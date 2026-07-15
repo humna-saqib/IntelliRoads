@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">
+    <!-- Vehicle Types matching our classifications -->
+    <vType id="passenger" vClass="passenger" accel="2.6" decel="4.5" sigma="0.5" length="5.0" minGap="2.5" maxSpeed="33.33"/>
+    <vType id="motorcycle" vClass="motorcycle" accel="6.0" decel="5.0" sigma="0.5" length="2.0" minGap="1.0" maxSpeed="41.67"/>
+    <vType id="bus" vClass="bus" accel="1.2" decel="4.0" sigma="0.5" length="12.0" minGap="3.0" maxSpeed="22.22"/>
+    <vType id="truck" vClass="truck" accel="1.5" decel="4.0" sigma="0.5" length="15.0" minGap="3.5" maxSpeed="25.00"/>
+
+    <!-- Routes -->
+    <route id="route_A" edges="edge_A edge_out_A"/>
+    <route id="route_B" edges="edge_B edge_out_B"/>
+    <route id="route_C" edges="edge_C edge_out_C"/>
+    <route id="route_D" edges="edge_D edge_out_D"/>
+
+    <!-- Vehicle Flows to generate traffic -->
+    <flow id="flow_car_A" begin="0" end="3600" period="exp(15)" route="route_A" type="passenger"/>
+    <flow id="flow_moto_A" begin="0" end="3600" period="exp(45)" route="route_A" type="motorcycle"/>
+    <flow id="flow_bus_A" begin="0" end="3600" period="180" route="route_A" type="bus"/>
+    <flow id="flow_truck_A" begin="0" end="3600" period="120" route="route_A" type="truck"/>
+
+    <flow id="flow_car_B" begin="0" end="3600" period="exp(12)" route="route_B" type="passenger"/>
+    <flow id="flow_moto_B" begin="0" end="3600" period="exp(30)" route="route_B" type="motorcycle"/>
+    <flow id="flow_truck_B" begin="0" end="3600" period="150" route="route_B" type="truck"/>
+
+    <flow id="flow_car_C" begin="0" end="3600" period="exp(20)" route="route_C" type="passenger"/>
+    <flow id="flow_bus_C" begin="0" end="3600" period="200" route="route_C" type="bus"/>
+    <flow id="flow_truck_C" begin="0" end="3600" period="140" route="route_C" type="truck"/>
+
+    <flow id="flow_car_D" begin="0" end="3600" period="exp(18)" route="route_D" type="passenger"/>
+    <flow id="flow_moto_D" begin="0" end="3600" period="exp(40)" route="route_D" type="motorcycle"/>
+    <flow id="flow_truck_D" begin="0" end="3600" period="160" route="route_D" type="truck"/>
+</routes>
