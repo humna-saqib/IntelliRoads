@@ -81,6 +81,30 @@ export default function IntersectionMap() {
     }
   };
 
+  // Map density to color-coded status
+  // Based on thresholds: Low (<20), Medium (20-40), High (>40) v/km
+  const getDensityColor = (density: number) => {
+    if (density < 20) {
+      return {
+        ring: '#22c55e',      // Green - Free flow
+        glow: 'rgba(34, 197, 94, 0.3)',
+        label: 'Free Flow'
+      };
+    } else if (density < 40) {
+      return {
+        ring: '#f59e0b',      // Orange - Congested
+        glow: 'rgba(245, 158, 11, 0.3)',
+        label: 'Congested'
+      };
+    } else {
+      return {
+        ring: '#ef4444',      // Red - Severely congested
+        glow: 'rgba(239, 68, 68, 0.3)',
+        label: 'Severe'
+      };
+    }
+  };
+
   return (
     <Card
       title="Interactive Intersection Map"
@@ -99,6 +123,28 @@ export default function IntersectionMap() {
         />
 
         <svg viewBox="0 0 400 400" className="w-full h-full">
+          {/* Define gradients for all density levels */}
+          <defs>
+            <style>{`
+              @keyframes density-pulse {
+                0%, 100% { opacity: 0.5; }
+                50% { opacity: 1; }
+              }
+              .pulse-animation { animation: density-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+            `}</style>
+            <radialGradient id="glow-green" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#22c55e" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
+            </radialGradient>
+            <radialGradient id="glow-orange" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
+            </radialGradient>
+            <radialGradient id="glow-red" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#ef4444" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
+            </radialGradient>
+          </defs>
           {/* Roads (Thick Gray Paths) */}
           {/* Horizontal Road 1 (A-B) */}
           <line x1="0" y1="120" x2="400" y2="120" stroke="#334155" strokeWidth="24" strokeLinecap="round" />
@@ -121,35 +167,59 @@ export default function IntersectionMap() {
             const coords = junctionCoords[junction.id];
             if (!coords) return null;
             const signalColor = getSignalColor(junction.signal);
-            const isCongested = junction.congestion_status === 'CONGESTED';
+            const densityInfo = getDensityColor(junction.density);
+            const isHighDensity = junction.density >= 40;
+
+            // Select the appropriate gradient ID based on density
+            let gradientId = 'glow-green';
+            if (junction.density < 20) {
+              gradientId = 'glow-green';
+            } else if (junction.density < 40) {
+              gradientId = 'glow-orange';
+            } else {
+              gradientId = 'glow-red';
+            }
 
             return (
               <g key={junction.id}>
-                {/* Congestion Pulse Ring */}
-                {isCongested && (
+                {/* Background Glow Circle */}
+                <circle
+                  cx={coords.x}
+                  cy={coords.y}
+                  r="26"
+                  fill={`url(#${gradientId})`}
+                  className="pointer-events-none"
+                />
+
+                {/* Animated Pulse Ring (High density only) */}
+                {isHighDensity && (
                   <circle
                     cx={coords.x}
                     cy={coords.y}
                     r="22"
                     fill="none"
-                    stroke="#ef4444"
+                    stroke={densityInfo.ring}
                     strokeWidth="2"
-                    className="animate-ping"
+                    className="pulse-animation"
+                    opacity="0.5"
                     style={{ transformOrigin: `${coords.x}px ${coords.y}px` }}
                   />
                 )}
 
-                {/* Base Intersection Ring */}
+                {/* Base Intersection Circle - Color coded by density */}
                 <circle
                   cx={coords.x}
                   cy={coords.y}
                   r="16"
                   fill="#1e293b"
-                  stroke={isCongested ? '#ef4444' : '#475569'}
-                  strokeWidth="2"
-                  className="cursor-pointer hover:fill-slate-800 transition-colors"
+                  stroke={densityInfo.ring}
+                  strokeWidth="2.5"
+                  className="cursor-pointer hover:fill-slate-800 transition-all duration-300"
                   onMouseMove={(e) => handleJunctionHover(e, junction)}
                   onMouseLeave={() => setHoveredJunction(null)}
+                  style={{
+                    boxShadow: `0 0 8px ${densityInfo.ring}40`
+                  }}
                 />
 
                 {/* Signal Light Center */}
@@ -158,7 +228,7 @@ export default function IntersectionMap() {
                   cy={coords.y}
                   r="6"
                   fill={signalColor}
-                  className="pointer-events-none"
+                  className="pointer-events-none transition-colors duration-300"
                   style={{
                     filter: `drop-shadow(0 0 6px ${signalColor})`
                   }}
@@ -217,20 +287,28 @@ export default function IntersectionMap() {
               Signal: <span className="font-semibold" style={{ color: getSignalColor(hoveredJunction.signal) }}>{hoveredJunction.signal}</span>
             </div>
             <div>
-              Status: <span className={`font-semibold ${hoveredJunction.congestion_status === 'CONGESTED' ? 'text-red-400' : 'text-green-400'}`}>{hoveredJunction.congestion_status}</span>
+              Density: <span className="font-semibold text-slate-100">{hoveredJunction.density.toFixed(1)} veh/km</span>
+            </div>
+            <div>
+              Status: <span className={`font-semibold px-2 py-0.5 rounded text-xs ${
+                hoveredJunction.density < 20 
+                  ? 'bg-green-500/20 text-green-300' 
+                  : hoveredJunction.density < 40 
+                    ? 'bg-orange-500/20 text-orange-300'
+                    : 'bg-red-500/20 text-red-300'
+              }`}>
+                {hoveredJunction.density < 20 ? '✓ Free Flow' : hoveredJunction.density < 40 ? '⚠ Congested' : '✕ Severe'}
+              </span>
             </div>
             <div>
               Vehicles: <span className="font-semibold text-slate-100">{hoveredJunction.vehicle_count}</span>
-            </div>
-            <div>
-              Density: <span className="font-semibold text-slate-100">{hoveredJunction.density} veh/km</span>
             </div>
           </div>
         )}
       </div>
 
       {/* Map Legend */}
-      <div className="flex flex-wrap items-center justify-center gap-4 mt-4 text-[10px] text-slate-400 border-t border-slate-850 pt-3">
+      <div className="flex flex-wrap items-center justify-center gap-3 mt-4 text-[10px] text-slate-400 border-t border-slate-850 pt-3">
         <div className="flex items-center gap-1">
           <span className="h-2 w-2 rounded-full bg-[#3b82f6]" />
           <span>Car</span>
@@ -247,14 +325,20 @@ export default function IntersectionMap() {
           <span className="h-2 w-2 rounded-full bg-[#ef4444]" />
           <span>Truck</span>
         </div>
-        <div className="w-full md:w-auto h-0.5 md:h-3 border-l border-slate-800 hidden md:block" />
+
+        <div className="w-full h-px bg-slate-700/50 my-1" />
+
         <div className="flex items-center gap-1">
-          <span className="h-2.5 w-2.5 rounded-full border border-slate-700 bg-[#22c55e]" />
-          <span>Green Phase</span>
+          <span className="h-2.5 w-2.5 rounded-full border-2 border-[#22c55e] bg-slate-900" />
+          <span>Green - Free Flow (&lt;20 v/km)</span>
         </div>
         <div className="flex items-center gap-1">
-          <span className="h-2.5 w-2.5 rounded-full border border-slate-700 bg-[#ef4444]" />
-          <span>Red Phase</span>
+          <span className="h-2.5 w-2.5 rounded-full border-2 border-[#f59e0b] bg-slate-900" />
+          <span>Orange - Congested (20-40 v/km)</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <span className="h-2.5 w-2.5 rounded-full border-2 border-[#ef4444] bg-slate-900" />
+          <span>Red - Severe (&gt;40 v/km)</span>
         </div>
       </div>
     </Card>
