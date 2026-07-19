@@ -76,4 +76,8 @@
         <phase duration="5" state="y"/>
         <phase duration="35" state="r"/>
     </tlLogic>
+    <connection from="edge_A" to="edge_out_A" fromLane="0" toLane="0" tl="junctionA" linkIndex="0" dir="s" state="o"/>
+    <connection from="edge_B" to="edge_out_B" fromLane="0" toLane="0" tl="junctionB" linkIndex="0" dir="s" state="o"/>
+    <connection from="edge_C" to="edge_out_C" fromLane="0" toLane="0" tl="junctionC" linkIndex="0" dir="s" state="o"/>
+    <connection from="edge_D" to="edge_out_D" fromLane="0" toLane="0" tl="junctionD" linkIndex="0" dir="s" state="o"/>
 </net>
