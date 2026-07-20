@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<net version="1.16" junctionCornerDetail="5" limitTurnSpeed="5.50" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/net_file.xsd">
+    <location netOffset="0.00,0.00" convBoundary="-500.00,-500.00,500.00,500.00" origBoundary="-10000000000.00,-10000000000.00,10000000000.00,10000000000.00" projParameter="!"/>
+
+    <!-- Edges and Lanes -->
+    <edge id="edge_A" from="node_in_A" to="junctionA" priority="-1">
+        <lane id="lane_A_0" index="0" speed="13.89" length="500.00" shape="-500.00,0.00 -10.00,0.00"/>
+    </edge>
+    <edge id="edge_B" from="node_in_B" to="junctionB" priority="-1">
+        <lane id="lane_B_0" index="0" speed="13.89" length="600.00" shape="0.00,-500.00 0.00,-10.00"/>
+    </edge>
+    <edge id="edge_C" from="node_in_C" to="junctionC" priority="-1">
+        <lane id="lane_C_0" index="0" speed="13.89" length="400.00" shape="500.00,0.00 10.00,0.00"/>
+    </edge>
+    <edge id="edge_D" from="node_in_D" to="junctionD" priority="-1">
+        <lane id="lane_D_0" index="0" speed="13.89" length="500.00" shape="0.00,500.00 0.00,10.00"/>
+    </edge>
+
+    <!-- Outbound Edges -->
+    <edge id="edge_out_A" from="junctionA" to="node_out_A" priority="-1">
+        <lane id="lane_out_A_0" index="0" speed="13.89" length="500.00" shape="10.00,0.00 500.00,0.00"/>
+    </edge>
+    <edge id="edge_out_B" from="junctionB" to="node_out_B" priority="-1">
+        <lane id="lane_out_B_0" index="0" speed="13.89" length="500.00" shape="0.00,10.00 0.00,500.00"/>
+    </edge>
+    <edge id="edge_out_C" from="junctionC" to="node_out_C" priority="-1">
+        <lane id="lane_out_C_0" index="0" speed="13.89" length="500.00" shape="-10.00,0.00 -500.00,0.00"/>
+    </edge>
+    <edge id="edge_out_D" from="junctionD" to="node_out_D" priority="-1">
+        <lane id="lane_out_D_0" index="0" speed="13.89" length="500.00" shape="0.00,-10.00 0.00,-500.00"/>
+    </edge>
+
+    <!-- Junction Nodes -->
+    <junction id="node_in_A" type="dead_end" x="-500.00" y="0.00" incLanes="" intLanes="" shape="-500.00,1.60 -500.00,-1.60"/>
+    <junction id="node_in_B" type="dead_end" x="0.00" y="-500.00" incLanes="" intLanes="" shape="-1.60,-500.00 1.60,-500.00"/>
+    <junction id="node_in_C" type="dead_end" x="500.00" y="0.00" incLanes="" intLanes="" shape="500.00,-1.60 500.00,1.60"/>
+    <junction id="node_in_D" type="dead_end" x="0.00" y="500.00" incLanes="" intLanes="" shape="1.60,500.00 -1.60,500.00"/>
+
+    <junction id="node_out_A" type="dead_end" x="500.00" y="0.00" incLanes="lane_out_A_0" intLanes="" shape="500.00,-1.60 500.00,1.60"/>
+    <junction id="node_out_B" type="dead_end" x="0.00" y="500.00" incLanes="lane_out_B_0" intLanes="" shape="1.60,500.00 -1.60,500.00"/>
+    <junction id="node_out_C" type="dead_end" x="-500.00" y="0.00" incLanes="lane_out_C_0" intLanes="" shape="-500.00,1.60 -500.00,-1.60"/>
+    <junction id="node_out_D" type="dead_end" x="0.00" y="-500.00" incLanes="lane_out_D_0" intLanes="" shape="-1.60,-500.00 1.60,-500.00"/>
+
+    <!-- Traffic Lights junctions -->
+    <junction id="junctionA" type="traffic_light" x="-10.00" y="0.00" incLanes="lane_A_0" intLanes="" shape="-10.00,1.60 -10.00,-1.60">
+        <request index="0" response="0" foes="0"/>
+    </junction>
+    <junction id="junctionB" type="traffic_light" x="0.00" y="-10.00" incLanes="lane_B_0" intLanes="" shape="-1.60,-10.00 1.60,-10.00">
+        <request index="0" response="0" foes="0"/>
+    </junction>
+    <junction id="junctionC" type="traffic_light" x="10.00" y="0.00" incLanes="lane_C_0" intLanes="" shape="10.00,-1.60 10.00,1.60">
+        <request index="0" response="0" foes="0"/>
+    </junction>
+    <junction id="junctionD" type="traffic_light" x="0.00" y="10.00" incLanes="lane_D_0" intLanes="" shape="1.60,10.00 -1.60,10.00">
+        <request index="0" response="0" foes="0"/>
+    </junction>
+
+    <!-- TLS Programs -->
+    <tlLogic id="junctionA" type="static" programID="0" offset="0">
+        <phase duration="30" state="G"/>
+        <phase duration="5" state="y"/>
+        <phase duration="35" state="r"/>
+    </tlLogic>
+    <tlLogic id="junctionB" type="static" programID="0" offset="0">
+        <phase duration="30" state="G"/>
+        <phase duration="5" state="y"/>
+        <phase duration="35" state="r"/>
+    </tlLogic>
+    <tlLogic id="junctionC" type="static" programID="0" offset="0">
+        <phase duration="30" state="G"/>
+        <phase duration="5" state="y"/>
+        <phase duration="35" state="r"/>
+    </tlLogic>
+    <tlLogic id="junctionD" type="static" programID="0" offset="0">
+        <phase duration="30" state="G"/>
+        <phase duration="5" state="y"/>
+        <phase duration="35" state="r"/>
+    </tlLogic>
+    <connection from="edge_A" to="edge_out_A" fromLane="0" toLane="0" tl="junctionA" linkIndex="0" dir="s" state="o"/>
+    <connection from="edge_B" to="edge_out_B" fromLane="0" toLane="0" tl="junctionB" linkIndex="0" dir="s" state="o"/>
+    <connection from="edge_C" to="edge_out_C" fromLane="0" toLane="0" tl="junctionC" linkIndex="0" dir="s" state="o"/>
+    <connection from="edge_D" to="edge_out_D" fromLane="0" toLane="0" tl="junctionD" linkIndex="0" dir="s" state="o"/>
+</net>
