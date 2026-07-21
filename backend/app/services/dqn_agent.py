@@ -31,9 +31,13 @@ from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
+from app.core.dqn_config import load_dqn_config
+
+_config_defaults = load_dqn_config()
+
 STATE_SIZE = 5
 ACTION_SIZE = 3
-HIDDEN_SIZE = 64
+HIDDEN_SIZE = _config_defaults.hidden_size
 
 # Approximate observed ranges per state feature — density, queue_length,
 # avg_waiting_time, occupancy_percent, current_signal_duration (see
@@ -44,17 +48,16 @@ HIDDEN_SIZE = 64
 _FEATURE_MIN = [0.0, 0.0, 0.0, 0.0, 0.0]
 _FEATURE_MAX = [80.0, 30.0, 120.0, 100.0, 90.0]
 
-# ---------------------------------------------------------------------------
-# Hyperparameters – tunable defaults, not final/tuned values.
-# ---------------------------------------------------------------------------
-GAMMA: float = 0.99
-LEARNING_RATE: float = 1e-3
-TARGET_UPDATE_FREQUENCY_EPOCHS: int = 10
-EPSILON_START: float = 1.0
-EPSILON_END: float = 0.05
-EPSILON_DECAY_EPOCHS: int = 50
+# Default Hyperparameters (loaded from config as defaults)
+GAMMA: float = _config_defaults.gamma
+LEARNING_RATE: float = _config_defaults.learning_rate
+TARGET_UPDATE_FREQUENCY_EPOCHS: int = _config_defaults.target_update_frequency_epochs
+EPSILON_START: float = _config_defaults.epsilon_start
+EPSILON_END: float = _config_defaults.epsilon_end
+EPSILON_DECAY_EPOCHS: int = _config_defaults.epsilon_decay_epochs
 
 DEFAULT_MODEL_PATH: Path = Path(__file__).resolve().parent.parent.parent / "data" / "models" / "dqn_agent.pt"
+
 
 
 def normalize_state(state: List[float]) -> List[float]:
@@ -91,16 +94,45 @@ class DQNAgent:
     SQLiteReplayBuffer.
     """
 
-    def __init__(self, device: Optional[str] = None) -> None:
+    def __init__(
+        self,
+        device: Optional[str] = None,
+        gamma: Optional[float] = None,
+        learning_rate: Optional[float] = None,
+        hidden_size: Optional[int] = None,
+        target_update_frequency_epochs: Optional[int] = None,
+        epsilon_start: Optional[float] = None,
+        epsilon_end: Optional[float] = None,
+        epsilon_decay_epochs: Optional[int] = None,
+    ) -> None:
         self.device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
-        self.policy_net = QNetwork().to(self.device)
-        self.target_net = QNetwork().to(self.device)
+
+        config = load_dqn_config()
+        self.gamma = gamma if gamma is not None else config.gamma
+        self.learning_rate = learning_rate if learning_rate is not None else config.learning_rate
+        self.hidden_size = hidden_size if hidden_size is not None else config.hidden_size
+        self.target_update_frequency_epochs = (
+            target_update_frequency_epochs if target_update_frequency_epochs is not None
+            else config.target_update_frequency_epochs
+        )
+        self.epsilon_start = epsilon_start if epsilon_start is not None else config.epsilon_start
+        self.epsilon_end = epsilon_end if epsilon_end is not None else config.epsilon_end
+        self.epsilon_decay_epochs = (
+            epsilon_decay_epochs if epsilon_decay_epochs is not None else config.epsilon_decay_epochs
+        )
+
+        self.policy_net = QNetwork(hidden_size=self.hidden_size).to(self.device)
+        self.target_net = QNetwork(hidden_size=self.hidden_size).to(self.device)
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
-        self.optimizer = optim.Adam(self.policy_net.parameters(), lr=LEARNING_RATE)
+        self.optimizer = optim.Adam(self.policy_net.parameters(), lr=self.learning_rate)
         self.loss_fn = nn.SmoothL1Loss()
         self.train_step_count = 0
-        logger.info(f"DQNAgent initialised on device={self.device}.")
+        logger.info(
+            f"DQNAgent initialised on device={self.device}, "
+            f"hidden_size={self.hidden_size}, learning_rate={self.learning_rate}, "
+            f"gamma={self.gamma}, target_update_frequency={self.target_update_frequency_epochs}"
+        )
 
     # ------------------------------------------------------------------
     # Action selection – for future live/online use only (see module
@@ -149,7 +181,7 @@ class DQNAgent:
 
         with torch.no_grad():
             next_q_max = self.target_net(next_states).max(dim=1).values
-            target_q = rewards + GAMMA * next_q_max * (1.0 - dones)
+            target_q = rewards + self.gamma * next_q_max * (1.0 - dones)
 
         loss = self.loss_fn(current_q, target_q)
 
@@ -204,12 +236,12 @@ class DQNAgent:
                 q_values.append(mean_q)
                 rewards_seen.extend(t.reward for t in batch)
 
-            if epoch % TARGET_UPDATE_FREQUENCY_EPOCHS == 0:
+            if epoch % self.target_update_frequency_epochs == 0:
                 self.update_target_network()
 
             epsilon = max(
-                EPSILON_END,
-                EPSILON_START - (EPSILON_START - EPSILON_END) * (epoch / EPSILON_DECAY_EPOCHS),
+                self.epsilon_end,
+                self.epsilon_start - (self.epsilon_start - self.epsilon_end) * (epoch / self.epsilon_decay_epochs),
             )
 
             stats = {
@@ -253,3 +285,4 @@ class DQNAgent:
         self.optimizer.load_state_dict(checkpoint["optimizer"])
         self.train_step_count = checkpoint.get("train_step_count", 0)
         logger.info(f"DQNAgent checkpoint loaded from {path}")
+

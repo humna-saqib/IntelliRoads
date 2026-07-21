@@ -39,9 +39,19 @@ class InMemoryStateStore:
         self._emergency: Optional[EmergencyResponse] = None
         self._occupancy: Optional[OccupancyResponse] = None
         self._performance: Optional[PerformanceSnapshot] = None
+        self._controller_mode: str = "RULE_BASED"
         self._sim_time: float = 0.0
         self._last_update: float = time.time()
         logger.info("InMemoryStateStore initialised.")
+
+    async def set_controller_mode(self, mode: str) -> None:
+        async with self._lock:
+            self._controller_mode = mode.upper()
+            logger.info(f"State store controller_mode updated to {self._controller_mode}")
+
+    async def get_controller_mode(self) -> str:
+        async with self._lock:
+            return self._controller_mode
 
     async def update_all(
         self,
