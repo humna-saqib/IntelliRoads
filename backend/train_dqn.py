@@ -77,21 +77,41 @@ def _persist_stats(db_path: Path, epoch_stats: List[dict], buffer_size: int) -> 
 
 
 def main() -> None:
+    from app.core.dqn_config import load_dqn_config
+    config = load_dqn_config()
+
     parser = argparse.ArgumentParser(description="Offline DQN training from collected rl_experiences.")
-    parser.add_argument("--epochs", type=int, default=50)
-    parser.add_argument("--batch-size", type=int, default=64)
-    parser.add_argument("--steps-per-epoch", type=int, default=20)
-    parser.add_argument("--model-path", type=str, default=str(DEFAULT_MODEL_PATH))
+    parser.add_argument("--epochs", type=int, default=config.offline_epochs, help="Number of training epochs")
+    parser.add_argument("--batch-size", type=int, default=config.batch_size_offline, help="Minibatch training size")
+    parser.add_argument("--steps-per-epoch", type=int, default=config.offline_steps_per_epoch, help="SGD steps per epoch")
+    parser.add_argument("--model-path", type=str, default=str(DEFAULT_MODEL_PATH), help="Path to save trained PyTorch model")
+    
+    # Custom Hyperparameter overrides
+    parser.add_argument("--lr", type=float, default=None, help="Learning rate override")
+    parser.add_argument("--gamma", type=float, default=None, help="Gamma (discount factor) override")
+    parser.add_argument("--hidden-size", type=int, default=None, help="Hidden layers dimension override")
+    parser.add_argument("--target-update", type=int, default=None, help="Target update epoch frequency override")
+    parser.add_argument("--epsilon-start", type=float, default=None, help="Starting epsilon override")
+    parser.add_argument("--epsilon-end", type=float, default=None, help="Ending epsilon override")
+    parser.add_argument("--epsilon-decay", type=int, default=None, help="Epsilon decay duration in epochs override")
     args = parser.parse_args()
 
     buffer = SQLiteReplayBuffer()
     n = buffer.load()
     print(f"Loaded {n} transitions from {DB_PATH}")
     if n == 0:
-        print("No experiences found. Run the backend simulation first so RLEnvironment can collect data.")
+        print("No experiences found. Run the backend simulation first so RLEnvironment can populate rl_experiences.")
         return
 
-    agent = DQNAgent()
+    agent = DQNAgent(
+        gamma=args.gamma,
+        learning_rate=args.lr,
+        hidden_size=args.hidden_size,
+        target_update_frequency_epochs=args.target_update,
+        epsilon_start=args.epsilon_start,
+        epsilon_end=args.epsilon_end,
+        epsilon_decay_epochs=args.epsilon_decay,
+    )
     epoch_stats = agent.train_offline(
         buffer,
         num_epochs=args.epochs,

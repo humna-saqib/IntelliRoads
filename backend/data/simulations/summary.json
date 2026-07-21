@@ -1,0 +1,112 @@
+[
+  {
+    "run_id": "sim_run_1_6129b7",
+    "start_time": 1784652254.8408206,
+    "end_time": 1784652264.2980173,
+    "duration": 49.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5362,
+    "throughput": 0,
+    "avg_reward": -4.65,
+    "timestamp": 1784652254.8408206
+  },
+  {
+    "run_id": "sim_run_2_b44f47",
+    "start_time": 1784652264.3555784,
+    "end_time": 1784652269.780996,
+    "duration": 49.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5362,
+    "throughput": 0,
+    "avg_reward": -4.65,
+    "timestamp": 1784652264.3555784
+  },
+  {
+    "run_id": "sim_run_1_b3476f",
+    "start_time": 1784652303.4258015,
+    "end_time": 1784652311.4543154,
+    "duration": 49.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5362,
+    "throughput": 0,
+    "avg_reward": -4.65,
+    "timestamp": 1784652303.4258015
+  },
+  {
+    "run_id": "sim_run_2_f6a12b",
+    "start_time": 1784652311.4837234,
+    "end_time": 1784652317.2589447,
+    "duration": 49.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5362,
+    "throughput": 0,
+    "avg_reward": -4.65,
+    "timestamp": 1784652311.4837234
+  },
+  {
+    "run_id": "sim_run_1_afcd02",
+    "start_time": 1784653411.6242273,
+    "end_time": 1784653421.9090521,
+    "duration": 49.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5362,
+    "throughput": 0,
+    "avg_reward": -4.65,
+    "timestamp": 1784653411.6242273
+  },
+  {
+    "run_id": "sim_run_2_899bbf",
+    "start_time": 1784653421.9681096,
+    "end_time": 1784653427.5592241,
+    "duration": 49.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5362,
+    "throughput": 0,
+    "avg_reward": -4.65,
+    "timestamp": 1784653421.9681096
+  },
+  {
+    "run_id": "sim_run_1_2b058b",
+    "start_time": 1784663384.9147222,
+    "end_time": 1784663395.935196,
+    "duration": 49.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5362,
+    "throughput": 0,
+    "avg_reward": -4.65,
+    "timestamp": 1784663384.9147222
+  },
+  {
+    "run_id": "sim_run_1_4048ec",
+    "start_time": 1784663750.8050256,
+    "end_time": 1784663779.716229,
+    "duration": 149.0,
+    "avg_waiting_time": 10.4267,
+    "avg_queue_length": 17.555,
+    "throughput": 0,
+    "avg_reward": -209.9812,
+    "timestamp": 1784663750.8050256
+  },
+  {
+    "run_id": "sim_run_1_2fd716",
+    "start_time": 1784664427.38684,
+    "end_time": 1784664445.107717,
+    "duration": 99.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.4575,
+    "throughput": 20,
+    "avg_reward": -9.845,
+    "timestamp": 1784664427.38684
+  },
+  {
+    "run_id": "sim_run_1_284731",
+    "start_time": 1784664584.7625794,
+    "end_time": 1784664601.3691642,
+    "duration": 99.0,
+    "avg_waiting_time": 3.193,
+    "avg_queue_length": 7.1725,
+    "throughput": 0,
+    "avg_reward": -89.6933,
+    "timestamp": 1784664584.7625794
+  }
+]

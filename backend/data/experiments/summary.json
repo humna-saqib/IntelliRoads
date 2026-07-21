@@ -1,0 +1,24 @@
+[
+  {
+    "experiment_id": "exp_test_1",
+    "timestamp": 1784651911.303874,
+    "learning_rate": 0.001,
+    "gamma": 0.99,
+    "hidden_size": 32,
+    "epochs": 2,
+    "avg_reward": -0.571,
+    "avg_loss": 5.5845,
+    "model_path": "D:\\Downloads D\\Unsolved DL\\IntelliRoads\\backend\\data\\experiments\\exp_test_1\\model.pt"
+  },
+  {
+    "experiment_id": "exp_test_2",
+    "timestamp": 1784651914.0821483,
+    "learning_rate": 0.0005,
+    "gamma": 0.95,
+    "hidden_size": 64,
+    "epochs": 2,
+    "avg_reward": 0.5869,
+    "avg_loss": 5.015,
+    "model_path": "D:\\Downloads D\\Unsolved DL\\IntelliRoads\\backend\\data\\experiments\\exp_test_2\\model.pt"
+  }
+]
