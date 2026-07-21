@@ -32,6 +32,9 @@ from app.services.priority_controller import EmergencyPriorityController
 from app.services.occupancy_calculator import OccupancyCalculator
 from app.services.performance_metrics_service import PerformanceMetricsService
 from app.services.rl_environment import RLEnvironment
+from app.agent.dqn_agent import DQNAgent
+from app.environment.sumo_environment import SUMOEnvironment
+from app.controllers.dqn_controller import DQNController, ControllerMode
 from app.models.emergency import EmergencyResponse
 from app.models.signal import SignalResponse
 from app.websocket.manager import WebSocketManager, websocket_endpoint
@@ -61,6 +64,7 @@ async def simulate_loop(
     occupancy_calculator: OccupancyCalculator,
     performance_metrics_service: PerformanceMetricsService,
     rl_environment: RLEnvironment,
+    dqn_controller: DQNController,
     store: InMemoryStateStore,
     manager: WebSocketManager,
 ) -> None:
@@ -97,12 +101,18 @@ async def simulate_loop(
             #      purely observational for analytics/future RL state)
             occupancy_response = occupancy_calculator.calculate_all(vehicles)
 
-            # 5. Adapt traffic signals using rule-based timing – unchanged,
-            #    always pure density-based, never touched by priority control.
+            # 5. Adapt traffic signals using active controller mode (Rule-Based vs DQN).
             #    Timed for Response Optimization Metrics (controller_response_time).
             controller_timer_start = time.perf_counter()
-            signal_controller.update_all_signals(density_response)
-            normal_signals = signal_controller.get_current_signals()
+            current_mode_str = await store.get_controller_mode()
+            dqn_controller.set_mode(current_mode_str)
+
+            normal_signals = dqn_controller.control_step(
+                density_response=density_response,
+                vehicles=vehicles,
+                occupancy_response=occupancy_response,
+                throughput=1,
+            )
             normal_signals_response = SignalResponse(
                 signals=normal_signals, timestamp=time.time()
             )
@@ -255,15 +265,27 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     performance_metrics_service = PerformanceMetricsService(session)
     rl_environment = RLEnvironment()
 
+    # Initialise Modular DQN RL Architecture
+    sumo_env = SUMOEnvironment(session)
+    dqn_agent = DQNAgent()
+    dqn_controller = DQNController(
+        session=session,
+        environment=sumo_env,
+        agent=dqn_agent,
+        rule_based_controller=signal_controller,
+        mode=ControllerMode.RULE_BASED,
+    )
+
     # Connect the SQLite telemetry database (Sprint 2 logging layer)
     database = Database()
     await database.connect()
     db_logger = DBLogger(database)
 
-    # Share state store, ws manager, and db logger with FastAPI application state
+    # Share state store, ws manager, db logger, and dqn controller with FastAPI application state
     app.state.store = state_store
     app.state.ws_manager = ws_manager
     app.state.db_logger = db_logger
+    app.state.dqn_controller = dqn_controller
 
     # Start simulation loop in the background
     sim_loop_task = asyncio.create_task(
@@ -280,6 +302,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             occupancy_calculator=occupancy_calculator,
             performance_metrics_service=performance_metrics_service,
             rl_environment=rl_environment,
+            dqn_controller=dqn_controller,
             store=state_store,
             manager=ws_manager,
         )

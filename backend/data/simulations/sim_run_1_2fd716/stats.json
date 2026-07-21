@@ -1,0 +1,902 @@
+[
+  {
+    "step": 1,
+    "sim_time": 1.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 1.0,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": 0.0
+  },
+  {
+    "step": 2,
+    "sim_time": 2.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 1.0,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -8.0
+  },
+  {
+    "step": 3,
+    "sim_time": 3.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -4.0
+  },
+  {
+    "step": 4,
+    "sim_time": 4.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.25,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -2.0
+  },
+  {
+    "step": 5,
+    "sim_time": 5.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -4.0
+  },
+  {
+    "step": 6,
+    "sim_time": 6.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.0,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": 0.0
+  },
+  {
+    "step": 7,
+    "sim_time": 7.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.25,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -2.0
+  },
+  {
+    "step": 8,
+    "sim_time": 8.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 1.0,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -8.0
+  },
+  {
+    "step": 9,
+    "sim_time": 9.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -4.0
+  },
+  {
+    "step": 10,
+    "sim_time": 10.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.25,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -2.0
+  },
+  {
+    "step": 11,
+    "sim_time": 11.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -4.0
+  },
+  {
+    "step": 12,
+    "sim_time": 12.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -4.0
+  },
+  {
+    "step": 13,
+    "sim_time": 13.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.75,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -6.0
+  },
+  {
+    "step": 14,
+    "sim_time": 14.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.75,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -6.0
+  },
+  {
+    "step": 15,
+    "sim_time": 15.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -4.0
+  },
+  {
+    "step": 16,
+    "sim_time": 16.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -4.0
+  },
+  {
+    "step": 17,
+    "sim_time": 17.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.75,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -6.0
+  },
+  {
+    "step": 18,
+    "sim_time": 18.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.25,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -2.0
+  },
+  {
+    "step": 19,
+    "sim_time": 19.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -4.0
+  },
+  {
+    "step": 20,
+    "sim_time": 20.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.25,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -2.0
+  },
+  {
+    "step": 21,
+    "sim_time": 21.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -4.0
+  },
+  {
+    "step": 22,
+    "sim_time": 22.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.75,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -6.0
+  },
+  {
+    "step": 23,
+    "sim_time": 23.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -4.0
+  },
+  {
+    "step": 24,
+    "sim_time": 24.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.75,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -6.0
+  },
+  {
+    "step": 25,
+    "sim_time": 25.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -4.0
+  },
+  {
+    "step": 26,
+    "sim_time": 26.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.75,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -6.0
+  },
+  {
+    "step": 27,
+    "sim_time": 27.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.75,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -6.0
+  },
+  {
+    "step": 28,
+    "sim_time": 28.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.75,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -6.5
+  },
+  {
+    "step": 29,
+    "sim_time": 29.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -5.0
+  },
+  {
+    "step": 30,
+    "sim_time": 30.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -4.0
+  },
+  {
+    "step": 31,
+    "sim_time": 31.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -4.0
+  },
+  {
+    "step": 32,
+    "sim_time": 32.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -4.0
+  },
+  {
+    "step": 33,
+    "sim_time": 33.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.75,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -6.5
+  },
+  {
+    "step": 34,
+    "sim_time": 34.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.75,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -6.0
+  },
+  {
+    "step": 35,
+    "sim_time": 35.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -4.0
+  },
+  {
+    "step": 36,
+    "sim_time": 36.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 1.0,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -8.0
+  },
+  {
+    "step": 37,
+    "sim_time": 37.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.4,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -4.0
+  },
+  {
+    "step": 38,
+    "sim_time": 38.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.4,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -4.0
+  },
+  {
+    "step": 39,
+    "sim_time": 39.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.4,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -4.0
+  },
+  {
+    "step": 40,
+    "sim_time": 40.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.6,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -6.0
+  },
+  {
+    "step": 41,
+    "sim_time": 41.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.6,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -6.0
+  },
+  {
+    "step": 42,
+    "sim_time": 42.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -6.0
+  },
+  {
+    "step": 43,
+    "sim_time": 43.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -6.0
+  },
+  {
+    "step": 44,
+    "sim_time": 44.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -6.0
+  },
+  {
+    "step": 45,
+    "sim_time": 45.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.29,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -4.0
+  },
+  {
+    "step": 46,
+    "sim_time": 46.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.43,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -6.0
+  },
+  {
+    "step": 47,
+    "sim_time": 47.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.29,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -4.0
+  },
+  {
+    "step": 48,
+    "sim_time": 48.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.43,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -6.0
+  },
+  {
+    "step": 49,
+    "sim_time": 49.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.29,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -4.5
+  },
+  {
+    "step": 50,
+    "sim_time": 50.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.43,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -6.0
+  },
+  {
+    "step": 51,
+    "sim_time": 51.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.29,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -14.0
+  },
+  {
+    "step": 52,
+    "sim_time": 52.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -6.0
+  },
+  {
+    "step": 53,
+    "sim_time": 53.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.25,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -14.0
+  },
+  {
+    "step": 54,
+    "sim_time": 54.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -16.0
+  },
+  {
+    "step": 55,
+    "sim_time": 55.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -16.0
+  },
+  {
+    "step": 56,
+    "sim_time": 56.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -18.0
+  },
+  {
+    "step": 57,
+    "sim_time": 57.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.25,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -14.0
+  },
+  {
+    "step": 58,
+    "sim_time": 58.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -16.0
+  },
+  {
+    "step": 59,
+    "sim_time": 59.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -16.0
+  },
+  {
+    "step": 60,
+    "sim_time": 60.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.25,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -14.0
+  },
+  {
+    "step": 61,
+    "sim_time": 61.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -16.0
+  },
+  {
+    "step": 62,
+    "sim_time": 62.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -16.0
+  },
+  {
+    "step": 63,
+    "sim_time": 63.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -16.5
+  },
+  {
+    "step": 64,
+    "sim_time": 64.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -16.0
+  },
+  {
+    "step": 65,
+    "sim_time": 65.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -28.0
+  },
+  {
+    "step": 66,
+    "sim_time": 66.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -16.0
+  },
+  {
+    "step": 67,
+    "sim_time": 67.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.25,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -24.0
+  },
+  {
+    "step": 68,
+    "sim_time": 68.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -18.0
+  },
+  {
+    "step": 69,
+    "sim_time": 69.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.25,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -24.0
+  },
+  {
+    "step": 70,
+    "sim_time": 70.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -26.0
+  },
+  {
+    "step": 71,
+    "sim_time": 71.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -26.0
+  },
+  {
+    "step": 72,
+    "sim_time": 72.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -26.0
+  },
+  {
+    "step": 73,
+    "sim_time": 73.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.25,
+    "throughput_tick": 0,
+    "throughput_total": 0,
+    "reward": -24.0
+  },
+  {
+    "step": 74,
+    "sim_time": 74.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 1,
+    "throughput_total": 1,
+    "reward": -6.0
+  },
+  {
+    "step": 75,
+    "sim_time": 75.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.25,
+    "throughput_tick": 0,
+    "throughput_total": 1,
+    "reward": -24.0
+  },
+  {
+    "step": 76,
+    "sim_time": 76.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 0,
+    "throughput_total": 1,
+    "reward": -26.0
+  },
+  {
+    "step": 77,
+    "sim_time": 77.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 1,
+    "throughput_total": 2,
+    "reward": -8.0
+  },
+  {
+    "step": 78,
+    "sim_time": 78.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.25,
+    "throughput_tick": 0,
+    "throughput_total": 2,
+    "reward": -24.0
+  },
+  {
+    "step": 79,
+    "sim_time": 79.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 0,
+    "throughput_total": 2,
+    "reward": -26.0
+  },
+  {
+    "step": 80,
+    "sim_time": 80.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 2,
+    "throughput_total": 4,
+    "reward": 14.0
+  },
+  {
+    "step": 81,
+    "sim_time": 81.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 1,
+    "throughput_total": 5,
+    "reward": -6.0
+  },
+  {
+    "step": 82,
+    "sim_time": 82.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 0,
+    "throughput_total": 5,
+    "reward": -26.0
+  },
+  {
+    "step": 83,
+    "sim_time": 83.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 0,
+    "throughput_total": 5,
+    "reward": -26.0
+  },
+  {
+    "step": 84,
+    "sim_time": 84.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 2,
+    "throughput_total": 7,
+    "reward": 14.0
+  },
+  {
+    "step": 85,
+    "sim_time": 85.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 0,
+    "throughput_total": 7,
+    "reward": -26.0
+  },
+  {
+    "step": 86,
+    "sim_time": 86.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 0,
+    "throughput_total": 7,
+    "reward": -28.0
+  },
+  {
+    "step": 87,
+    "sim_time": 87.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 0,
+    "throughput_total": 7,
+    "reward": -26.0
+  },
+  {
+    "step": 88,
+    "sim_time": 88.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 0,
+    "throughput_total": 7,
+    "reward": -26.0
+  },
+  {
+    "step": 89,
+    "sim_time": 89.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 0,
+    "throughput_total": 7,
+    "reward": -26.0
+  },
+  {
+    "step": 90,
+    "sim_time": 90.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 1,
+    "throughput_total": 8,
+    "reward": -6.0
+  },
+  {
+    "step": 91,
+    "sim_time": 91.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 2,
+    "throughput_total": 10,
+    "reward": 14.0
+  },
+  {
+    "step": 92,
+    "sim_time": 92.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 2,
+    "throughput_total": 12,
+    "reward": 13.5
+  },
+  {
+    "step": 93,
+    "sim_time": 93.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 1,
+    "throughput_total": 13,
+    "reward": -8.5
+  },
+  {
+    "step": 94,
+    "sim_time": 94.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 2,
+    "throughput_total": 15,
+    "reward": 12.0
+  },
+  {
+    "step": 95,
+    "sim_time": 95.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 0,
+    "throughput_total": 15,
+    "reward": -28.0
+  },
+  {
+    "step": 96,
+    "sim_time": 96.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.25,
+    "throughput_tick": 2,
+    "throughput_total": 17,
+    "reward": 15.5
+  },
+  {
+    "step": 97,
+    "sim_time": 97.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 1,
+    "throughput_total": 18,
+    "reward": -8.0
+  },
+  {
+    "step": 98,
+    "sim_time": 98.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 1,
+    "throughput_total": 19,
+    "reward": -16.0
+  },
+  {
+    "step": 99,
+    "sim_time": 99.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.38,
+    "throughput_tick": 1,
+    "throughput_total": 20,
+    "reward": -6.0
+  },
+  {
+    "step": 100,
+    "sim_time": 100.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5,
+    "throughput_tick": 0,
+    "throughput_total": 20,
+    "reward": -38.0
+  }
+]
