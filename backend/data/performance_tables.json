@@ -1,0 +1,676 @@
+{
+  "training_performance": [
+    {
+      "epoch": 1,
+      "loss": 4.4683,
+      "avg_reward": 0.0456,
+      "avg_q_value": 0.0694,
+      "timestamp": 1784648478.5641782
+    },
+    {
+      "epoch": 2,
+      "loss": 4.5502,
+      "avg_reward": -0.6101,
+      "avg_q_value": 0.0714,
+      "timestamp": 1784648478.5791798
+    },
+    {
+      "epoch": 1,
+      "loss": 4.9168,
+      "avg_reward": 0.3812,
+      "avg_q_value": 0.0837,
+      "timestamp": 1784651345.8215914
+    },
+    {
+      "epoch": 1,
+      "loss": 5.1172,
+      "avg_reward": -0.5875,
+      "avg_q_value": -0.1102,
+      "timestamp": 1784651495.9785304
+    }
+  ],
+  "hyperparameter_tuning": [
+    {
+      "rank": 1,
+      "trial_id": "trial_18_774686",
+      "learning_rate": 0.0005,
+      "gamma": 0.99,
+      "hidden_size": 128,
+      "avg_reward": 2.9531,
+      "avg_loss": 5.9236,
+      "timestamp": 1784651361.6561918
+    },
+    {
+      "rank": 2,
+      "trial_id": "trial_16_e7362f",
+      "learning_rate": 0.0005,
+      "gamma": 0.99,
+      "hidden_size": 32,
+      "avg_reward": 2.4766,
+      "avg_loss": 5.5166,
+      "timestamp": 1784651583.126432
+    },
+    {
+      "rank": 3,
+      "trial_id": "trial_10_6bb503",
+      "learning_rate": 0.0005,
+      "gamma": 0.9,
+      "hidden_size": 32,
+      "avg_reward": 2.25,
+      "avg_loss": 5.2866,
+      "timestamp": 1784651582.833077
+    },
+    {
+      "rank": 4,
+      "trial_id": "trial_2_c2db8e",
+      "learning_rate": 0.0001,
+      "gamma": 0.9,
+      "hidden_size": 64,
+      "avg_reward": 2.125,
+      "avg_loss": 6.5855,
+      "timestamp": 1784651582.2640388
+    },
+    {
+      "rank": 5,
+      "trial_id": "trial_19_fabe4b",
+      "learning_rate": 0.001,
+      "gamma": 0.9,
+      "hidden_size": 32,
+      "avg_reward": 1.6953,
+      "avg_loss": 5.0424,
+      "timestamp": 1784651361.6903744
+    },
+    {
+      "rank": 6,
+      "trial_id": "trial_20_cbb43e",
+      "learning_rate": 0.001,
+      "gamma": 0.9,
+      "hidden_size": 64,
+      "avg_reward": 1.546,
+      "avg_loss": 5.9894,
+      "timestamp": 1784651583.3081293
+    },
+    {
+      "rank": 7,
+      "trial_id": "trial_21_79a175",
+      "learning_rate": 0.001,
+      "gamma": 0.9,
+      "hidden_size": 128,
+      "avg_reward": 1.5312,
+      "avg_loss": 5.6366,
+      "timestamp": 1784651361.8430529
+    },
+    {
+      "rank": 8,
+      "trial_id": "trial_7_c81fa3",
+      "learning_rate": 0.0001,
+      "gamma": 0.99,
+      "hidden_size": 32,
+      "avg_reward": 1.5149,
+      "avg_loss": 5.2749,
+      "timestamp": 1784651361.2261946
+    },
+    {
+      "rank": 9,
+      "trial_id": "trial_12_0f00b4",
+      "learning_rate": 0.0005,
+      "gamma": 0.9,
+      "hidden_size": 128,
+      "avg_reward": 1.4915,
+      "avg_loss": 5.8147,
+      "timestamp": 1784651582.9602408
+    },
+    {
+      "rank": 10,
+      "trial_id": "trial_25_b731ae",
+      "learning_rate": 0.001,
+      "gamma": 0.99,
+      "hidden_size": 32,
+      "avg_reward": 1.4448,
+      "avg_loss": 5.4859,
+      "timestamp": 1784651583.5440834
+    },
+    {
+      "rank": 11,
+      "trial_id": "trial_3_60b6d4",
+      "learning_rate": 0.0001,
+      "gamma": 0.9,
+      "hidden_size": 128,
+      "avg_reward": 1.4292,
+      "avg_loss": 4.1493,
+      "timestamp": 1784651582.3251896
+    },
+    {
+      "rank": 12,
+      "trial_id": "trial_2_81104f",
+      "learning_rate": 0.0001,
+      "gamma": 0.9,
+      "hidden_size": 64,
+      "avg_reward": 0.9525,
+      "avg_loss": 5.4235,
+      "timestamp": 1784651361.0221703
+    },
+    {
+      "rank": 13,
+      "trial_id": "trial_6_95c087",
+      "learning_rate": 0.0001,
+      "gamma": 0.95,
+      "hidden_size": 128,
+      "avg_reward": 0.8928,
+      "avg_loss": 7.0737,
+      "timestamp": 1784651582.666401
+    },
+    {
+      "rank": 14,
+      "trial_id": "trial_15_482fbc",
+      "learning_rate": 0.0005,
+      "gamma": 0.95,
+      "hidden_size": 128,
+      "avg_reward": 0.804,
+      "avg_loss": 5.846,
+      "timestamp": 1784651583.0926533
+    },
+    {
+      "rank": 15,
+      "trial_id": "trial_11_4c74c9",
+      "learning_rate": 0.0005,
+      "gamma": 0.9,
+      "hidden_size": 64,
+      "avg_reward": 0.7338,
+      "avg_loss": 5.6748,
+      "timestamp": 1784651582.8703053
+    },
+    {
+      "rank": 16,
+      "trial_id": "trial_25_e4a42c",
+      "learning_rate": 0.001,
+      "gamma": 0.99,
+      "hidden_size": 32,
+      "avg_reward": 0.6953,
+      "avg_loss": 4.3305,
+      "timestamp": 1784651362.291569
+    },
+    {
+      "rank": 17,
+      "trial_id": "trial_7_161121",
+      "learning_rate": 0.0001,
+      "gamma": 0.99,
+      "hidden_size": 32,
+      "avg_reward": 0.6791,
+      "avg_loss": 4.8587,
+      "timestamp": 1784651582.7031245
+    },
+    {
+      "rank": 18,
+      "trial_id": "trial_27_db8e11",
+      "learning_rate": 0.001,
+      "gamma": 0.99,
+      "hidden_size": 128,
+      "avg_reward": 0.6406,
+      "avg_loss": 5.224,
+      "timestamp": 1784651362.3913386
+    },
+    {
+      "rank": 19,
+      "trial_id": "trial_17_0161df",
+      "learning_rate": 0.0005,
+      "gamma": 0.99,
+      "hidden_size": 64,
+      "avg_reward": 0.6172,
+      "avg_loss": 4.7789,
+      "timestamp": 1784651583.1643276
+    },
+    {
+      "rank": 20,
+      "trial_id": "trial_4_d133f5",
+      "learning_rate": 0.0001,
+      "gamma": 0.95,
+      "hidden_size": 32,
+      "avg_reward": 0.6088,
+      "avg_loss": 4.6765,
+      "timestamp": 1784651361.1018455
+    },
+    {
+      "rank": 21,
+      "trial_id": "trial_5_ecffa7",
+      "learning_rate": 0.0001,
+      "gamma": 0.95,
+      "hidden_size": 64,
+      "avg_reward": 0.5469,
+      "avg_loss": 4.5242,
+      "timestamp": 1784651361.142958
+    },
+    {
+      "rank": 22,
+      "trial_id": "trial_12_7d99a3",
+      "learning_rate": 0.0005,
+      "gamma": 0.9,
+      "hidden_size": 128,
+      "avg_reward": 0.5078,
+      "avg_loss": 4.6116,
+      "timestamp": 1784651361.4142704
+    },
+    {
+      "rank": 23,
+      "trial_id": "trial_24_e0b6f0",
+      "learning_rate": 0.001,
+      "gamma": 0.95,
+      "hidden_size": 128,
+      "avg_reward": 0.5039,
+      "avg_loss": 5.6177,
+      "timestamp": 1784651362.229328
+    },
+    {
+      "rank": 24,
+      "trial_id": "trial_9_2fff5b",
+      "learning_rate": 0.0001,
+      "gamma": 0.99,
+      "hidden_size": 128,
+      "avg_reward": 0.4922,
+      "avg_loss": 4.9655,
+      "timestamp": 1784651582.7912066
+    },
+    {
+      "rank": 25,
+      "trial_id": "trial_5_578ab1",
+      "learning_rate": 0.0001,
+      "gamma": 0.95,
+      "hidden_size": 64,
+      "avg_reward": 0.4453,
+      "avg_loss": 5.6673,
+      "timestamp": 1784651582.5876877
+    },
+    {
+      "rank": 26,
+      "trial_id": "trial_22_cbed21",
+      "learning_rate": 0.001,
+      "gamma": 0.95,
+      "hidden_size": 32,
+      "avg_reward": 0.4297,
+      "avg_loss": 4.9702,
+      "timestamp": 1784651583.3916311
+    },
+    {
+      "rank": 27,
+      "trial_id": "trial_21_09a1d3",
+      "learning_rate": 0.001,
+      "gamma": 0.9,
+      "hidden_size": 128,
+      "avg_reward": 0.4057,
+      "avg_loss": 5.755,
+      "timestamp": 1784651583.3504977
+    },
+    {
+      "rank": 28,
+      "trial_id": "trial_17_7a9eb6",
+      "learning_rate": 0.0005,
+      "gamma": 0.99,
+      "hidden_size": 64,
+      "avg_reward": 0.3281,
+      "avg_loss": 4.9092,
+      "timestamp": 1784651361.6115108
+    },
+    {
+      "rank": 29,
+      "trial_id": "trial_11_d8ac99",
+      "learning_rate": 0.0005,
+      "gamma": 0.9,
+      "hidden_size": 64,
+      "avg_reward": 0.3281,
+      "avg_loss": 5.0637,
+      "timestamp": 1784651361.378483
+    },
+    {
+      "rank": 30,
+      "trial_id": "trial_13_2ac236",
+      "learning_rate": 0.0005,
+      "gamma": 0.95,
+      "hidden_size": 32,
+      "avg_reward": 0.2885,
+      "avg_loss": 3.6385,
+      "timestamp": 1784651361.4484344
+    },
+    {
+      "rank": 31,
+      "trial_id": "trial_4_8da775",
+      "learning_rate": 0.0001,
+      "gamma": 0.95,
+      "hidden_size": 32,
+      "avg_reward": 0.2656,
+      "avg_loss": 4.7939,
+      "timestamp": 1784651582.3530607
+    },
+    {
+      "rank": 32,
+      "trial_id": "trial_23_dc5002",
+      "learning_rate": 0.001,
+      "gamma": 0.95,
+      "hidden_size": 64,
+      "avg_reward": 0.2339,
+      "avg_loss": 5.825,
+      "timestamp": 1784651361.9359977
+    },
+    {
+      "rank": 33,
+      "trial_id": "trial_3_f31d63",
+      "learning_rate": 0.0001,
+      "gamma": 0.9,
+      "hidden_size": 128,
+      "avg_reward": 0.2031,
+      "avg_loss": 4.6803,
+      "timestamp": 1784651361.0615027
+    },
+    {
+      "rank": 34,
+      "trial_id": "trial_8_8dae81",
+      "learning_rate": 0.0001,
+      "gamma": 0.99,
+      "hidden_size": 64,
+      "avg_reward": 0.0889,
+      "avg_loss": 6.7144,
+      "timestamp": 1784651361.2585046
+    },
+    {
+      "rank": 35,
+      "trial_id": "trial_26_e4653b",
+      "learning_rate": 0.001,
+      "gamma": 0.99,
+      "hidden_size": 64,
+      "avg_reward": 0.0065,
+      "avg_loss": 4.2092,
+      "timestamp": 1784651362.358152
+    },
+    {
+      "rank": 36,
+      "trial_id": "trial_1_e16dbe",
+      "learning_rate": 0.0001,
+      "gamma": 0.9,
+      "hidden_size": 32,
+      "avg_reward": -0.0006,
+      "avg_loss": 4.8424,
+      "timestamp": 1784651582.2256203
+    },
+    {
+      "rank": 37,
+      "trial_id": "trial_27_4bafad",
+      "learning_rate": 0.001,
+      "gamma": 0.99,
+      "hidden_size": 128,
+      "avg_reward": -0.2439,
+      "avg_loss": 5.3016,
+      "timestamp": 1784651583.624319
+    },
+    {
+      "rank": 38,
+      "trial_id": "trial_14_e62b59",
+      "learning_rate": 0.0005,
+      "gamma": 0.95,
+      "hidden_size": 64,
+      "avg_reward": -0.3438,
+      "avg_loss": 5.2734,
+      "timestamp": 1784651583.056145
+    },
+    {
+      "rank": 39,
+      "trial_id": "trial_18_50ea6d",
+      "learning_rate": 0.0005,
+      "gamma": 0.99,
+      "hidden_size": 128,
+      "avg_reward": -0.5,
+      "avg_loss": 5.0964,
+      "timestamp": 1784651583.2093272
+    },
+    {
+      "rank": 40,
+      "trial_id": "trial_1_fe0776",
+      "learning_rate": 0.0001,
+      "gamma": 0.9,
+      "hidden_size": 32,
+      "avg_reward": -0.6262,
+      "avg_loss": 4.6267,
+      "timestamp": 1784651360.9762194
+    },
+    {
+      "rank": 41,
+      "trial_id": "trial_8_464d9c",
+      "learning_rate": 0.0001,
+      "gamma": 0.99,
+      "hidden_size": 64,
+      "avg_reward": -0.6484,
+      "avg_loss": 5.3191,
+      "timestamp": 1784651582.750166
+    },
+    {
+      "rank": 42,
+      "trial_id": "trial_9_93b6da",
+      "learning_rate": 0.0001,
+      "gamma": 0.99,
+      "hidden_size": 128,
+      "avg_reward": -1.0083,
+      "avg_loss": 4.5332,
+      "timestamp": 1784651361.304149
+    },
+    {
+      "rank": 43,
+      "trial_id": "trial_10_0fe39f",
+      "learning_rate": 0.0005,
+      "gamma": 0.9,
+      "hidden_size": 32,
+      "avg_reward": -1.1745,
+      "avg_loss": 6.594,
+      "timestamp": 1784651361.3431652
+    },
+    {
+      "rank": 44,
+      "trial_id": "trial_14_66fd59",
+      "learning_rate": 0.0005,
+      "gamma": 0.95,
+      "hidden_size": 64,
+      "avg_reward": -1.2357,
+      "avg_loss": 4.8276,
+      "timestamp": 1784651361.4872339
+    },
+    {
+      "rank": 45,
+      "trial_id": "trial_15_e6b3c1",
+      "learning_rate": 0.0005,
+      "gamma": 0.95,
+      "hidden_size": 128,
+      "avg_reward": -1.4069,
+      "avg_loss": 8.0822,
+      "timestamp": 1784651361.528145
+    },
+    {
+      "rank": 46,
+      "trial_id": "trial_23_50165e",
+      "learning_rate": 0.001,
+      "gamma": 0.95,
+      "hidden_size": 64,
+      "avg_reward": -1.7112,
+      "avg_loss": 7.6836,
+      "timestamp": 1784651583.4468179
+    },
+    {
+      "rank": 47,
+      "trial_id": "trial_26_3693a2",
+      "learning_rate": 0.001,
+      "gamma": 0.99,
+      "hidden_size": 64,
+      "avg_reward": -1.8679,
+      "avg_loss": 6.9907,
+      "timestamp": 1784651583.591317
+    },
+    {
+      "rank": 48,
+      "trial_id": "trial_20_932a28",
+      "learning_rate": 0.001,
+      "gamma": 0.9,
+      "hidden_size": 64,
+      "avg_reward": -2.2644,
+      "avg_loss": 7.7774,
+      "timestamp": 1784651361.7940884
+    },
+    {
+      "rank": 49,
+      "trial_id": "trial_13_58574a",
+      "learning_rate": 0.0005,
+      "gamma": 0.95,
+      "hidden_size": 32,
+      "avg_reward": -2.3205,
+      "avg_loss": 10.1387,
+      "timestamp": 1784651583.0144463
+    },
+    {
+      "rank": 50,
+      "trial_id": "trial_24_0e1587",
+      "learning_rate": 0.001,
+      "gamma": 0.95,
+      "hidden_size": 128,
+      "avg_reward": -2.3438,
+      "avg_loss": 6.1844,
+      "timestamp": 1784651583.4890037
+    },
+    {
+      "rank": 51,
+      "trial_id": "trial_19_83f082",
+      "learning_rate": 0.001,
+      "gamma": 0.9,
+      "hidden_size": 32,
+      "avg_reward": -2.3463,
+      "avg_loss": 7.0842,
+      "timestamp": 1784651583.2559621
+    },
+    {
+      "rank": 52,
+      "trial_id": "trial_6_ae4cc4",
+      "learning_rate": 0.0001,
+      "gamma": 0.95,
+      "hidden_size": 128,
+      "avg_reward": -2.5534,
+      "avg_loss": 8.0967,
+      "timestamp": 1784651361.1856012
+    },
+    {
+      "rank": 53,
+      "trial_id": "trial_16_e77e4b",
+      "learning_rate": 0.0005,
+      "gamma": 0.99,
+      "hidden_size": 32,
+      "avg_reward": -3.5105,
+      "avg_loss": 7.084,
+      "timestamp": 1784651361.571278
+    },
+    {
+      "rank": 54,
+      "trial_id": "trial_22_a52dc7",
+      "learning_rate": 0.001,
+      "gamma": 0.95,
+      "hidden_size": 32,
+      "avg_reward": -6.0749,
+      "avg_loss": 9.1682,
+      "timestamp": 1784651361.8807356
+    }
+  ],
+  "experiment_comparison": [
+    {
+      "experiment_id": "exp_test_1",
+      "learning_rate": 0.001,
+      "gamma": 0.99,
+      "hidden_size": 32,
+      "epochs": 2,
+      "avg_reward": -0.571,
+      "avg_loss": 5.5845,
+      "is_best": 0,
+      "timestamp": 1784651911.303874
+    },
+    {
+      "experiment_id": "exp_test_2",
+      "learning_rate": 0.0005,
+      "gamma": 0.95,
+      "hidden_size": 64,
+      "epochs": 2,
+      "avg_reward": 0.5869,
+      "avg_loss": 5.015,
+      "is_best": 1,
+      "timestamp": 1784651914.0821483
+    }
+  ],
+  "simulation_comparison": [
+    {
+      "simulation_run_id": "sim_run_1_6129b7",
+      "avg_waiting_time": 0.0,
+      "avg_queue_length": 0.5362,
+      "throughput": 0,
+      "avg_reward": -4.65,
+      "is_best": 1,
+      "timestamp": 1784652254.8408206
+    },
+    {
+      "simulation_run_id": "sim_run_2_b44f47",
+      "avg_waiting_time": 0.0,
+      "avg_queue_length": 0.5362,
+      "throughput": 0,
+      "avg_reward": -4.65,
+      "is_best": 0,
+      "timestamp": 1784652264.3555784
+    },
+    {
+      "simulation_run_id": "sim_run_1_b3476f",
+      "avg_waiting_time": 0.0,
+      "avg_queue_length": 0.5362,
+      "throughput": 0,
+      "avg_reward": -4.65,
+      "is_best": 0,
+      "timestamp": 1784652303.4258015
+    },
+    {
+      "simulation_run_id": "sim_run_2_f6a12b",
+      "avg_waiting_time": 0.0,
+      "avg_queue_length": 0.5362,
+      "throughput": 0,
+      "avg_reward": -4.65,
+      "is_best": 0,
+      "timestamp": 1784652311.4837234
+    },
+    {
+      "simulation_run_id": "sim_run_1_afcd02",
+      "avg_waiting_time": 0.0,
+      "avg_queue_length": 0.5362,
+      "throughput": 0,
+      "avg_reward": -4.65,
+      "is_best": 0,
+      "timestamp": 1784653411.6242273
+    },
+    {
+      "simulation_run_id": "sim_run_2_899bbf",
+      "avg_waiting_time": 0.0,
+      "avg_queue_length": 0.5362,
+      "throughput": 0,
+      "avg_reward": -4.65,
+      "is_best": 0,
+      "timestamp": 1784653421.9681096
+    }
+  ],
+  "overall_project_summary": {
+    "total_training_epochs": 4,
+    "total_tuning_trials": 54,
+    "total_experiments": 2,
+    "total_simulations": 6,
+    "best_average_reward": {
+      "value": 2.9531,
+      "source": "tuning",
+      "id": "trial_18_774686"
+    },
+    "lowest_loss": {
+      "value": 3.6385,
+      "source": "tuning",
+      "id": "trial_13_2ac236"
+    },
+    "best_hyperparameter_configuration": "LR: 0.0005, Gamma: 0.99, Hidden Size: 128",
+    "best_experiment": "exp_test_2 (Reward: 0.5869)",
+    "best_simulation": "sim_run_1_6129b7 (Reward: -4.6500)",
+    "average_throughput": 0.0,
+    "average_waiting_time": 0.0,
+    "average_queue_length": 0.5362
+  }
+}

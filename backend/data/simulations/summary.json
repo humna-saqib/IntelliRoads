@@ -64,5 +64,49 @@
     "throughput": 0,
     "avg_reward": -4.65,
     "timestamp": 1784653421.9681096
+  },
+  {
+    "run_id": "sim_run_1_2b058b",
+    "start_time": 1784663384.9147222,
+    "end_time": 1784663395.935196,
+    "duration": 49.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.5362,
+    "throughput": 0,
+    "avg_reward": -4.65,
+    "timestamp": 1784663384.9147222
+  },
+  {
+    "run_id": "sim_run_1_4048ec",
+    "start_time": 1784663750.8050256,
+    "end_time": 1784663779.716229,
+    "duration": 149.0,
+    "avg_waiting_time": 10.4267,
+    "avg_queue_length": 17.555,
+    "throughput": 0,
+    "avg_reward": -209.9812,
+    "timestamp": 1784663750.8050256
+  },
+  {
+    "run_id": "sim_run_1_2fd716",
+    "start_time": 1784664427.38684,
+    "end_time": 1784664445.107717,
+    "duration": 99.0,
+    "avg_waiting_time": 0.0,
+    "avg_queue_length": 0.4575,
+    "throughput": 20,
+    "avg_reward": -9.845,
+    "timestamp": 1784664427.38684
+  },
+  {
+    "run_id": "sim_run_1_284731",
+    "start_time": 1784664584.7625794,
+    "end_time": 1784664601.3691642,
+    "duration": 99.0,
+    "avg_waiting_time": 3.193,
+    "avg_queue_length": 7.1725,
+    "throughput": 0,
+    "avg_reward": -89.6933,
+    "timestamp": 1784664584.7625794
   }
 ]

@@ -233,6 +233,23 @@ CREATE TABLE IF NOT EXISTS sumo_simulation_runs (
     timestamp REAL NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_sumo_simulation_runs_run_id ON sumo_simulation_runs(run_id);
+
+CREATE TABLE IF NOT EXISTS dqn_centralized_summary (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp REAL NOT NULL,
+    summary_json TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_dqn_centralized_summary_timestamp ON dqn_centralized_summary(timestamp);
+
+CREATE TABLE IF NOT EXISTS dqn_summary_statistics (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    metric_name TEXT NOT NULL,
+    metric_value TEXT NOT NULL,
+    source_id TEXT,
+    source_type TEXT NOT NULL,
+    timestamp REAL NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_dqn_summary_statistics_metric ON dqn_summary_statistics(metric_name);
 """
 
 
