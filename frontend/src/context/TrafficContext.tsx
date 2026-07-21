@@ -16,6 +16,7 @@ import type {
   TrafficSnapshot,
   VehicleData,
   OccupancyResponse,
+  EmergencyResponse,
 } from '../types/traffic';
 import { fetchAllData } from '../services/api';
 import { TrafficWebSocket } from '../services/websocket';
@@ -35,6 +36,7 @@ interface TrafficContextType {
   signals:          SignalResponse | null;
   kpis:             KPIData | null;
   occupancy:        OccupancyResponse | null;
+  emergency:        EmergencyResponse | null;
   intersections:    IntersectionData[];
   isConnected:      boolean;
   isLoading:        boolean;
@@ -55,6 +57,7 @@ const TrafficContext = createContext<TrafficContextType>({
   signals:          null,
   kpis:             null,
   occupancy:        null,
+  emergency:        null,
   intersections:    [],
   isConnected:      false,
   isLoading:        true,
@@ -70,6 +73,7 @@ export function TrafficProvider({ children }: { children: React.ReactNode }) {
   const [signals,          setSignals]          = useState<SignalResponse | null>(null);
   const [kpis,             setKPIs]             = useState<KPIData | null>(null);
   const [occupancy,        setOccupancy]        = useState<OccupancyResponse | null>(null);
+  const [emergency,        setEmergency]        = useState<EmergencyResponse | null>(null);
   const [intersections,    setIntersections]    = useState<IntersectionData[]>([]);
   const [isConnected,      setIsConnected]      = useState(false);
   const [isLoading,        setIsLoading]        = useState(true);
@@ -88,6 +92,7 @@ export function TrafficProvider({ children }: { children: React.ReactNode }) {
     if (snap.signals)        setSignals(snap.signals);
     if (snap.kpis)           setKPIs(snap.kpis);
     if (snap.occupancy)      setOccupancy(snap.occupancy);
+    if (snap.emergency)      setEmergency(snap.emergency);
     if (snap.intersections)  setIntersections(snap.intersections);
     setLastUpdate(Date.now());
     setIsLoading(false);
@@ -102,6 +107,8 @@ export function TrafficProvider({ children }: { children: React.ReactNode }) {
       setCongestion(data.congestion);
       setSignals(data.signals);
       setKPIs(data.kpis);
+      setOccupancy(data.occupancy ?? null);
+      setEmergency(data.emergency ?? null);
       setIntersections(data.intersections ?? []);
       setLastUpdate(Date.now());
       setIsLoading(false);
@@ -175,6 +182,7 @@ export function TrafficProvider({ children }: { children: React.ReactNode }) {
         signals,
         kpis,
         occupancy,
+        emergency,
         intersections,
         isConnected,
         isLoading,

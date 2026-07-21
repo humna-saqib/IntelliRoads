@@ -6,6 +6,7 @@ import Header from './components/layout/Header';
 import DashboardPage from './pages/DashboardPage';
 import MapPage from './pages/MapPage';
 import AnalyticsPage from './pages/AnalyticsPage';
+import ReportsPage from './pages/ReportsPage';
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -33,6 +34,7 @@ export default function App() {
                   <Route path="/" element={<DashboardPage />} />
                   <Route path="/map" element={<MapPage />} />
                   <Route path="/analytics" element={<AnalyticsPage />} />
+                  <Route path="/reports" element={<ReportsPage />} />
                 </Routes>
               </div>
             </main>

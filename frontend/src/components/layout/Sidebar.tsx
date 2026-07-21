@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Map, BarChart3, Zap, X } from 'lucide-react';
+import { LayoutDashboard, Map, BarChart3, FileText, Zap, X } from 'lucide-react';
 import { useTraffic } from '../../context/TrafficContext';
 import StatusIndicator from '../ui/StatusIndicator';
 import clsx from 'clsx';
@@ -8,6 +8,7 @@ const navItems = [
   { to: '/',          label: 'Dashboard',    icon: LayoutDashboard },
   { to: '/map',       label: 'Traffic Map',  icon: Map             },
   { to: '/analytics', label: 'Analytics',    icon: BarChart3       },
+  { to: '/reports',   label: 'Reports',      icon: FileText        },
 ];
 
 interface SidebarProps {

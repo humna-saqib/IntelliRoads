@@ -130,23 +130,30 @@ class InMemoryStateStore:
             # We have 4 intersections: A, B, C, D
             # Let's match them to their signal timing and density levels
             junctions = ["junctionA", "junctionB", "junctionC", "junctionD"]
-            lanes = ["lane_A_west_in", "lane_B_east_in", "lane_C_east_in", "lane_D_west_in"]
             names = ["Northwest Square", "Northeast Plaza", "Southeast Gateway", "Southwest Crossing"]
+            
+            junction_lanes = {
+                "junctionA": ["lane_A_west_in", "lane_A_north_in", "lane_AB_west", "lane_AD_north"],
+                "junctionB": ["lane_AB_east", "lane_B_east_in", "lane_B_north_in", "lane_BC_north"],
+                "junctionC": ["lane_CD_east", "lane_BC_south", "lane_C_east_in", "lane_C_south_in"],
+                "junctionD": ["lane_D_west_in", "lane_CD_west", "lane_AD_south", "lane_D_south_in"],
+            }
 
-            for idx, (j_id, lane_id, name) in enumerate(zip(junctions, lanes, names)):
+            for idx, (j_id, name) in enumerate(zip(junctions, names)):
                 # Default values
                 sig_phase = "GREEN"
                 cong_status = "CLEAR"
                 v_count = 0
                 density_val = 0.0
+                approach_lanes = junction_lanes.get(j_id, [])
 
-                # Extract vehicle count and density
+                # Extract vehicle count and density (sum vehicles, max density)
                 if self._density:
                     for l_dens in self._density.lanes:
-                        if l_dens.lane_id == lane_id:
-                            v_count = l_dens.vehicle_count
-                            density_val = l_dens.density
-                            break
+                        if l_dens.lane_id in approach_lanes:
+                            v_count += l_dens.vehicle_count
+                            if l_dens.density > density_val:
+                                density_val = l_dens.density
 
                 # Extract signal phase
                 if self._signals:
@@ -155,12 +162,13 @@ class InMemoryStateStore:
                             sig_phase = sig.phase
                             break
 
-                # Extract congestion status
+                # Extract congestion status (congested if any lane is congested)
                 if self._congestion:
                     for ev in self._congestion.events:
-                        if ev.intersection_id == lane_id:
-                            cong_status = ev.status
-                            break
+                        if ev.intersection_id in approach_lanes:
+                            if ev.status == "CONGESTED":
+                                cong_status = "CONGESTED"
+                                break
 
                 intersections.append({
                     "id": j_id,

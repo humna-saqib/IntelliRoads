@@ -6,10 +6,14 @@ import DensityChart from '../components/widgets/DensityChart';
 import OccupancyChart from '../components/widgets/OccupancyChart';
 import VehicleClassChart from '../components/widgets/VehicleClassChart';
 import VehicleTable from '../components/widgets/VehicleTable';
+import EmergencyPriorityBanner from '../components/widgets/EmergencyPriorityBanner';
 
 export default function DashboardPage() {
   return (
     <div className="space-y-4 sm:space-y-6">
+      {/* Emergency vehicle indicator banner */}
+      <EmergencyPriorityBanner />
+
       {/* Top row: KPI cards */}
       <KPICards />
 

@@ -8,6 +8,8 @@ import type {
   IntersectionData,
   TrafficSnapshot,
   OccupancyResponse,
+  PerformanceResponse,
+  EmergencyResponse,
 } from '../types/traffic';
 
 const BASE_URL = '/api';
@@ -54,8 +56,16 @@ export async function fetchOccupancy(): Promise<OccupancyResponse> {
   return apiFetch<OccupancyResponse>('/occupancy');
 }
 
+export async function fetchPerformance(minutes: number = 10): Promise<PerformanceResponse> {
+  return apiFetch<PerformanceResponse>(`/performance?minutes=${minutes}`);
+}
+
+export async function fetchEmergency(): Promise<EmergencyResponse> {
+  return apiFetch<EmergencyResponse>('/emergency');
+}
+
 export async function fetchAllData(): Promise<Omit<TrafficSnapshot, 'vehicles' | 'timestamp'> & { vehicles: VehicleListResponse; timestamp: number }> {
-  const [vehiclesRes, classification, density, congestion, signals, kpis, intersections, occupancy] =
+  const [vehiclesRes, classification, density, congestion, signals, kpis, intersections, occupancy, emergency] =
     await Promise.all([
       fetchVehicles(),
       fetchClassification(),
@@ -65,6 +75,7 @@ export async function fetchAllData(): Promise<Omit<TrafficSnapshot, 'vehicles' |
       fetchKPIs(),
       fetchIntersections(),
       fetchOccupancy(),
+      fetchEmergency(),
     ]);
 
   return {
@@ -76,6 +87,7 @@ export async function fetchAllData(): Promise<Omit<TrafficSnapshot, 'vehicles' |
     kpis,
     intersections,
     occupancy,
+    emergency,
     timestamp: Date.now(),
   };
 }
