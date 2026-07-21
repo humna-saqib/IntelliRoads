@@ -63,6 +63,7 @@ class SignalController:
     def __init__(self, session: TraCISession) -> None:
         self._session = session
         self._current_signals: Dict[str, SignalTiming] = {}
+        self._last_seen_phase: Dict[str, int] = {}
         logger.info(
             f"SignalController initialised, "
             f"rules={self.TIMING_RULES}"
