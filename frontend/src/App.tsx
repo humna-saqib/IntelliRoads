@@ -14,7 +14,7 @@ export default function App() {
   return (
     <TrafficProvider>
       <Router>
-        <div className="flex h-screen bg-[#0a0f1d] text-slate-100 overflow-hidden font-sans">
+        <div className="flex h-screen bg-[#08080a] text-slate-100 overflow-hidden font-sans">
           {/* Sidebar Navigation */}
           <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
@@ -24,10 +24,10 @@ export default function App() {
             <Header onMenuClick={() => setSidebarOpen(true)} />
 
             {/* Scrollable Page Body */}
-            <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#0a0f1d] relative">
+            <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#08080a] relative">
               {/* background ambient glow blobs */}
-              <div className="absolute top-[-10%] left-[-10%] w-[50%] aspect-square rounded-full bg-purple-900/10 blur-[120px] pointer-events-none" />
-              <div className="absolute bottom-[-10%] right-[-10%] w-[55%] aspect-square rounded-full bg-blue-900/10 blur-[130px] pointer-events-none" />
+              <div className="absolute top-[-10%] left-[-10%] w-[50%] aspect-square rounded-full bg-slate-900/5 blur-[120px] pointer-events-none" />
+              <div className="absolute bottom-[-10%] right-[-10%] w-[55%] aspect-square rounded-full bg-slate-900/5 blur-[130px] pointer-events-none" />
 
               <div className="max-w-7xl mx-auto relative z-10">
                 <Routes>
