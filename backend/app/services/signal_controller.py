@@ -24,10 +24,10 @@ logger = get_logger(__name__)
 # Lane → Junction mapping for Sprint 1 (hard-coded for 4 intersections)
 # ---------------------------------------------------------------------------
 _LANE_TO_JUNCTION: Dict[str, str] = {
-    "lane_A_0": "junctionA",
-    "lane_B_0": "junctionB",
-    "lane_C_0": "junctionC",
-    "lane_D_0": "junctionD",
+    "lane_A_west_in": "junctionA",
+    "lane_B_east_in": "junctionB",
+    "lane_C_east_in": "junctionC",
+    "lane_D_west_in": "junctionD",
 }
 
 # SUMO traffic-light phase indices for GREEN (0) and RED (2)
@@ -124,20 +124,17 @@ class SignalController:
         # Apply via TraCI when available
         if not self.mock_mode and SUMO_AVAILABLE:
             try:
-                phase_index = _SUMO_PHASE_INDEX.get(
-                    SignalPhaseType(timing.phase), 0
-                )
-                traci.trafficlight.setPhase(junction_id, phase_index)
+                # We only set the active phase duration based on density,
+                # allowing SUMO to cycle through all 4 phases (West/East vs North/South) naturally.
                 traci.trafficlight.setPhaseDuration(
                     junction_id, timing.duration_seconds
                 )
                 logger.debug(
-                    f"TraCI: set junction '{junction_id}' to phase "
-                    f"{phase_index} for {timing.duration_seconds}s"
+                    f"TraCI: updated junction '{junction_id}' phase duration to {timing.duration_seconds}s"
                 )
             except Exception as exc:  # noqa: BLE001
                 logger.warning(
-                    f"TraCI setPhase failed for {junction_id}: {exc}"
+                    f"TraCI setPhaseDuration failed for {junction_id}: {exc}"
                 )
 
         # Update internal state

@@ -130,8 +130,8 @@ class InMemoryStateStore:
             # We have 4 intersections: A, B, C, D
             # Let's match them to their signal timing and density levels
             junctions = ["junctionA", "junctionB", "junctionC", "junctionD"]
-            lanes = ["lane_A_0", "lane_B_0", "lane_C_0", "lane_D_0"]
-            names = ["Intersection A", "Intersection B", "Intersection C", "Intersection D"]
+            lanes = ["lane_A_west_in", "lane_B_east_in", "lane_C_east_in", "lane_D_west_in"]
+            names = ["Northwest Square", "Northeast Plaza", "Southeast Gateway", "Southwest Crossing"]
 
             for idx, (j_id, lane_id, name) in enumerate(zip(junctions, lanes, names)):
                 # Default values

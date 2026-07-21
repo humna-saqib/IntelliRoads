@@ -34,10 +34,25 @@ logger = get_logger(__name__)
 # Sprint 1/2 scope: the 4 monitored intersection lanes (matches
 # DensityCalculator.LANE_LENGTHS and the real net.xml lane lengths).
 _MONITORED_LANE_LENGTHS_M: Dict[str, float] = {
-    "lane_A_0": 500.0,
-    "lane_B_0": 600.0,
-    "lane_C_0": 400.0,
-    "lane_D_0": 500.0,
+    "lane_A_west_in": 300.0,
+    "lane_A_north_in": 300.0,
+    "lane_AB_west": 400.0,
+    "lane_AD_north": 400.0,
+    
+    "lane_AB_east": 400.0,
+    "lane_B_north_in": 300.0,
+    "lane_B_east_in": 300.0,
+    "lane_BC_north": 400.0,
+    
+    "lane_CD_east": 400.0,
+    "lane_BC_south": 400.0,
+    "lane_C_east_in": 300.0,
+    "lane_C_south_in": 300.0,
+    
+    "lane_D_west_in": 300.0,
+    "lane_AD_south": 400.0,
+    "lane_CD_west": 400.0,
+    "lane_D_south_in": 300.0,
 }
 
 # Average vehicle length (m), used only for mock-mode occupancy estimation
@@ -47,8 +62,8 @@ _AVG_VEHICLE_LENGTH_M: Dict[VehicleType, float] = {
     VehicleType.CAR: 5.0,
     VehicleType.MOTORCYCLE: 2.0,
     VehicleType.BUS: 12.0,
-    VehicleType.TRUCK: 15.0,
-    VehicleType.UNKNOWN: 6.0,  # covers emergency vehicles in mock mode
+    VehicleType.EMERGENCY: 6.0,
+    VehicleType.UNKNOWN: 6.0,
 }
 
 # Occupancy-specific thresholds (distinct from DensityCalculator's

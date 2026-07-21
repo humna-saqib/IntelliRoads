@@ -13,4 +13,7 @@
     <verbose value="false"/>
     <no-step-log value="true"/>
   </report>
+  <gui_only>
+    <delay value="200"/>
+  </gui_only>
 </configuration>

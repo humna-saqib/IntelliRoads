@@ -114,6 +114,7 @@ class TraCISession:
             "-c", str(self.config_path),
             "--remote-port", str(self.port),
             "--step-length", str(self.step_length),
+            "--delay", "200",
             "--no-step-log", "true",
             "--verbose", "false",
             "--start",  # auto-run instead of waiting for a manual GUI click
@@ -235,7 +236,7 @@ class TraCISession:
         if binary_override:
             return binary_override
 
-        want_gui = os.environ.get("SUMO_USE_GUI", "").lower() in ("1", "true", "yes")
+        want_gui = os.environ.get("SUMO_USE_GUI", "1").lower() in ("1", "true", "yes")
         names = ["sumo-gui", "sumo"] if want_gui else ["sumo", "sumo-gui"]
 
         sumo_home: str | None = os.environ.get("SUMO_HOME")

@@ -17,7 +17,7 @@ class VehicleType(str, Enum):
     CAR = "CAR"
     MOTORCYCLE = "MOTORCYCLE"
     BUS = "BUS"
-    TRUCK = "TRUCK"
+    EMERGENCY = "EMERGENCY"
     UNKNOWN = "UNKNOWN"
 
 

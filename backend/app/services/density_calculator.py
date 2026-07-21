@@ -43,10 +43,25 @@ class DensityCalculator:
     """
 
     LANE_LENGTHS: Dict[str, float] = {
-        "lane_A_0": 0.5,
-        "lane_B_0": 0.6,
-        "lane_C_0": 0.4,
-        "lane_D_0": 0.5,
+        "lane_A_west_in": 0.3,
+        "lane_A_north_in": 0.3,
+        "lane_AB_west": 0.4,
+        "lane_AD_north": 0.4,
+        
+        "lane_AB_east": 0.4,
+        "lane_B_north_in": 0.3,
+        "lane_B_east_in": 0.3,
+        "lane_BC_north": 0.4,
+        
+        "lane_CD_east": 0.4,
+        "lane_BC_south": 0.4,
+        "lane_C_east_in": 0.3,
+        "lane_C_south_in": 0.3,
+        
+        "lane_D_west_in": 0.3,
+        "lane_AD_south": 0.4,
+        "lane_CD_west": 0.4,
+        "lane_D_south_in": 0.3,
     }
 
     LOW_THRESHOLD: float = 20.0

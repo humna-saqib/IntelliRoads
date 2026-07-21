@@ -1,4 +1,4 @@
-export type VehicleType = 'car' | 'motorcycle' | 'bus' | 'truck' | 'unknown';
+export type VehicleType = 'car' | 'motorcycle' | 'bus' | 'emergency' | 'unknown';
 export type DensityLevel = 'LOW' | 'MEDIUM' | 'HIGH';
 export type CongestionStatus = 'CLEAR' | 'CONGESTED';
 export type SignalPhase = 'GREEN' | 'YELLOW' | 'RED';
@@ -26,7 +26,7 @@ export interface ClassificationData {
   car: number;
   motorcycle: number;
   bus: number;
-  truck: number;
+  emergency?: number;
   percentages: Record<string, number>;
   most_common_type: string;
 }
@@ -98,6 +98,19 @@ export interface IntersectionData {
   density: number;
 }
 
+export interface LaneOccupancy {
+  lane_id: string;
+  occupancy_percent: number;
+  occupancy_level: DensityLevel;
+  timestamp: number;
+}
+
+export interface OccupancyResponse {
+  lanes: LaneOccupancy[];
+  average_occupancy: number;
+  timestamp: number;
+}
+
 export interface TrafficSnapshot {
   vehicles: VehicleData[];
   classification: ClassificationData;
@@ -106,5 +119,6 @@ export interface TrafficSnapshot {
   signals: SignalResponse;
   kpis: KPIData;
   intersections: IntersectionData[];
+  occupancy?: OccupancyResponse;
   timestamp: number;
 }

@@ -227,7 +227,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             config_path = candidate
             break
 
-    logger.info(f"Using SUMO config path candidate: {config_path}")
+    # Force SUMO to use GUI (sumo-gui) as requested
+    os.environ["SUMO_USE_GUI"] = "true"
 
     # Initialise TraCI session and dependencies
     session = TraCISession(config_path=config_path, step_length=1.0)
