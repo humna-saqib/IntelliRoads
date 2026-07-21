@@ -55,8 +55,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         {/* Logo */}
         <div className="flex items-center justify-between px-6 py-6 border-b border-white/5">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary-600 to-accent-500 shadow-glow-purple">
-              <Zap size={20} className="text-white" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-slate-800 to-zinc-900 border border-zinc-700/50 shadow-card">
+              <Zap size={20} className="text-accent-400" />
             </div>
             <div>
               <h1 className="text-lg font-bold text-white tracking-tight">IntelliRoads</h1>
@@ -85,7 +85,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 clsx(
                   'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200',
                   isActive
-                    ? 'bg-gradient-to-r from-primary-600/30 to-accent-500/10 text-white border border-primary-500/30 shadow-[0_0_12px_rgba(124,58,237,0.2)]'
+                    ? 'bg-white/5 text-white border border-white/10 shadow-[0_0_12px_rgba(255,255,255,0.03)]'
                     : 'text-slate-400 hover:text-white hover:bg-white/5',
                 )
               }
@@ -94,11 +94,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 <>
                   <Icon
                     size={18}
-                    className={clsx(isActive ? 'text-primary-400' : 'text-slate-500')}
+                    className={clsx(isActive ? 'text-accent-400' : 'text-slate-500')}
                   />
                   {label}
                   {isActive && (
-                    <div className="ml-auto w-1.5 h-1.5 rounded-full bg-primary-400 shadow-[0_0_6px_rgba(167,139,250,0.8)]" />
+                    <div className="ml-auto w-1.5 h-1.5 rounded-full bg-accent-500 shadow-[0_0_6px_rgba(245,158,11,0.6)]" />
                   )}
                 </>
               )}

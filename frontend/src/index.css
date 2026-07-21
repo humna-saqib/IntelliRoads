@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-[#0a0f1d] text-slate-100 antialiased;
+    @apply bg-[#08080a] text-slate-100 antialiased;
     font-family: 'Inter', sans-serif;
   }
 }
@@ -16,23 +16,23 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.1);
+  background: rgba(8, 8, 10, 0.1);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 0.4);
+  background: rgba(39, 39, 42, 0.4);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(71, 85, 105, 0.6);
+  background: rgba(63, 63, 70, 0.6);
 }
 
 /* Glassmorphism style helper */
 .glass-card {
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(14, 14, 18, 0.65);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 /* Animation utilities */
