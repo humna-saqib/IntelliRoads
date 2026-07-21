@@ -5,6 +5,13 @@ import Badge from '../ui/Badge';
 import { Map, Info } from 'lucide-react';
 import type { IntersectionData, VehicleData } from '../../types/traffic';
 
+const JUNCTION_SHORT_NAMES: Record<string, string> = {
+  junctionA: 'Northwest Square',
+  junctionB: 'Northeast Plaza',
+  junctionC: 'Southeast Gateway',
+  junctionD: 'Southwest Crossing',
+};
+
 export default function IntersectionMap() {
   const { intersections, vehicles } = useTraffic();
   const [hoveredJunction, setHoveredJunction] = useState<IntersectionData | null>(null);
@@ -18,8 +25,8 @@ export default function IntersectionMap() {
   const junctionCoords: Record<string, { x: number; y: number }> = {
     junctionA: { x: 120, y: 120 },
     junctionB: { x: 280, y: 120 },
-    junctionC: { x: 120, y: 280 },
-    junctionD: { x: 280, y: 280 },
+    junctionC: { x: 280, y: 280 },
+    junctionD: { x: 120, y: 280 },
   };
 
   const getSignalColor = (signal: string) => {
@@ -42,33 +49,30 @@ export default function IntersectionMap() {
 
   // Helper to map vehicle SUMO positions to SVG space
   const getVehicleCoords = (v: VehicleData) => {
-    // Determine the road/lane the vehicle is on
-    const lane = v.lane_id || '';
-    
-    // We place the vehicles along the paths between the boundaries and the junctions
-    if (lane.includes('A')) {
-      // Lane A leads to Junction A from the West (0, 120) -> (120, 120)
-      const pct = Math.min(Math.max((v.position_x + 500) / 490, 0), 1);
-      return { x: 10 + pct * 100, y: 120 + (v.vehicle_id.charCodeAt(0) % 2 === 0 ? 4 : -4) };
-    }
-    if (lane.includes('B')) {
-      // Lane B leads to Junction B from the South (280, 400) -> (280, 120)
-      const pct = Math.min(Math.max((v.position_y + 500) / 490, 0), 1);
-      return { x: 280 + (v.vehicle_id.charCodeAt(0) % 2 === 0 ? 4 : -4), y: 390 - pct * 260 };
-    }
-    if (lane.includes('C')) {
-      // Lane C leads to Junction C from the East (400, 280) -> (120, 280)
-      const pct = Math.min(Math.max((500 - v.position_x) / 490, 0), 1);
-      return { x: 390 - pct * 260, y: 280 + (v.vehicle_id.charCodeAt(0) % 2 === 0 ? 4 : -4) };
-    }
-    if (lane.includes('D')) {
-      // Lane D leads to Junction D from the North (120, 0) -> (120, 280)
-      const pct = Math.min(Math.max((500 - v.position_y) / 490, 0), 1);
-      return { x: 120 + (v.vehicle_id.charCodeAt(0) % 2 === 0 ? 4 : -4), y: 10 + pct * 260 };
+    const posX = typeof v.position_x === 'number' ? v.position_x : 0;
+    const posY = typeof v.position_y === 'number' ? v.position_y : 0;
+
+    let x = (posX + 500) * 0.4;
+    let y = (500 - posY) * 0.4;
+
+    // Constrain to SVG boundaries with a small padding
+    x = Math.min(Math.max(x, 5), 395);
+    y = Math.min(Math.max(y, 5), 395);
+
+    // Add a tiny offset depending on direction to keep dots distinct (e.g. left vs right lane offset)
+    const lane = (v.lane_id || '').toLowerCase();
+    const isEven = v.vehicle_id.charCodeAt(v.vehicle_id.length - 1) % 2 === 0;
+    const offsetVal = isEven ? 3 : -3;
+
+    if (lane.includes('a') || lane.includes('d')) {
+      // Horizontal lanes A and D: add y-offset to distinguish lanes
+      y += offsetVal;
+    } else if (lane.includes('b') || lane.includes('c')) {
+      // Vertical lanes B and C: add x-offset to distinguish lanes
+      x += offsetVal;
     }
 
-    // Default random placement near center if unmapped
-    return { x: 200, y: 200 };
+    return { x, y };
   };
 
   const getVehicleColor = (type: string) => {
@@ -76,7 +80,7 @@ export default function IntersectionMap() {
       case 'car': return '#3b82f6'; // Blue
       case 'motorcycle': return '#a855f7'; // Purple
       case 'bus': return '#f59e0b'; // Amber
-      case 'truck': return '#ef4444'; // Red
+      case 'emergency': return '#ef4444'; // Red
       default: return '#94a3b8'; // Slate
     }
   };
@@ -244,7 +248,7 @@ export default function IntersectionMap() {
                   textAnchor="middle"
                   className="pointer-events-none select-none"
                 >
-                  {junction.id.replace('junction', 'Junction ')}
+                  {JUNCTION_SHORT_NAMES[junction.id] || junction.id}
                 </text>
               </g>
             );
@@ -323,7 +327,7 @@ export default function IntersectionMap() {
         </div>
         <div className="flex items-center gap-1">
           <span className="h-2 w-2 rounded-full bg-[#ef4444]" />
-          <span>Truck</span>
+          <span>Emergency</span>
         </div>
 
         <div className="w-full h-px bg-slate-700/50 my-1" />

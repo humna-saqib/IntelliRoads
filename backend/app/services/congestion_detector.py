@@ -22,10 +22,25 @@ logger = get_logger(__name__)
 # intersection the lane approaches from).
 # ---------------------------------------------------------------------------
 _LANE_DIRECTION: Dict[str, str] = {
-    "lane_A_0": "W",
-    "lane_B_0": "S",
-    "lane_C_0": "E",
-    "lane_D_0": "N",
+    "lane_A_west_in": "W",
+    "lane_A_north_in": "N",
+    "lane_AB_west": "E",
+    "lane_AD_north": "S",
+    
+    "lane_AB_east": "W",
+    "lane_B_north_in": "N",
+    "lane_B_east_in": "E",
+    "lane_BC_north": "S",
+    
+    "lane_CD_east": "W",
+    "lane_BC_south": "N",
+    "lane_C_east_in": "E",
+    "lane_C_south_in": "S",
+    
+    "lane_D_west_in": "W",
+    "lane_AD_south": "N",
+    "lane_CD_west": "E",
+    "lane_D_south_in": "S",
 }
 
 
