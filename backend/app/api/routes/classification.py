@@ -25,7 +25,7 @@ async def get_classification(store: InMemoryStateStore = Depends(get_store)) -> 
         "car": 0,
         "motorcycle": 0,
         "bus": 0,
-        "truck": 0,
+        "emergency": 0,
         "unknown": 0,
         "percentages": {},
         "most_common_type": "unknown"

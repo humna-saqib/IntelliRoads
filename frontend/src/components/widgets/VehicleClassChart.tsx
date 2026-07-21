@@ -10,14 +10,14 @@ const VEHICLE_COLORS = {
   car:        '#06b6d4',
   motorcycle: '#8b5cf6',
   bus:        '#f59e0b',
-  truck:      '#ef4444',
+  emergency:  '#ef4444',
 };
 
 const VEHICLE_LABELS: Record<string, string> = {
   car:        '🚗 Car',
   motorcycle: '🏍️ Moto',
   bus:        '🚌 Bus',
-  truck:      '🚛 Truck',
+  emergency:  '🚨 Emergency',
 };
 
 function CustomTooltip({ active, payload }: { active?: boolean; payload?: Array<{ name: string; value: number; payload: { pct: number } }> }) {
@@ -44,7 +44,7 @@ function CenterLabel({ total }: { total: number }) {
 export default function VehicleClassChart() {
   const { classification } = useTraffic();
 
-  const entries = ['car', 'motorcycle', 'bus', 'truck'] as const;
+  const entries = ['car', 'motorcycle', 'bus', 'emergency'] as const;
   const total   = entries.reduce((s, k) => s + (classification?.[k] ?? 0), 0);
 
   const data = entries.map((k) => ({

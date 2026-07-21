@@ -47,7 +47,7 @@ class VehicleClassificationService:
             "car": 0,
             "motorcycle": 0,
             "bus": 0,
-            "truck": 0,
+            "emergency": 0,
             "unknown": 0,
         }
         for v in vehicles:

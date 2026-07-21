@@ -2,82 +2,185 @@
 <net version="1.16" junctionCornerDetail="5" limitTurnSpeed="5.50" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/net_file.xsd">
     <location netOffset="0.00,0.00" convBoundary="-500.00,-500.00,500.00,500.00" origBoundary="-10000000000.00,-10000000000.00,10000000000.00,10000000000.00" projParameter="!"/>
 
-    <!-- Edges and Lanes -->
-    <edge id="edge_A" from="node_in_A" to="junctionA" priority="-1">
-        <lane id="lane_A_0" index="0" speed="13.89" length="500.00" shape="-500.00,0.00 -10.00,0.00"/>
+    <!-- Junction A Streets -->
+    <edge id="edge_A_west_in" from="node_in_A" to="junctionA" priority="-1">
+        <lane id="lane_A_west_in" index="0" speed="10.00" length="300.00" shape="-500.00,198.40 -200.00,198.40"/>
     </edge>
-    <edge id="edge_B" from="node_in_B" to="junctionB" priority="-1">
-        <lane id="lane_B_0" index="0" speed="13.89" length="600.00" shape="0.00,-500.00 0.00,-10.00"/>
+    <edge id="edge_A_west_out" from="junctionA" to="node_out_A" priority="-1">
+        <lane id="lane_A_west_out" index="0" speed="10.00" length="300.00" shape="-200.00,201.60 -500.00,201.60"/>
     </edge>
-    <edge id="edge_C" from="node_in_C" to="junctionC" priority="-1">
-        <lane id="lane_C_0" index="0" speed="13.89" length="400.00" shape="500.00,0.00 10.00,0.00"/>
+    <edge id="edge_A_north_in" from="node_in_D" to="junctionA" priority="-1">
+        <lane id="lane_A_north_in" index="0" speed="10.00" length="300.00" shape="-201.60,500.00 -201.60,200.00"/>
     </edge>
-    <edge id="edge_D" from="node_in_D" to="junctionD" priority="-1">
-        <lane id="lane_D_0" index="0" speed="13.89" length="500.00" shape="0.00,500.00 0.00,10.00"/>
-    </edge>
-
-    <!-- Outbound Edges -->
-    <edge id="edge_out_A" from="junctionA" to="node_out_A" priority="-1">
-        <lane id="lane_out_A_0" index="0" speed="13.89" length="500.00" shape="10.00,0.00 500.00,0.00"/>
-    </edge>
-    <edge id="edge_out_B" from="junctionB" to="node_out_B" priority="-1">
-        <lane id="lane_out_B_0" index="0" speed="13.89" length="500.00" shape="0.00,10.00 0.00,500.00"/>
-    </edge>
-    <edge id="edge_out_C" from="junctionC" to="node_out_C" priority="-1">
-        <lane id="lane_out_C_0" index="0" speed="13.89" length="500.00" shape="-10.00,0.00 -500.00,0.00"/>
-    </edge>
-    <edge id="edge_out_D" from="junctionD" to="node_out_D" priority="-1">
-        <lane id="lane_out_D_0" index="0" speed="13.89" length="500.00" shape="0.00,-10.00 0.00,-500.00"/>
+    <edge id="edge_A_north_out" from="junctionA" to="node_out_D" priority="-1">
+        <lane id="lane_A_north_out" index="0" speed="10.00" length="300.00" shape="-198.40,200.00 -198.40,500.00"/>
     </edge>
 
-    <!-- Junction Nodes -->
-    <junction id="node_in_A" type="dead_end" x="-500.00" y="0.00" incLanes="" intLanes="" shape="-500.00,1.60 -500.00,-1.60"/>
-    <junction id="node_in_B" type="dead_end" x="0.00" y="-500.00" incLanes="" intLanes="" shape="-1.60,-500.00 1.60,-500.00"/>
-    <junction id="node_in_C" type="dead_end" x="500.00" y="0.00" incLanes="" intLanes="" shape="500.00,-1.60 500.00,1.60"/>
-    <junction id="node_in_D" type="dead_end" x="0.00" y="500.00" incLanes="" intLanes="" shape="1.60,500.00 -1.60,500.00"/>
+    <!-- Street A-B (Between A and B) -->
+    <edge id="edge_AB_east" from="junctionA" to="junctionB" priority="-1">
+        <lane id="lane_AB_east" index="0" speed="10.00" length="400.00" shape="-200.00,198.40 200.00,198.40"/>
+    </edge>
+    <edge id="edge_AB_west" from="junctionB" to="junctionA" priority="-1">
+        <lane id="lane_AB_west" index="0" speed="10.00" length="400.00" shape="200.00,201.60 -200.00,201.60"/>
+    </edge>
 
-    <junction id="node_out_A" type="dead_end" x="500.00" y="0.00" incLanes="lane_out_A_0" intLanes="" shape="500.00,-1.60 500.00,1.60"/>
-    <junction id="node_out_B" type="dead_end" x="0.00" y="500.00" incLanes="lane_out_B_0" intLanes="" shape="1.60,500.00 -1.60,500.00"/>
-    <junction id="node_out_C" type="dead_end" x="-500.00" y="0.00" incLanes="lane_out_C_0" intLanes="" shape="-500.00,1.60 -500.00,-1.60"/>
-    <junction id="node_out_D" type="dead_end" x="0.00" y="-500.00" incLanes="lane_out_D_0" intLanes="" shape="-1.60,-500.00 1.60,-500.00"/>
+    <!-- Junction B Streets -->
+    <edge id="edge_B_east_in" from="node_in_A_opp" to="junctionB" priority="-1">
+        <lane id="lane_B_east_in" index="0" speed="10.00" length="300.00" shape="500.00,201.60 200.00,201.60"/>
+    </edge>
+    <edge id="edge_B_east_out" from="junctionB" to="node_out_A_opp" priority="-1">
+        <lane id="lane_B_east_out" index="0" speed="10.00" length="300.00" shape="200.00,198.40 500.00,198.40"/>
+    </edge>
+    <edge id="edge_B_north_in" from="node_in_B_opp" to="junctionB" priority="-1">
+        <lane id="lane_B_north_in" index="0" speed="10.00" length="300.00" shape="198.40,500.00 198.40,200.00"/>
+    </edge>
+    <edge id="edge_B_north_out" from="junctionB" to="node_out_B_opp" priority="-1">
+        <lane id="lane_B_north_out" index="0" speed="10.00" length="300.00" shape="201.60,200.00 201.60,500.00"/>
+    </edge>
 
-    <!-- Traffic Lights junctions -->
-    <junction id="junctionA" type="traffic_light" x="-10.00" y="0.00" incLanes="lane_A_0" intLanes="" shape="-10.00,1.60 -10.00,-1.60">
-        <request index="0" response="0" foes="0"/>
+    <!-- Street B-C (Between B and C) -->
+    <edge id="edge_BC_south" from="junctionB" to="junctionC" priority="-1">
+        <lane id="lane_BC_south" index="0" speed="10.00" length="400.00" shape="198.40,200.00 198.40,-200.00"/>
+    </edge>
+    <edge id="edge_BC_north" from="junctionC" to="junctionB" priority="-1">
+        <lane id="lane_BC_north" index="0" speed="10.00" length="400.00" shape="201.60,-200.00 201.60,200.00"/>
+    </edge>
+
+    <!-- Junction C Streets -->
+    <edge id="edge_C_east_in" from="node_in_C" to="junctionC" priority="-1">
+        <lane id="lane_C_east_in" index="0" speed="10.00" length="300.00" shape="500.00,-198.40 200.00,-198.40"/>
+    </edge>
+    <edge id="edge_C_east_out" from="junctionC" to="node_out_C" priority="-1">
+        <lane id="lane_C_east_out" index="0" speed="10.00" length="300.00" shape="200.00,-201.60 500.00,-201.60"/>
+    </edge>
+    <edge id="edge_C_south_in" from="node_in_B" to="junctionC" priority="-1">
+        <lane id="lane_C_south_in" index="0" speed="10.00" length="300.00" shape="201.60,-500.00 201.60,-200.00"/>
+    </edge>
+    <edge id="edge_C_south_out" from="junctionC" to="node_out_B" priority="-1">
+        <lane id="lane_C_south_out" index="0" speed="10.00" length="300.00" shape="198.40,-200.00 198.40,-500.00"/>
+    </edge>
+
+    <!-- Street C-D (Between C and D) -->
+    <edge id="edge_CD_west" from="junctionC" to="junctionD" priority="-1">
+        <lane id="lane_CD_west" index="0" speed="10.00" length="400.00" shape="200.00,-198.40 -200.00,-198.40"/>
+    </edge>
+    <edge id="edge_CD_east" from="junctionD" to="junctionC" priority="-1">
+        <lane id="lane_CD_east" index="0" speed="10.00" length="400.00" shape="-200.00,-201.60 200.00,-201.60"/>
+    </edge>
+
+    <!-- Junction D Streets -->
+    <edge id="edge_D_west_in" from="node_in_C_opp" to="junctionD" priority="-1">
+        <lane id="lane_D_west_in" index="0" speed="10.00" length="300.00" shape="-500.00,-201.60 -200.00,-201.60"/>
+    </edge>
+    <edge id="edge_D_west_out" from="junctionD" to="node_out_C_opp" priority="-1">
+        <lane id="lane_D_west_out" index="0" speed="10.00" length="300.00" shape="-200.00,-198.40 -500.00,-198.40"/>
+    </edge>
+    <edge id="edge_D_south_in" from="node_in_D_opp" to="junctionD" priority="-1">
+        <lane id="lane_D_south_in" index="0" speed="10.00" length="300.00" shape="-198.40,-500.00 -198.40,-200.00"/>
+    </edge>
+    <edge id="edge_D_south_out" from="junctionD" to="node_out_D_opp" priority="-1">
+        <lane id="lane_D_south_out" index="0" speed="10.00" length="300.00" shape="-201.60,-200.00 -201.60,-500.00"/>
+    </edge>
+
+    <!-- Street A-D (Between A and D) -->
+    <edge id="edge_AD_south" from="junctionA" to="junctionD" priority="-1">
+        <lane id="lane_AD_south" index="0" speed="10.00" length="400.00" shape="-201.60,200.00 -201.60,-200.00"/>
+    </edge>
+    <edge id="edge_AD_north" from="junctionD" to="junctionA" priority="-1">
+        <lane id="lane_AD_north" index="0" speed="10.00" length="400.00" shape="-198.40,-200.00 -198.40,200.00"/>
+    </edge>
+
+    <!-- Dead Ends Junctions -->
+    <junction id="node_in_A" type="dead_end" x="-500.00" y="198.40" incLanes="" intLanes="" shape="-500.00,200.00 -500.00,196.80"/>
+    <junction id="node_out_A" type="dead_end" x="-500.00" y="201.60" incLanes="lane_A_west_out" intLanes="" shape="-500.00,203.20 -500.00,200.00"/>
+    <junction id="node_in_D" type="dead_end" x="-201.60" y="500.00" incLanes="" intLanes="" shape="-203.20,500.00 -200.00,500.00"/>
+    <junction id="node_out_D" type="dead_end" x="-198.40" y="500.00" incLanes="lane_A_north_out" intLanes="" shape="-200.00,500.00 -196.80,500.00"/>
+
+    <junction id="node_in_A_opp" type="dead_end" x="500.00" y="201.60" incLanes="" intLanes="" shape="500.00,200.00 500.00,203.20"/>
+    <junction id="node_out_A_opp" type="dead_end" x="500.00" y="198.40" incLanes="lane_B_east_out" intLanes="" shape="500.00,196.80 500.00,200.00"/>
+    <junction id="node_in_B_opp" type="dead_end" x="198.40" y="500.00" incLanes="" intLanes="" shape="200.00,500.00 196.80,500.00"/>
+    <junction id="node_out_B_opp" type="dead_end" x="201.60" y="500.00" incLanes="lane_B_north_out" intLanes="" shape="203.20,500.00 200.00,500.00"/>
+
+    <junction id="node_in_C" type="dead_end" x="500.00" y="-198.40" incLanes="" intLanes="" shape="500.00,-196.80 500.00,-200.00"/>
+    <junction id="node_out_C" type="dead_end" x="500.00" y="-201.60" incLanes="lane_C_east_out" intLanes="" shape="500.00,-200.00 500.00,-203.20"/>
+    <junction id="node_in_B" type="dead_end" x="201.60" y="-500.00" incLanes="" intLanes="" shape="200.00,-500.00 203.20,-500.00"/>
+    <junction id="node_out_B" type="dead_end" x="198.40" y="-500.00" incLanes="lane_C_south_out" intLanes="" shape="196.80,-500.00 200.00,-500.00"/>
+
+    <junction id="node_in_C_opp" type="dead_end" x="-500.00" y="-201.60" incLanes="" intLanes="" shape="-500.00,-200.00 -500.00,-203.20"/>
+    <junction id="node_out_C_opp" type="dead_end" x="-500.00" y="-198.40" incLanes="lane_D_west_out" intLanes="" shape="-500.00,-200.00 -500.00,-196.80"/>
+    <junction id="node_in_D_opp" type="dead_end" x="-198.40" y="-500.00" incLanes="" intLanes="" shape="-196.80,-500.00 -200.00,-500.00"/>
+    <junction id="node_out_D_opp" type="dead_end" x="-201.60" y="-500.00" incLanes="lane_D_south_out" intLanes="" shape="-200.00,-500.00 -203.20,-500.00"/>
+
+    <!-- Traffic Lights Junctions (4-way intersections) -->
+    <junction id="junctionA" type="traffic_light" x="-200.00" y="200.00" incLanes="lane_A_west_in lane_AB_west lane_A_north_in lane_AD_north" intLanes="" shape="-203.20,203.20 -196.80,203.20 -196.80,196.80 -203.20,196.80">
+        <request index="0" response="0000" foes="1100"/>
+        <request index="1" response="0000" foes="1100"/>
+        <request index="2" response="0011" foes="0011"/>
+        <request index="3" response="0011" foes="0011"/>
     </junction>
-    <junction id="junctionB" type="traffic_light" x="0.00" y="-10.00" incLanes="lane_B_0" intLanes="" shape="-1.60,-10.00 1.60,-10.00">
-        <request index="0" response="0" foes="0"/>
+    <junction id="junctionB" type="traffic_light" x="200.00" y="200.00" incLanes="lane_AB_east lane_B_east_in lane_B_north_in lane_BC_north" intLanes="" shape="196.80,203.20 203.20,203.20 203.20,196.80 196.80,196.80">
+        <request index="0" response="0000" foes="1100"/>
+        <request index="1" response="0000" foes="1100"/>
+        <request index="2" response="0011" foes="0011"/>
+        <request index="3" response="0011" foes="0011"/>
     </junction>
-    <junction id="junctionC" type="traffic_light" x="10.00" y="0.00" incLanes="lane_C_0" intLanes="" shape="10.00,-1.60 10.00,1.60">
-        <request index="0" response="0" foes="0"/>
+    <junction id="junctionC" type="traffic_light" x="200.00" y="-200.00" incLanes="lane_CD_east lane_C_east_in lane_BC_south lane_C_south_in" intLanes="" shape="196.80,-196.80 203.20,-196.80 203.20,-203.20 196.80,-203.20">
+        <request index="0" response="0000" foes="1100"/>
+        <request index="1" response="0000" foes="1100"/>
+        <request index="2" response="0011" foes="0011"/>
+        <request index="3" response="0011" foes="0011"/>
     </junction>
-    <junction id="junctionD" type="traffic_light" x="0.00" y="10.00" incLanes="lane_D_0" intLanes="" shape="1.60,10.00 -1.60,10.00">
-        <request index="0" response="0" foes="0"/>
+    <junction id="junctionD" type="traffic_light" x="-200.00" y="-200.00" incLanes="lane_D_west_in lane_CD_west lane_AD_south lane_D_south_in" intLanes="" shape="-203.20,-196.80 -196.80,-196.80 -196.80,-203.20 -203.20,-203.20">
+        <request index="0" response="0000" foes="1100"/>
+        <request index="1" response="0000" foes="1100"/>
+        <request index="2" response="0011" foes="0011"/>
+        <request index="3" response="0011" foes="0011"/>
     </junction>
 
-    <!-- TLS Programs -->
+    <!-- TLS Programs (West/East Green first, then North/South Green) -->
     <tlLogic id="junctionA" type="static" programID="0" offset="0">
-        <phase duration="30" state="G"/>
-        <phase duration="5" state="y"/>
-        <phase duration="35" state="r"/>
+        <phase duration="30" state="GGrr"/>
+        <phase duration="5"  state="yyrr"/>
+        <phase duration="30" state="rrGG"/>
+        <phase duration="5"  state="rryy"/>
     </tlLogic>
     <tlLogic id="junctionB" type="static" programID="0" offset="0">
-        <phase duration="30" state="G"/>
-        <phase duration="5" state="y"/>
-        <phase duration="35" state="r"/>
+        <phase duration="30" state="GGrr"/>
+        <phase duration="5"  state="yyrr"/>
+        <phase duration="30" state="rrGG"/>
+        <phase duration="5"  state="rryy"/>
     </tlLogic>
     <tlLogic id="junctionC" type="static" programID="0" offset="0">
-        <phase duration="30" state="G"/>
-        <phase duration="5" state="y"/>
-        <phase duration="35" state="r"/>
+        <phase duration="30" state="GGrr"/>
+        <phase duration="5"  state="yyrr"/>
+        <phase duration="30" state="rrGG"/>
+        <phase duration="5"  state="rryy"/>
     </tlLogic>
     <tlLogic id="junctionD" type="static" programID="0" offset="0">
-        <phase duration="30" state="G"/>
-        <phase duration="5" state="y"/>
-        <phase duration="35" state="r"/>
+        <phase duration="30" state="GGrr"/>
+        <phase duration="5"  state="yyrr"/>
+        <phase duration="30" state="rrGG"/>
+        <phase duration="5"  state="rryy"/>
     </tlLogic>
-    <connection from="edge_A" to="edge_out_A" fromLane="0" toLane="0" tl="junctionA" linkIndex="0" dir="s" state="o"/>
-    <connection from="edge_B" to="edge_out_B" fromLane="0" toLane="0" tl="junctionB" linkIndex="0" dir="s" state="o"/>
-    <connection from="edge_C" to="edge_out_C" fromLane="0" toLane="0" tl="junctionC" linkIndex="0" dir="s" state="o"/>
-    <connection from="edge_D" to="edge_out_D" fromLane="0" toLane="0" tl="junctionD" linkIndex="0" dir="s" state="o"/>
+
+    <!-- Connections (Straight crossings) -->
+    <connection from="edge_A_west_in" to="edge_AB_east" fromLane="0" toLane="0" tl="junctionA" linkIndex="0" dir="s" state="o"/>
+    <connection from="edge_AB_west" to="edge_A_west_out" fromLane="0" toLane="0" tl="junctionA" linkIndex="1" dir="s" state="o"/>
+    <connection from="edge_A_north_in" to="edge_AD_south" fromLane="0" toLane="0" tl="junctionA" linkIndex="2" dir="s" state="o"/>
+    <connection from="edge_AD_north" to="edge_A_north_out" fromLane="0" toLane="0" tl="junctionA" linkIndex="3" dir="s" state="o"/>
+
+    <connection from="edge_AB_east" to="edge_B_east_out" fromLane="0" toLane="0" tl="junctionB" linkIndex="0" dir="s" state="o"/>
+    <connection from="edge_B_east_in" to="edge_AB_west" fromLane="0" toLane="0" tl="junctionB" linkIndex="1" dir="s" state="o"/>
+    <connection from="edge_B_north_in" to="edge_BC_south" fromLane="0" toLane="0" tl="junctionB" linkIndex="2" dir="s" state="o"/>
+    <connection from="edge_BC_north" to="edge_B_north_out" fromLane="0" toLane="0" tl="junctionB" linkIndex="3" dir="s" state="o"/>
+
+    <connection from="edge_CD_east" to="edge_C_east_out" fromLane="0" toLane="0" tl="junctionC" linkIndex="0" dir="s" state="o"/>
+    <connection from="edge_C_east_in" to="edge_CD_west" fromLane="0" toLane="0" tl="junctionC" linkIndex="1" dir="s" state="o"/>
+    <connection from="edge_BC_south" to="edge_C_south_out" fromLane="0" toLane="0" tl="junctionC" linkIndex="2" dir="s" state="o"/>
+    <connection from="edge_C_south_in" to="edge_BC_north" fromLane="0" toLane="0" tl="junctionC" linkIndex="3" dir="s" state="o"/>
+
+    <connection from="edge_D_west_in" to="edge_CD_east" fromLane="0" toLane="0" tl="junctionD" linkIndex="0" dir="s" state="o"/>
+    <connection from="edge_CD_west" to="edge_D_west_out" fromLane="0" toLane="0" tl="junctionD" linkIndex="1" dir="s" state="o"/>
+    <connection from="edge_AD_south" to="edge_D_south_out" fromLane="0" toLane="0" tl="junctionD" linkIndex="2" dir="s" state="o"/>
+    <connection from="edge_D_south_in" to="edge_AD_north" fromLane="0" toLane="0" tl="junctionD" linkIndex="3" dir="s" state="o"/>
 </net>

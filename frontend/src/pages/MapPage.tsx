@@ -18,9 +18,9 @@ export default function MapPage() {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
       {/* Intersection Map Widget takes 2/3 width */}
-      <div className="lg:col-span-2">
+      <div className="xl:col-span-2">
         <IntersectionMap />
       </div>
 

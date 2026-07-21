@@ -9,7 +9,7 @@ const TYPE_EMOJI: Record<VehicleType, string> = {
   car:        '🚗',
   motorcycle: '🏍️',
   bus:        '🚌',
-  truck:      '🚛',
+  emergency:  '🚨',
   unknown:    '🚘',
 };
 

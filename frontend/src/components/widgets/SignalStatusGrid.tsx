@@ -83,7 +83,7 @@ export default function SignalStatusGrid() {
       icon={<TrafficCone size={16} />}
       gradient
     >
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {displayed.length === 0 ? (
           <div className="col-span-2 text-center py-8 text-slate-500 text-sm">
             No intersections found

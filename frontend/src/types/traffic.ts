@@ -1,4 +1,4 @@
-export type VehicleType = 'car' | 'motorcycle' | 'bus' | 'truck' | 'unknown';
+export type VehicleType = 'car' | 'motorcycle' | 'bus' | 'emergency' | 'unknown';
 export type DensityLevel = 'LOW' | 'MEDIUM' | 'HIGH';
 export type CongestionStatus = 'CLEAR' | 'CONGESTED';
 export type SignalPhase = 'GREEN' | 'YELLOW' | 'RED';
@@ -26,7 +26,7 @@ export interface ClassificationData {
   car: number;
   motorcycle: number;
   bus: number;
-  truck: number;
+  emergency?: number;
   percentages: Record<string, number>;
   most_common_type: string;
 }
@@ -98,6 +98,86 @@ export interface IntersectionData {
   density: number;
 }
 
+export interface LaneOccupancy {
+  lane_id: string;
+  occupancy_percent: number;
+  occupancy_level: DensityLevel;
+  timestamp: number;
+}
+
+export interface OccupancyResponse {
+  lanes: LaneOccupancy[];
+  average_occupancy: number;
+  timestamp: number;
+}
+
+export interface PerformanceSnapshot {
+  sim_time: number;
+  avg_waiting_time: number;
+  avg_queue_length: number;
+  avg_occupancy: number;
+  throughput_total: number;
+  throughput_tick: number;
+  congestion_event_count: number;
+  emergency_priority_activations: number;
+  signal_decision_frequency: number;
+  controller_response_time_ms: number;
+  tick_processing_time_ms: number;
+  timestamp: number;
+}
+
+export interface PerformanceSummary {
+  period_label: string;
+  sample_count: number;
+  avg_waiting_time: number;
+  avg_queue_length: number;
+  avg_occupancy: number;
+  total_throughput: number;
+  total_congestion_events: number;
+  total_emergency_activations: number;
+  total_signal_decisions: number;
+  avg_controller_response_time_ms: number;
+  avg_tick_processing_time_ms: number;
+  start_sim_time: number;
+  end_sim_time: number;
+}
+
+export interface PerformanceResponse {
+  current: PerformanceSnapshot | null;
+  per_minute: PerformanceSummary[];
+  simulation_summary: PerformanceSummary | null;
+  timestamp: number;
+}
+
+export type EmergencyVehicleType = 'AMBULANCE' | 'POLICE' | 'FIRETRUCK' | 'UNKNOWN';
+
+export interface EmergencyVehicleState {
+  vehicle_id: string;
+  vehicle_type: EmergencyVehicleType;
+  lane_id: string;
+  junction_id?: string;
+  speed: number;
+  first_detected_at: number;
+  last_seen_at: number;
+  sim_time: number;
+}
+
+export interface EmergencyEvent {
+  vehicle_id: string;
+  vehicle_type: EmergencyVehicleType;
+  lane_id: string;
+  junction_id?: string;
+  event_type: 'DETECTED' | 'INTERSECTION_CHANGE' | 'CLEARED';
+  timestamp: number;
+  sim_time: number;
+}
+
+export interface EmergencyResponse {
+  active_vehicles: EmergencyVehicleState[];
+  recent_events: EmergencyEvent[];
+  timestamp: number;
+}
+
 export interface TrafficSnapshot {
   vehicles: VehicleData[];
   classification: ClassificationData;
@@ -106,5 +186,8 @@ export interface TrafficSnapshot {
   signals: SignalResponse;
   kpis: KPIData;
   intersections: IntersectionData[];
+  occupancy?: OccupancyResponse;
+  performance?: PerformanceSnapshot;
+  emergency?: EmergencyResponse;
   timestamp: number;
 }

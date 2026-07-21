@@ -32,9 +32,9 @@ _TYPE_MAP: dict[str, VehicleType] = {
     "bicycle": VehicleType.MOTORCYCLE,
     "bus": VehicleType.BUS,
     "coach": VehicleType.BUS,
-    "truck": VehicleType.TRUCK,
-    "trailer": VehicleType.TRUCK,
-    "delivery": VehicleType.TRUCK,
+    "ambulance": VehicleType.EMERGENCY,
+    "police": VehicleType.EMERGENCY,
+    "firetruck": VehicleType.EMERGENCY,
 }
 
 # ---------------------------------------------------------------------------
@@ -45,9 +45,39 @@ _FETCH_LATENCY_BUDGET_MS: float = 200.0
 # ---------------------------------------------------------------------------
 # Mock configuration
 # ---------------------------------------------------------------------------
-_MOCK_LANES = ["lane_A_0", "lane_B_0", "lane_C_0", "lane_D_0"]
-_MOCK_ROADS = ["road_A", "road_B", "road_C", "road_D"]
-_MOCK_LANE_LENGTHS_M = {"lane_A_0": 500.0, "lane_B_0": 600.0, "lane_C_0": 400.0, "lane_D_0": 500.0}
+_MOCK_LANES = [
+    "lane_A_west_in", "lane_A_north_in", "lane_AB_west", "lane_AD_north",
+    "lane_AB_east", "lane_B_north_in", "lane_B_east_in", "lane_BC_north",
+    "lane_CD_east", "lane_BC_south", "lane_C_east_in", "lane_C_south_in",
+    "lane_D_west_in", "lane_AD_south", "lane_CD_west", "lane_D_south_in"
+]
+_MOCK_ROADS = [
+    "edge_A_west_in", "edge_A_north_in", "edge_AB_west", "edge_AD_north",
+    "edge_AB_east", "edge_B_north_in", "edge_B_east_in", "edge_BC_north",
+    "edge_CD_east", "edge_BC_south", "edge_C_east_in", "edge_C_south_in",
+    "edge_D_west_in", "edge_AD_south", "edge_CD_west", "edge_D_south_in"
+]
+_MOCK_LANE_LENGTHS_M = {
+    "lane_A_west_in": 300.0,
+    "lane_A_north_in": 300.0,
+    "lane_AB_west": 400.0,
+    "lane_AD_north": 400.0,
+    
+    "lane_AB_east": 400.0,
+    "lane_B_north_in": 300.0,
+    "lane_B_east_in": 300.0,
+    "lane_BC_north": 400.0,
+    
+    "lane_CD_east": 400.0,
+    "lane_BC_south": 400.0,
+    "lane_C_east_in": 300.0,
+    "lane_C_south_in": 300.0,
+    
+    "lane_D_west_in": 300.0,
+    "lane_AD_south": 400.0,
+    "lane_CD_west": 400.0,
+    "lane_D_south_in": 300.0,
+}
 _MOCK_TYPES = list(VehicleType)
 
 # Chance (per tick) that a mock emergency vehicle is present on a random
@@ -59,15 +89,15 @@ _MOCK_SUMO_TYPE_ID: dict[VehicleType, str] = {
     VehicleType.CAR: "passenger",
     VehicleType.MOTORCYCLE: "motorcycle",
     VehicleType.BUS: "bus",
-    VehicleType.TRUCK: "truck",
+    VehicleType.EMERGENCY: "ambulance",
 }
 
 
 def _mock_vehicle_type() -> VehicleType:
     """Return a weighted random vehicle type (cars most common)."""
     return random.choices(
-        [VehicleType.CAR, VehicleType.MOTORCYCLE, VehicleType.BUS, VehicleType.TRUCK],
-        weights=[65, 15, 10, 10],
+        [VehicleType.CAR, VehicleType.MOTORCYCLE, VehicleType.BUS, VehicleType.EMERGENCY],
+        weights=[70, 15, 10, 5],
         k=1,
     )[0]
 
