@@ -192,6 +192,47 @@ CREATE TABLE IF NOT EXISTS dqn_training_stats (
 );
 CREATE INDEX IF NOT EXISTS idx_dqn_training_stats_epoch ON dqn_training_stats(epoch);
 CREATE INDEX IF NOT EXISTS idx_dqn_training_stats_timestamp ON dqn_training_stats(timestamp);
+
+CREATE TABLE IF NOT EXISTS dqn_experiments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    experiment_id TEXT NOT NULL UNIQUE,
+    timestamp REAL NOT NULL,
+    learning_rate REAL NOT NULL,
+    gamma REAL NOT NULL,
+    hidden_size INTEGER NOT NULL,
+    epochs INTEGER NOT NULL,
+    avg_reward REAL NOT NULL,
+    avg_loss REAL NOT NULL,
+    model_path TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_dqn_experiments_id ON dqn_experiments(experiment_id);
+
+CREATE TABLE IF NOT EXISTS dqn_experiment_epoch_stats (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    experiment_id TEXT NOT NULL,
+    epoch INTEGER NOT NULL,
+    avg_loss REAL NOT NULL,
+    avg_q_value REAL NOT NULL,
+    avg_reward REAL NOT NULL,
+    epsilon REAL NOT NULL,
+    timestamp REAL NOT NULL,
+    FOREIGN KEY(experiment_id) REFERENCES dqn_experiments(experiment_id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_dqn_experiment_epoch_stats_id ON dqn_experiment_epoch_stats(experiment_id);
+
+CREATE TABLE IF NOT EXISTS sumo_simulation_runs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    run_id TEXT NOT NULL UNIQUE,
+    start_time REAL NOT NULL,
+    end_time REAL NOT NULL,
+    duration REAL NOT NULL,
+    avg_waiting_time REAL NOT NULL,
+    avg_queue_length REAL NOT NULL,
+    throughput INTEGER NOT NULL,
+    avg_reward REAL NOT NULL,
+    timestamp REAL NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_sumo_simulation_runs_run_id ON sumo_simulation_runs(run_id);
 """
 
 

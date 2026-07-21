@@ -1,0 +1,16 @@
+[
+  {
+    "experiment_id": "exp_test_1",
+    "learning_rate": 0.001,
+    "gamma": 0.99,
+    "hidden_size": 32,
+    "epochs": 2
+  },
+  {
+    "experiment_id": "exp_test_2",
+    "learning_rate": 0.0005,
+    "gamma": 0.95,
+    "hidden_size": 64,
+    "epochs": 2
+  }
+]
