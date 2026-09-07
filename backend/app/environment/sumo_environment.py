@@ -165,8 +165,14 @@ class SUMOEnvironment:
             5-element state vector:
             [vehicle_count, queue_length, avg_waiting_time, lane_occupancy, current_phase]
         """
-        # Map junction to incoming lane ID convention
-        lane_id = f"lane_{junction_id[-1]}_0" if junction_id.startswith("junction") else junction_id
+        # Map junction to real incoming lane ID convention
+        lane_map = {
+            "junctionA": "lane_A_west_in",
+            "junctionB": "lane_B_east_in",
+            "junctionC": "lane_C_east_in",
+            "junctionD": "lane_D_west_in",
+        }
+        lane_id = lane_map.get(junction_id, junction_id)
 
         vehicle_count: float = 0.0
         queue_length: float = 0.0
