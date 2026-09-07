@@ -66,3 +66,43 @@ async def set_controller_mode(
     dqn_controller.set_mode(mode_enum)
     await store.set_controller_mode(requested_mode)
     return {"status": "success", "mode": requested_mode}
+
+
+@router.get("/state/{intersection_id}")
+async def get_intersection_rl_state(intersection_id: str) -> Dict[str, Any]:
+    """
+    Qasim's Deliverable API:
+    Fetch live RL state vector and feature breakdown for a given intersection.
+    Returns:
+      rl_state_vector: [vehicle_count, queue_length, avg_waiting_time, lane_occupancy, current_phase]
+    """
+    from app.services.traffic_state_service import get_traffic_state_service
+
+    service = get_traffic_state_service()
+    raw_details = service.get_raw_state(intersection_id)
+    vector = service.get_state_vector(intersection_id)
+    return {
+        "intersection_id": intersection_id,
+        "rl_state_vector": vector,
+        "features": raw_details,
+    }
+
+
+@router.get("/state")
+async def get_all_intersections_rl_state() -> Dict[str, Any]:
+    """
+    Qasim's Deliverable API:
+    Fetch live RL state vectors for all monitored intersections.
+    """
+    from app.services.traffic_state_service import get_traffic_state_service
+
+    service = get_traffic_state_service()
+    intersections = ["junctionA", "junctionB", "junctionC", "junctionD"]
+    return {
+        j: {
+            "rl_state_vector": service.get_state_vector(j),
+            "features": service.get_raw_state(j),
+        }
+        for j in intersections
+    }
+
