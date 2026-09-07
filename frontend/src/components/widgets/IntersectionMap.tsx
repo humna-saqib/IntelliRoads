@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useTraffic } from '../../context/TrafficContext';
 import Card from '../ui/Card';
 import Badge from '../ui/Badge';
@@ -16,6 +16,7 @@ export default function IntersectionMap() {
   const { intersections, vehicles } = useTraffic();
   const [hoveredJunction, setHoveredJunction] = useState<IntersectionData | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // 2x2 Grid Junction Coordinates in SVG space (400x400)
   // Junction A (Top-Left): (120, 120)
@@ -39,11 +40,12 @@ export default function IntersectionMap() {
   };
 
   const handleJunctionHover = (e: React.MouseEvent, junction: IntersectionData) => {
-    const rect = e.currentTarget.getBoundingClientRect();
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
     setHoveredJunction(junction);
     setTooltipPos({
-      x: e.clientX - rect.left + 15,
-      y: e.clientY - rect.top + 15,
+      x: Math.min(Math.max(e.clientX - rect.left + 15, 10), rect.width - 160),
+      y: Math.min(Math.max(e.clientY - rect.top + 15, 10), rect.height - 140),
     });
   };
 
@@ -116,10 +118,13 @@ export default function IntersectionMap() {
       icon={<Map className="h-5 w-5 text-purple-500" />}
       className="relative"
     >
-      <div className="relative border border-slate-800/80 rounded-lg overflow-hidden bg-slate-950/80 aspect-square max-w-[400px] mx-auto">
+      <div 
+        ref={containerRef}
+        className="relative border border-slate-800/80 rounded-lg overflow-hidden bg-slate-950/80 aspect-square max-w-[400px] mx-auto"
+      >
         {/* Dark Grid Background */}
         <div 
-          className="absolute inset-0 opacity-[0.03]" 
+          className="absolute inset-0 opacity-[0.03] pointer-events-none" 
           style={{
             backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)',
             backgroundSize: '20px 20px',
@@ -185,7 +190,23 @@ export default function IntersectionMap() {
             }
 
             return (
-              <g key={junction.id}>
+              <g 
+                key={junction.id}
+                className="cursor-pointer"
+                onMouseEnter={(e) => handleJunctionHover(e, junction)}
+                onMouseMove={(e) => handleJunctionHover(e, junction)}
+                onMouseLeave={() => setHoveredJunction(null)}
+                onClick={(e) => handleJunctionHover(e, junction)}
+              >
+                {/* Hit area for smooth hovering */}
+                <circle
+                  cx={coords.x}
+                  cy={coords.y}
+                  r="32"
+                  fill="transparent"
+                  pointerEvents="all"
+                />
+
                 {/* Background Glow Circle */}
                 <circle
                   cx={coords.x}
@@ -218,9 +239,7 @@ export default function IntersectionMap() {
                   fill="#1e293b"
                   stroke={densityInfo.ring}
                   strokeWidth="2.5"
-                  className="cursor-pointer hover:fill-slate-800 transition-all duration-300"
-                  onMouseMove={(e) => handleJunctionHover(e, junction)}
-                  onMouseLeave={() => setHoveredJunction(null)}
+                  className="hover:fill-slate-800 transition-all duration-300 pointer-events-none"
                   style={{
                     boxShadow: `0 0 8px ${densityInfo.ring}40`
                   }}
@@ -265,6 +284,7 @@ export default function IntersectionMap() {
                 cy={coords.y}
                 r="4"
                 fill={color}
+                className="pointer-events-none"
                 style={{
                   filter: `drop-shadow(0 0 2px ${color})`,
                   transition: 'cx 0.9s linear, cy 0.9s linear'
@@ -279,33 +299,37 @@ export default function IntersectionMap() {
         {/* Hover Tooltip Overlay */}
         {hoveredJunction && (
           <div
-            className="absolute z-10 p-3 rounded-lg border border-slate-700 bg-slate-900/95 backdrop-blur-sm text-xs space-y-1 text-slate-200 pointer-events-none"
-            style={{ left: tooltipPos.x, top: tooltipPos.y }}
+            className="absolute z-50 p-3 rounded-lg border border-slate-700 bg-slate-900/95 backdrop-blur-md text-xs space-y-1.5 text-slate-200 pointer-events-none shadow-2xl min-w-[150px]"
+            style={{ left: `${tooltipPos.x}px`, top: `${tooltipPos.y}px` }}
           >
             <div className="flex items-center gap-1.5 font-bold text-slate-100">
               <Info className="h-3.5 w-3.5 text-purple-400" />
-              <span>{hoveredJunction.name}</span>
+              <span>{hoveredJunction.name || JUNCTION_SHORT_NAMES[hoveredJunction.id] || hoveredJunction.id}</span>
             </div>
             <div className="border-t border-slate-800 my-1" />
-            <div>
-              Signal: <span className="font-semibold" style={{ color: getSignalColor(hoveredJunction.signal) }}>{hoveredJunction.signal}</span>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Signal:</span>
+              <span className="font-semibold" style={{ color: getSignalColor(hoveredJunction.signal) }}>{hoveredJunction.signal}</span>
             </div>
-            <div>
-              Density: <span className="font-semibold text-slate-100">{hoveredJunction.density.toFixed(1)} veh/km</span>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Density:</span>
+              <span className="font-semibold text-slate-100">{Number(hoveredJunction.density || 0).toFixed(1)} veh/km</span>
             </div>
-            <div>
-              Status: <span className={`font-semibold px-2 py-0.5 rounded text-xs ${
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Status:</span>
+              <span className={`font-semibold px-1.5 py-0.5 rounded text-[10px] ${
                 hoveredJunction.density < 20 
                   ? 'bg-green-500/20 text-green-300' 
                   : hoveredJunction.density < 40 
                     ? 'bg-orange-500/20 text-orange-300'
                     : 'bg-red-500/20 text-red-300'
               }`}>
-                {hoveredJunction.density < 20 ? '✓ Free Flow' : hoveredJunction.density < 40 ? '⚠ Congested' : '✕ Severe'}
+                {hoveredJunction.density < 20 ? 'Free Flow' : hoveredJunction.density < 40 ? 'Congested' : 'Severe'}
               </span>
             </div>
-            <div>
-              Vehicles: <span className="font-semibold text-slate-100">{hoveredJunction.vehicle_count}</span>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Vehicles:</span>
+              <span className="font-semibold text-slate-100">{hoveredJunction.vehicle_count}</span>
             </div>
           </div>
         )}
