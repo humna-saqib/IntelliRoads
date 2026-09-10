@@ -127,7 +127,7 @@ class SignalController:
         """
         duration = self.TIMING_RULES.get(density_level, 20.0)
         direction_label = "West/East" if active_phase == SignalPhaseType.GREEN else "North/South"
-        reason = f"{density_level} density on {direction_label} approach → {duration}s green phase"
+        reason = f"{density_level} density on {direction_label} approach -> {duration}s green phase"
 
         return SignalTiming(
             junction_id=junction_id,

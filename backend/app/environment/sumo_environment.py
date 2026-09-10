@@ -57,9 +57,16 @@ class DQNAction(IntEnum):
 # ---------------------------------------------------------------------------
 REWARD_WEIGHT_WAITING_TIME: float = 1.0
 REWARD_WEIGHT_QUEUE_LENGTH: float = 2.0
-REWARD_WEIGHT_CONGESTION: float = 10.0
+REWARD_WEIGHT_CONGESTION: float = 4.0
 REWARD_WEIGHT_THROUGHPUT: float = 5.0
-REWARD_WEIGHT_ACTION_CHANGE: float = 0.5
+REWARD_WEIGHT_ACTION_CHANGE: float = 1.5
+
+# ---------------------------------------------------------------------------
+# Reward Shaping Bonus
+# A small positive constant added when the traffic state is *not* congested.
+# This lifts the overall reward baseline without changing relative ordering.
+# ---------------------------------------------------------------------------
+REWARD_SHAPING_BONUS: float = 1.0
 
 # Speed threshold below which a vehicle is considered queued / halted (m/s)
 _QUEUE_SPEED_THRESHOLD_MS: float = 2.0
@@ -359,6 +366,11 @@ class SUMOEnvironment:
             + REWARD_WEIGHT_THROUGHPUT * float(throughput)
             - REWARD_WEIGHT_ACTION_CHANGE * action_penalty
         )
+
+        # Apply shaping bonus when not congested
+        if not is_congested:
+            reward += REWARD_SHAPING_BONUS
+
         return round(reward, 4)
 
     def get_next_state(

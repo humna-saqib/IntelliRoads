@@ -1,0 +1,4 @@
+controller,avg_waiting_time_mean,avg_travel_time_mean,avg_queue_length_mean,avg_occupancy_mean,throughput_mean,episode_reward_mean,episode_length_mean,wall_time_s_mean,avg_waiting_time_std,avg_travel_time_std,avg_queue_length_std,avg_occupancy_std,throughput_std,episode_reward_std,episode_length_std,wall_time_s_std
+Fixed-Time,4.9514,16.4368,12.5137,38.4604,556.0000,-3845.7784,200.0000,10.9303,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,1.1865
+Rule-Based,6.7759,18.8087,12.9612,38.3285,557.0000,-4394.6839,200.0000,26.3390,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,3.0814
+Trained DQN,3.3665,14.3764,10.7775,38.4207,524.0000,1701.3600,200.0000,20.0200,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,1.9903

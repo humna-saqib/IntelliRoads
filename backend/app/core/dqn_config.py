@@ -29,8 +29,8 @@ class DQNConfig(BaseModel):
     target_update_frequency_epochs: int = 10
     epsilon_online: float = 0.1
     epsilon_start: float = 1.0
-    epsilon_end: float = 0.05
-    epsilon_decay_epochs: int = 50
+    epsilon_end: float = 0.08
+    epsilon_decay_epochs: int = 250
     offline_epochs: int = 50
     offline_steps_per_epoch: int = 20
 
