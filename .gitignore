@@ -224,3 +224,5 @@ frontend/dist/
 frontend/.vite/
 *.local
 npm-debug.log*
+myenv/
+backend/old_runs/

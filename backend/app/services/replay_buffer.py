@@ -1,15 +1,11 @@
 """
-IntelliRoads – SQLite-backed replay buffer for offline DQN training (Sprint 2).
+IntelliRoads – SQLite-backed replay buffer for 3-action historical data (Sprint 2).
 
+[LEGACY / UNUSED FOR FINAL TRAINING PIPELINE]
 Reads directly from the existing rl_experiences table (populated by
-RLEnvironment during live/mock simulation runs) as the offline replay
-buffer source. This is a read-only view over already-collected
-transitions — no new storage, no writes.
-
-Uses plain synchronous sqlite3 rather than aiosqlite: training runs as
-a standalone script outside the FastAPI event loop, and PyTorch's
-forward/backward passes are blocking anyway, so there's no async
-benefit here.
+RLEnvironment during rule-based simulation runs). Preserved for backward
+compatibility and offline historical analysis. Main training now uses direct
+SUMOEnvironment episodes.
 """
 
 from __future__ import annotations
