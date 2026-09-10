@@ -109,12 +109,17 @@ class TraCISession:
 
         sumo_binary: str = self._find_sumo_binary()
 
+        sumo_delay = os.environ.get("SUMO_DELAY")
+        if sumo_delay is None:
+            want_gui = os.environ.get("SUMO_USE_GUI", "1").lower() in ("1", "true", "yes")
+            sumo_delay = "200" if want_gui else "0"
+
         cmd = [
             sumo_binary,
             "-c", str(self.config_path),
             "--remote-port", str(self.port),
             "--step-length", str(self.step_length),
-            "--delay", "200",
+            "--delay", sumo_delay,
             "--no-step-log", "true",
             "--verbose", "false",
             "--start",  # auto-run instead of waiting for a manual GUI click

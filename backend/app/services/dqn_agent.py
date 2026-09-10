@@ -1,18 +1,11 @@
 """
-IntelliRoads – DQN Agent for adaptive signal timing (Sprint 2).
+IntelliRoads – Legacy 3-Action Offline DQN Agent (Sprint 2).
 
-Offline-only at this stage: trains purely from historical (state,
-action, reward, next_state) transitions already collected in
-rl_experiences by RLEnvironment. NOT connected to live signal control —
-SignalController and EmergencyPriorityController remain fully in
-charge of the running simulation. The goal here is to verify training
-mechanics (loss convergence, action selection, reward trend) before
-any live-deployment decision is made.
-
-select_action() (epsilon-greedy) exists for future online/live use; the
-offline training loop below samples straight from the fixed historical
-buffer and does not call it — there's no environment to explore, only
-already-collected data to learn from.
+[LEGACY / UNUSED FOR FINAL TRAINING PIPELINE]
+This module defines the initial 3-action offline DQNAgent for observational
+learning on rule-based historical logs. Primary training has migrated to
+app.agent.dqn_agent.DQNAgent (the 4-action SUMO environment agent used by
+main.py and dqn_controller.py). Preserved for backwards compatibility.
 """
 
 from __future__ import annotations

@@ -268,6 +268,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Initialise Modular DQN RL Architecture
     sumo_env = SUMOEnvironment(session)
     dqn_agent = DQNAgent()
+    # Load trained model checkpoint weights (dqn_episode_0950.pt)
+    from app.agent.dqn_agent import DEFAULT_MODEL_PATH
+    if DEFAULT_MODEL_PATH.exists():
+        dqn_agent.load(DEFAULT_MODEL_PATH)
+        logger.info(f"Loaded final trained DQN model checkpoint from {DEFAULT_MODEL_PATH}")
     dqn_controller = DQNController(
         session=session,
         environment=sumo_env,

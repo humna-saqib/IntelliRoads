@@ -193,7 +193,7 @@ def log_signal_change(
             reason=reason,
             name="signal_controller",
         ).info(
-            f"Signal changed at {junction_id}: {old_phase} → {new_phase} "
+            f"Signal changed at {junction_id}: {old_phase} -> {new_phase} "
             f"for {duration}s ({reason})"
         )
     else:
