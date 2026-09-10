@@ -1,0 +1,104 @@
+{
+  "Fixed-Time": {
+    "avg_waiting_time": {
+      "mean": 4.9513910620794555,
+      "std": 0.0
+    },
+    "avg_travel_time": {
+      "mean": 16.4368,
+      "std": 0.0
+    },
+    "avg_queue_length": {
+      "mean": 12.51375,
+      "std": 0.0
+    },
+    "avg_occupancy": {
+      "mean": 38.46042452119118,
+      "std": 0.0
+    },
+    "throughput": {
+      "mean": 556.0,
+      "std": 0.0
+    },
+    "episode_reward": {
+      "mean": -3845.7784,
+      "std": 0.0
+    },
+    "episode_length": {
+      "mean": 200.0,
+      "std": 0.0
+    },
+    "wall_time_s": {
+      "mean": 10.930333333333333,
+      "std": 1.1865234157368973
+    }
+  },
+  "Rule-Based": {
+    "avg_waiting_time": {
+      "mean": 6.77591857835094,
+      "std": 0.0
+    },
+    "avg_travel_time": {
+      "mean": 18.8087,
+      "std": 0.0
+    },
+    "avg_queue_length": {
+      "mean": 12.96125,
+      "std": 0.0
+    },
+    "avg_occupancy": {
+      "mean": 38.32851705330561,
+      "std": 0.0
+    },
+    "throughput": {
+      "mean": 557.0,
+      "std": 0.0
+    },
+    "episode_reward": {
+      "mean": -4394.6839,
+      "std": 0.0
+    },
+    "episode_length": {
+      "mean": 200.0,
+      "std": 0.0
+    },
+    "wall_time_s": {
+      "mean": 26.339,
+      "std": 3.081354773696029
+    }
+  },
+  "Trained DQN": {
+    "avg_waiting_time": {
+      "mean": 3.3664524483382534,
+      "std": 0.0
+    },
+    "avg_travel_time": {
+      "mean": 14.3764,
+      "std": 0.0
+    },
+    "avg_queue_length": {
+      "mean": 10.7775,
+      "std": 0.0
+    },
+    "avg_occupancy": {
+      "mean": 38.42065013205216,
+      "std": 0.0
+    },
+    "throughput": {
+      "mean": 524.0,
+      "std": 0.0
+    },
+    "episode_reward": {
+      "mean": 1701.36,
+      "std": 0.0
+    },
+    "episode_length": {
+      "mean": 200.0,
+      "std": 0.0
+    },
+    "wall_time_s": {
+      "mean": 20.02,
+      "std": 1.9902867580603418
+    }
+  }
+}

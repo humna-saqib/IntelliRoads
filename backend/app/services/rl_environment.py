@@ -1,14 +1,10 @@
 """
 IntelliRoads – RL Environment Preparation service (Sprint 2).
 
-Converts the current simulation state into a DQN-ready state
-representation and produces (state, action, reward, next_state)
-transitions from the rule-based controller's *observed* behaviour.
-Purely observational: reads already-computed density/occupancy/
-congestion/signal data, never influences SignalController or
-EmergencyPriorityController. The goal at this stage is clean training
-data collection and validation of the state/action/reward design —
-no DQN model exists yet.
+[LEGACY / UNUSED FOR FINAL TRAINING PIPELINE]
+Converts the current simulation state into 3-action transitions from the
+rule-based controller's observed behavior. Main DQN training now uses
+app.environment.sumo_environment.SUMOEnvironment with the 4-action space.
 
 Transition formalism
 ---------------------

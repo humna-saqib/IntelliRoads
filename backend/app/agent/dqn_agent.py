@@ -269,15 +269,21 @@ class DQNAgent:
         # Compute Q(s, a) from policy network
         current_q = self.policy_net(states).gather(1, actions).squeeze(1)
 
-        # Compute Target Q = r + gamma * max_a' Q_target(s', a') * (1 - done)
+        # Double DQN: policy_net selects best action, target_net evaluates it.
+        # Decouples selection from evaluation, reducing overestimation bias.
+        logger.debug("Double DQN train_step invoked")
         with torch.no_grad():
-            next_q_max = self.target_net(next_states).max(dim=1).values
-            target_q = rewards + self.gamma * next_q_max * (1.0 - dones)
+            best_actions = self.policy_net(next_states).argmax(dim=1, keepdim=True)
+            next_q_evaluated = self.target_net(next_states).gather(1, best_actions).squeeze(1)
+            target_q = rewards + self.gamma * next_q_evaluated * (1.0 - dones)
+            # Clip target Q to reasonable range
+            target_q = torch.clamp(target_q, min=-100.0, max=50.0)
 
         loss = self.loss_fn(current_q, target_q)
 
         self.optimizer.zero_grad()
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.policy_net.parameters(), max_norm=1.0)
         self.optimizer.step()
         self.train_step_count += 1
 
@@ -294,7 +300,7 @@ class DQNAgent:
     # ------------------------------------------------------------------
 
     def save(self, path: Path = DEFAULT_MODEL_PATH) -> None:
-        """Save network weights and training state to disk."""
+        """Save network weights, training state, and replay buffer to disk."""
         path.parent.mkdir(parents=True, exist_ok=True)
         torch.save(
             {
@@ -302,13 +308,17 @@ class DQNAgent:
                 "target_net": self.target_net.state_dict(),
                 "optimizer": self.optimizer.state_dict(),
                 "train_step_count": self.train_step_count,
+                "replay_buffer": [
+                    (exp.state, exp.action, exp.reward, exp.next_state, exp.done)
+                    for exp in self.memory.memory
+                ],
             },
             str(path),
         )
         logger.info(f"DQNAgent checkpoint saved to {path}")
 
     def load(self, path: Path = DEFAULT_MODEL_PATH) -> None:
-        """Load network weights and training state from disk."""
+        """Load network weights, training state, and replay buffer from disk."""
         if not path.exists():
             logger.warning(f"Checkpoint {path} does not exist — skipping load.")
             return
@@ -317,4 +327,16 @@ class DQNAgent:
         self.target_net.load_state_dict(checkpoint["target_net"])
         self.optimizer.load_state_dict(checkpoint["optimizer"])
         self.train_step_count = checkpoint.get("train_step_count", 0)
-        logger.info(f"DQNAgent checkpoint loaded from {path}")
+
+        if "replay_buffer" in checkpoint:
+            buffer_data = checkpoint["replay_buffer"]
+            self.memory.memory.clear()
+            for item in buffer_data:
+                if isinstance(item, (tuple, list)) and len(item) == 5:
+                    self.memory.push(item[0], item[1], item[2], item[3], item[4])
+                elif hasattr(item, "state"):
+                    self.memory.push(item.state, item.action, item.reward, item.next_state, item.done)
+            logger.info(f"Restored replay buffer with {len(self.memory)} transitions from {path}")
+        else:
+            logger.warning(f"Checkpoint {path} does not contain replay buffer data — starting with empty buffer.")
+
