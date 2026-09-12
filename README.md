@@ -48,9 +48,9 @@ IntelliRoads/
 │   │   └── types/
 │   └── package.json
 └── sumo/
-	├── config/
-	├── network/
-	└── routes/
+    ├── config/
+    ├── network/
+    └── routes/
 ```
 
 ## Prerequisites
@@ -115,6 +115,7 @@ chmod +x node_modules/.bin/*
 - `/` - Dashboard
 - `/map` - Interactive traffic map
 - `/analytics` - Traffic analytics view
+- `/reports` - Performance reports
 
 ## API Endpoints
 
@@ -132,6 +133,15 @@ All API routes are prefixed with `/api`.
 - `GET /api/signals/{junction_id}`
 - `GET /api/kpis`
 - `GET /api/intersections`
+- `GET /api/emergency`
+- `GET /api/emergency/active`
+- `GET /api/occupancy`
+- `GET /api/performance`
+- `GET /api/rl/stats`
+- `GET /api/rl/mode`
+- `POST /api/rl/mode`
+- `GET /api/rl/state`
+- `GET /api/rl/state/{intersection_id}`
 
 ## How the Live Data Flow Works
 
@@ -157,4 +167,3 @@ All API routes are prefixed with `/api`.
 ## License
 
 See [LICENSE](LICENSE) for licensing details.
-# intelliroads
