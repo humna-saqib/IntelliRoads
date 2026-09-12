@@ -42,6 +42,7 @@ backend/data/*.db-wal
 
 # DQN model checkpoints (Sprint 2 RL training)
 backend/data/models/*.pt
+!backend/data/models/dqn_agent.pt 
 pip-delete-this-directory.txt
 
 # Rotated/compressed runtime logs (loguru rotation, backend/app/utils/logger.py)
