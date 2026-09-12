@@ -87,7 +87,7 @@ ALL_EVAL_LANES: List[str] = [
 FIXED_GREEN_DURATION: float = 30.0   # seconds per green phase (fixed-time)
 FIXED_YELLOW_DURATION: float = 5.0   # seconds per yellow phase (fixed-time)
 
-CHECKPOINT_PATH: Path = _BACKEND_DIR / "final_dqn_model" / "dqn_episode_0950.pt"
+CHECKPOINT_PATH: Path = _BACKEND_DIR / "data" / "models" / "dqn_agent.pt"
 EVAL_RESULTS_DIR: Path = _BACKEND_DIR / "evaluation_results"
 SUMO_CONFIG_PATH: Path = _BACKEND_DIR / "sumo" / "config" / "intelliroads.sumocfg"
 
@@ -546,7 +546,7 @@ def main() -> None:
     if not CHECKPOINT_PATH.exists():
         raise FileNotFoundError(
             f"DQN checkpoint not found: {CHECKPOINT_PATH}\n"
-            "Ensure dqn_episode_0950.pt exists in final_dqn_model/."
+            "Ensure the trained checkpoint exists at backend/data/models/dqn_agent.pt."
         )
 
     print(f"\n{'='*60}")
