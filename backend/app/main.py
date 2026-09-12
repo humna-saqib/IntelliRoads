@@ -237,8 +237,14 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             config_path = candidate
             break
 
-    # Force SUMO to use GUI (sumo-gui) as requested
-    os.environ["SUMO_USE_GUI"] = "true"
+    # Respect an existing SUMO_USE_GUI env var if the operator has set one
+    # (e.g. to "1" on a local machine with a display). Default to headless
+    # SUMO otherwise: sumo-gui requires a display server, so unconditionally
+    # forcing it here silently breaks live data in any headless environment
+    # (Codespaces, CI, most servers) — the failed launch was previously
+    # caught by the broad except below and mistaken for "no SUMO available",
+    # falling back to mock mode even when SUMO itself was installed fine.
+    os.environ.setdefault("SUMO_USE_GUI", "false")
 
     # Initialise TraCI session and dependencies
     session = TraCISession(config_path=config_path, step_length=1.0)

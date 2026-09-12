@@ -38,19 +38,19 @@ IntelliRoads/
 │   │   ├── services/
 │   │   ├── utils/
 │   │   └── websocket/
+│   ├── sumo/
+│   │   ├── config/
+│   │   ├── network/
+│   │   └── routes/
 │   └── requirements.txt
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── context/
-│   │   ├── pages/
-│   │   ├── services/
-│   │   └── types/
-│   └── package.json
-└── sumo/
-    ├── config/
-    ├── network/
-    └── routes/
+└── frontend/
+    ├── src/
+    │   ├── components/
+    │   ├── context/
+    │   ├── pages/
+    │   ├── services/
+    │   └── types/
+    └── package.json
 ```
 
 ## Prerequisites
@@ -58,7 +58,7 @@ IntelliRoads/
 - Python 3.9+
 - Node.js 18+
 - npm
-- SUMO 1.13 or compatible
+- SUMO 1.13 or compatible (Debian/Ubuntu: `sudo apt update && sudo apt install sumo sumo-tools sumo-doc`)
 
 ## Local Setup
 
@@ -154,7 +154,8 @@ All API routes are prefixed with `/api`.
 ## Troubleshooting
 
 - If the backend cannot connect to SUMO, it will switch to mock mode.
-- Make sure the SUMO config exists at `sumo/config/intelliroads.sumocfg`.
+- Make sure the SUMO config exists at `backend/sumo/config/intelliroads.sumocfg`.
+- SUMO requires a display for `sumo-gui`; in headless environments (Codespaces, CI, most servers) it runs headless by default. Set `SUMO_USE_GUI=1` before starting the backend if you're on a machine with a display and want the SUMO GUI window.
 - If the frontend does not start, reinstall dependencies with `npm install`.
 - If you need to check what changed, run `git status` and `git diff`.
 
