@@ -117,6 +117,14 @@ async def simulate_loop(
                 signals=normal_signals, timestamp=time.time()
             )
 
+            # If control_step fell back internally (e.g. a DQN failure
+            # dropped it to RULE_BASED), persist that so the next tick's
+            # set_mode() call above doesn't just flip it back to DQN from
+            # the stale stored value.
+            actual_mode = dqn_controller.get_mode().value
+            if actual_mode != current_mode_str:
+                await store.set_controller_mode(actual_mode)
+
             # 5.5. Resolve final signals: substitute priority GREEN for any
             #      junction with an active emergency vehicle, otherwise pass
             #      the normal decision through untouched. Separate layer —
@@ -278,7 +286,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         environment=sumo_env,
         agent=dqn_agent,
         rule_based_controller=signal_controller,
-        mode=ControllerMode.RULE_BASED,
+        mode=ControllerMode.DQN,
     )
 
     # Connect the SQLite telemetry database (Sprint 2 logging layer)

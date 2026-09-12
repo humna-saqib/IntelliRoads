@@ -61,7 +61,7 @@ class DQNController:
         environment: SUMOEnvironment,
         agent: DQNAgent,
         rule_based_controller: Optional[SignalController] = None,
-        mode: ControllerMode = ControllerMode.RULE_BASED,
+        mode: ControllerMode = ControllerMode.DQN,
     ) -> None:
         self.session = session
         self.env = environment
@@ -127,7 +127,46 @@ class DQNController:
             self._observe_state_only(vehicles, density_response, occupancy_response, signals)
             return signals
 
-        # Otherwise, execute DQN control workflow
+        # Otherwise, execute DQN control workflow. Wrapped end-to-end: a
+        # failure anywhere in agent inference or environment stepping
+        # (malformed state, tensor error, TraCI hiccup, etc.) must not crash
+        # the live simulation loop. On failure, fall back to the rule-based
+        # controller for this step and drop back to RULE_BASED mode so
+        # the failure doesn't repeat indefinitely - an operator can retry
+        # DQN mode manually once the underlying issue is resolved.
+        try:
+            timings = self._dqn_control_step(
+                density_response=density_response,
+                vehicles=vehicles,
+                occupancy_response=occupancy_response,
+                throughput=throughput,
+                epsilon=epsilon,
+            )
+        except Exception as exc:
+            logger.error(
+                f"DQN control step failed ({exc!r}); falling back to "
+                f"RULE_BASED mode for this and subsequent steps until "
+                f"manually switched back."
+            )
+            self.mode = ControllerMode.RULE_BASED
+            if self.rule_based_controller is not None:
+                self.rule_based_controller.update_all_signals(density_response)
+                timings = self.rule_based_controller.get_current_signals()
+            else:
+                timings = list(self._current_signals.values())
+
+        return timings
+
+    def _dqn_control_step(
+        self,
+        density_response: DensityResponse,
+        vehicles: Optional[List[Any]],
+        occupancy_response: Optional[Any],
+        throughput: int,
+        epsilon: float,
+    ) -> List[SignalTiming]:
+        """DQN inference workflow for one control cycle step, isolated so
+        control_step can wrap it in a single try/except fallback."""
         timings: List[SignalTiming] = []
 
         for junction_id in self.env.junction_ids:
