@@ -39,7 +39,11 @@ class InMemoryStateStore:
         self._emergency: Optional[EmergencyResponse] = None
         self._occupancy: Optional[OccupancyResponse] = None
         self._performance: Optional[PerformanceSnapshot] = None
-        self._controller_mode: str = "RULE_BASED"
+        # Must match DQNController's default mode in main.py's lifespan setup:
+        # the simulate loop reads this value and calls dqn_controller.set_mode()
+        # with it every tick (including the first), so a mismatch here would
+        # silently override the controller's own constructor default.
+        self._controller_mode: str = "DQN"
         self._sim_time: float = 0.0
         self._last_update: float = time.time()
         logger.info("InMemoryStateStore initialised.")
