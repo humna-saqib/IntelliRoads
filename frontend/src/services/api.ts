@@ -24,6 +24,18 @@ async function apiFetch<T>(path: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+async function apiPost<T>(path: string, body: unknown): Promise<T> {
+  const response = await fetch(`${BASE_URL}${path}`, {
+    method: 'POST',
+    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    throw new Error(`API error ${response.status}: ${response.statusText} at ${path}`);
+  }
+  return response.json() as Promise<T>;
+}
+
 export async function fetchVehicles(): Promise<VehicleListResponse> {
   return apiFetch<VehicleListResponse>('/vehicles');
 }
@@ -62,6 +74,16 @@ export async function fetchPerformance(minutes: number = 10): Promise<Performanc
 
 export async function fetchEmergency(): Promise<EmergencyResponse> {
   return apiFetch<EmergencyResponse>('/emergency');
+}
+
+export type ControllerMode = 'RULE_BASED' | 'DQN';
+
+export async function fetchControllerMode(): Promise<{ mode: ControllerMode }> {
+  return apiFetch<{ mode: ControllerMode }>('/rl/mode');
+}
+
+export async function setControllerMode(mode: ControllerMode): Promise<{ status: string; mode: ControllerMode }> {
+  return apiPost<{ status: string; mode: ControllerMode }>('/rl/mode', { mode });
 }
 
 export async function fetchAllData(): Promise<Omit<TrafficSnapshot, 'vehicles' | 'timestamp'> & { vehicles: VehicleListResponse; timestamp: number }> {

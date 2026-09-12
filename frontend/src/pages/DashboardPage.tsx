@@ -7,6 +7,7 @@ import OccupancyChart from '../components/widgets/OccupancyChart';
 import VehicleClassChart from '../components/widgets/VehicleClassChart';
 import VehicleTable from '../components/widgets/VehicleTable';
 import EmergencyPriorityBanner from '../components/widgets/EmergencyPriorityBanner';
+import ControlModePanel from '../components/widgets/ControlModePanel';
 
 export default function DashboardPage() {
   return (
@@ -22,7 +23,8 @@ export default function DashboardPage() {
         <div className="xl:col-span-2">
           <SignalStatusGrid />
         </div>
-        <div>
+        <div className="space-y-4 sm:space-y-6">
+          <ControlModePanel />
           <CongestionAlerts />
         </div>
       </div>
