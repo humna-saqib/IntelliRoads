@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { fetchPerformance } from '../services/api';
 import type { PerformanceResponse } from '../types/traffic';
 import Card from '../components/ui/Card';
@@ -12,7 +14,8 @@ import {
   Shuffle, 
   Layers, 
   Activity, 
-  CheckCircle2 
+  CheckCircle2,
+  FileType
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -95,6 +98,82 @@ export default function ReportsPage() {
     document.body.removeChild(link);
   };
 
+  const handleExportPDF = () => {
+    if (!perfData || perfData.per_minute.length === 0) return;
+
+    const doc = new jsPDF();
+    
+    // Document Header
+    doc.setFontSize(18);
+    doc.setTextColor(30, 41, 59);
+    doc.text("IntelliRoads - Performance Report", 14, 20);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139);
+    doc.text(`Generated: ${new Date().toLocaleString()} | Window: Last ${timeWindow} mins`, 14, 27);
+
+    // Summary Metrics Section
+    doc.setFontSize(12);
+    doc.setTextColor(15, 23, 42);
+    doc.text("System Overview Summary", 14, 38);
+
+    const summaryData = [
+      ["Avg Waiting Time", perfData.simulation_summary ? `${perfData.simulation_summary.avg_waiting_time.toFixed(1)}s` : `${perfData.current?.avg_waiting_time.toFixed(1) || '0'}s`],
+      ["Avg Queue Length", perfData.simulation_summary ? perfData.simulation_summary.avg_queue_length.toFixed(1) : `${perfData.current?.avg_queue_length.toFixed(1) || '0'}`],
+      ["Avg Occupancy", perfData.simulation_summary ? `${perfData.simulation_summary.avg_occupancy.toFixed(1)}%` : `${perfData.current?.avg_occupancy.toFixed(1) || '0'}%`],
+      ["Total Throughput", `${perfData.simulation_summary ? perfData.simulation_summary.total_throughput : perfData.current?.throughput_total || 0}`],
+    ];
+
+    autoTable(doc, {
+      startY: 42,
+      head: [["Metric", "Value"]],
+      body: summaryData,
+      theme: 'grid',
+      headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255] },
+    });
+
+    // Per Minute Breakdown Table
+    const finalY = (doc as any).lastAutoTable ? (doc as any).lastAutoTable.finalY + 10 : 90;
+    doc.setFontSize(12);
+    doc.setTextColor(15, 23, 42);
+    doc.text("Per-Minute Performance Breakdown", 14, finalY);
+
+    const headers = [
+      'Period',
+      'Samples',
+      'Wait Time (s)',
+      'Queue Len',
+      'Occupancy (%)',
+      'Throughput',
+      'Congestions',
+      'Emergencies',
+      'Decisions'
+    ];
+
+    const rows = perfData.per_minute.map(item => [
+      item.period_label.replace('minute_', 'Min '),
+      item.sample_count,
+      item.avg_waiting_time.toFixed(1),
+      item.avg_queue_length.toFixed(1),
+      `${item.avg_occupancy.toFixed(1)}%`,
+      item.total_throughput,
+      item.total_congestion_events,
+      item.total_emergency_activations,
+      item.total_signal_decisions
+    ]);
+
+    autoTable(doc, {
+      startY: finalY + 4,
+      head: [headers],
+      body: rows,
+      theme: 'striped',
+      headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontSize: 8 },
+      bodyStyles: { fontSize: 8 },
+    });
+
+    doc.save(`intelliroads_performance_report_${timeWindow}m.pdf`);
+  };
+
   if (loading && !perfData) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
@@ -146,6 +225,15 @@ export default function ReportsPage() {
           >
             <Download size={14} />
             Export CSV
+          </button>
+
+          <button
+            onClick={handleExportPDF}
+            disabled={chartData.length === 0}
+            className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-white/10 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all duration-200 shadow-card"
+          >
+            <FileType size={14} className="text-red-400" />
+            Export PDF
           </button>
         </div>
       </div>

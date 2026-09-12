@@ -92,6 +92,7 @@ CREATE INDEX IF NOT EXISTS idx_signal_decisions_junction_id ON signal_decisions(
 
 CREATE TABLE IF NOT EXISTS congestion_events (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id TEXT,
     sim_time REAL NOT NULL,
     intersection_id TEXT NOT NULL,
     direction TEXT,
@@ -104,6 +105,7 @@ CREATE TABLE IF NOT EXISTS congestion_events (
 CREATE INDEX IF NOT EXISTS idx_congestion_events_timestamp ON congestion_events(timestamp);
 CREATE INDEX IF NOT EXISTS idx_congestion_events_sim_time ON congestion_events(sim_time);
 CREATE INDEX IF NOT EXISTS idx_congestion_events_intersection_id ON congestion_events(intersection_id);
+CREATE INDEX IF NOT EXISTS idx_congestion_events_event_id ON congestion_events(event_id);
 
 CREATE TABLE IF NOT EXISTS occupancy_readings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -272,6 +274,27 @@ class Database:
         self._conn = await aiosqlite.connect(str(self.db_path))
         await self._conn.execute("PRAGMA journal_mode=WAL;")
         await self._conn.executescript(_SCHEMA)
+        try:
+            await self._conn.execute("ALTER TABLE congestion_events ADD COLUMN event_id TEXT;")
+        except Exception:
+            pass  # Column already exists
+
+        try:
+            # Deduplicate any existing double-logged congestion_events
+            await self._conn.execute(
+                "UPDATE congestion_events SET status = 'CLEAR', resolved_at = "
+                "(SELECT c2.resolved_at FROM congestion_events c2 WHERE c2.event_id = congestion_events.event_id AND c2.status = 'CLEAR' AND c2.resolved_at IS NOT NULL LIMIT 1) "
+                "WHERE status = 'CONGESTED' AND event_id IN (SELECT event_id FROM congestion_events WHERE status = 'CLEAR')"
+            )
+            await self._conn.execute(
+                "DELETE FROM congestion_events WHERE id IN ("
+                "  SELECT c1.id FROM congestion_events c1 JOIN congestion_events c2 "
+                "  ON c1.event_id = c2.event_id AND c1.status = 'CLEAR' AND c2.status = 'CONGESTED' AND c2.resolved_at IS NOT NULL"
+                ")"
+            )
+        except Exception as exc:
+            logger.warning(f"Congestion deduplication migration notice: {exc}")
+
         await self._conn.commit()
         logger.info(f"SQLite database connected at {self.db_path}")
 

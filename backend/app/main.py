@@ -305,6 +305,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     app.state.ws_manager = ws_manager
     app.state.db_logger = db_logger
     app.state.dqn_controller = dqn_controller
+    app.state.congestion_detector = congestion_detector
 
     # Start simulation loop in the background
     sim_loop_task = asyncio.create_task(

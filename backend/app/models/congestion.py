@@ -21,6 +21,9 @@ class CongestionStatus(str, Enum):
 class CongestionEvent(BaseModel):
     """A congestion event recorded for a specific intersection / lane."""
 
+    id: Optional[str] = Field(
+        default=None, description="Unique identifier for the congestion event"
+    )
     intersection_id: str = Field(
         ..., description="Identifier of the affected intersection or lane"
     )
@@ -47,6 +50,12 @@ class CongestionEvent(BaseModel):
     model_config = {"use_enum_values": True}
 
 
+class ResolveEventRequest(BaseModel):
+    """Payload to resolve an active congestion event manually."""
+
+    event_id: str = Field(..., description="Unique event id or intersection_id to resolve")
+
+
 class CongestionResponse(BaseModel):
     """Aggregated congestion status for all monitored intersections."""
 
@@ -60,3 +69,4 @@ class CongestionResponse(BaseModel):
         default_factory=time.time,
         description="Unix timestamp of this response",
     )
+

@@ -8,6 +8,7 @@ an internal event log so resolutions can be tracked.
 from __future__ import annotations
 
 import time
+import uuid
 from typing import Dict, List, Optional
 
 from app.models.congestion import CongestionEvent, CongestionResponse, CongestionStatus
@@ -133,8 +134,10 @@ class CongestionDetector:
 
         if is_over_threshold:
             if intersection_id not in self._active_events:
-                # New congestion event
+                # New congestion event with unique ID
+                event_id = f"evt_{intersection_id}_{uuid.uuid4().hex[:8]}"
                 event = CongestionEvent(
+                    id=event_id,
                     intersection_id=intersection_id,
                     status=CongestionStatus.CONGESTED,
                     density_value=density,
@@ -145,7 +148,7 @@ class CongestionDetector:
                 )
                 self._active_events[intersection_id] = event
                 logger.warning(
-                    f"Congestion DETECTED at {intersection_id} "
+                    f"Congestion DETECTED at {intersection_id} [id={event_id}] "
                     f"(direction={direction or 'unknown'}): "
                     f"density={density:.1f} veh/km "
                     f"(threshold={self.CONGESTION_THRESHOLD})"
@@ -177,6 +180,7 @@ class CongestionDetector:
             else:
                 # No event – return a clean CLEAR record
                 return CongestionEvent(
+                    id=f"clr_{intersection_id}",
                     intersection_id=intersection_id,
                     status=CongestionStatus.CLEAR,
                     density_value=density,
@@ -185,6 +189,35 @@ class CongestionDetector:
                     resolved_at=None,
                     direction=direction,
                 )
+
+    def resolve_event(self, event_id_or_intersection_id: str) -> Optional[CongestionEvent]:
+        """
+        Manually resolve an active congestion event by event ID or intersection/lane ID.
+        """
+        target_key: Optional[str] = None
+
+        if event_id_or_intersection_id in self._active_events:
+            target_key = event_id_or_intersection_id
+        else:
+            for k, ev in self._active_events.items():
+                if ev.id == event_id_or_intersection_id:
+                    target_key = k
+                    break
+
+        if target_key is not None:
+            existing = self._active_events.pop(target_key)
+            now = time.time()
+            resolved_event = existing.model_copy(
+                update={
+                    "status": CongestionStatus.CLEAR,
+                    "resolved_at": now,
+                }
+            )
+            logger.info(
+                f"Congestion MANUALLY RESOLVED at {target_key} (id={existing.id})"
+            )
+            return resolved_event
+        return None
 
     def is_congested(self, lane_id: str) -> bool:
         """
@@ -209,3 +242,4 @@ class CongestionDetector:
         List[CongestionEvent]
         """
         return list(self._active_events.values())
+

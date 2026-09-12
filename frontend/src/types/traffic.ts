@@ -47,13 +47,22 @@ export interface DensityResponse {
 }
 
 export interface CongestionEvent {
+  id?: string;
   intersection_id: string;
   status: CongestionStatus;
   density_value: number;
   threshold: number;
-  timestamp: string;
-  resolved_at?: string;
+  timestamp: string | number;
+  resolved_at?: string | number;
   direction?: 'N' | 'S' | 'E' | 'W';
+}
+
+export interface CongestionHistoryParams {
+  start_time?: number;
+  end_time?: number;
+  status?: string;
+  intersection_id?: string;
+  limit?: number;
 }
 
 export interface CongestionResponse {
