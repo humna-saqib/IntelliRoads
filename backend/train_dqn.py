@@ -12,6 +12,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import os
 from pathlib import Path
 import sqlite3
 import sys
@@ -199,6 +200,12 @@ def main() -> None:
     # 1. Resolve SUMO config path & start TraCI session
     config_path = resolve_sumo_config_path()
     logger.info(f"Using SUMO config path: {config_path}")
+
+    # Default to headless sumo (not sumo-gui), which needs no display server -
+    # required for CI/Codespaces/most training machines. Respects an existing
+    # SUMO_USE_GUI env var for anyone running locally with a display who wants
+    # to watch training. (Same fix as backend/app/main.py - missed here originally.)
+    os.environ.setdefault("SUMO_USE_GUI", "false")
 
     session = TraCISession(config_path=config_path, step_length=1.0)
     try:
