@@ -200,6 +200,16 @@ class TraCISession:
 
         self._terminate_process()
 
+    def reload(self) -> None:
+        """Close and restart the session, re-reading the config/route files
+        from disk. Used between training/evaluation episodes when the route
+        file has been regenerated (see app.sumo_tools.route_generator) so
+        each episode runs against fresh, independently randomized traffic
+        demand rather than reusing the same SUMO process state.
+        """
+        self.close()
+        self.start()
+
     def is_connected(self) -> bool:
         """Return ``True`` if the session is active (including mock mode)."""
         return self._connected

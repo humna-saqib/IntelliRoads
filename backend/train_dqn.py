@@ -122,6 +122,9 @@ _BASE_DIR = Path(__file__).resolve().parent
 RESULTS_DIR = _BASE_DIR / "training_results"
 CHECKPOINTS_DIR = _BASE_DIR / "final_dqn_model"
 GRAPHS_DIR = _BASE_DIR / "training_graphs"
+ROUTE_FILE_PATH = _BASE_DIR / "sumo" / "routes" / "intelliroads.rou.xml"
+
+from app.sumo_tools.route_generator import generate_routefile  # noqa: E402
 
 
 def _make_output_dirs() -> None:
@@ -167,6 +170,16 @@ def main() -> None:
     parser.add_argument("--epsilon-decay", type=int, default=None, help="Epsilon decay duration in epochs (defaults to 25%% of total epochs)")
     parser.add_argument("--checkpoint-every", type=int, default=50, help="Save periodic checkpoint every N epochs")
     parser.add_argument("--resume", type=str, default=None, help="Path to checkpoint to resume from")
+    parser.add_argument(
+        "--no-randomize-traffic", action="store_true",
+        help="Disable per-epoch randomized traffic demand and reuse the static route file "
+             "(legacy behavior - not recommended, produces a model overfit to one traffic pattern)",
+    )
+    parser.add_argument(
+        "--traffic-seed-offset", type=int, default=0,
+        help="Added to the epoch number to form each episode's route-generation seed. "
+             "Use a distinct offset for evaluation runs so eval traffic is never seen during training.",
+    )
 
     args = parser.parse_args()
     _make_output_dirs()
@@ -237,6 +250,13 @@ def main() -> None:
                 epsilon_end,
                 epsilon_start - (epsilon_start - epsilon_end) * (epoch / max(epsilon_decay, 1)),
             )
+
+            # Randomize this epoch's traffic demand so each episode is a genuinely
+            # independent trial instead of a replay of the same fixed scenario.
+            if not args.no_randomize_traffic and not session.mock_mode:
+                generate_routefile(seed=epoch + args.traffic_seed_offset, output_path=ROUTE_FILE_PATH)
+                session.reload()
+                env.reset()
 
             losses: List[float] = []
             q_values: List[float] = []
