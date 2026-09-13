@@ -54,6 +54,7 @@ from app.environment.sumo_environment import (
 from app.models.density import DensityLevel, DensityResponse, LaneDensity
 from app.services.signal_controller import SignalController
 from app.services.traci_session import SUMO_AVAILABLE, TraCISession
+from app.sumo_tools.route_generator import generate_routefile
 from app.utils.logger import get_logger
 
 if SUMO_AVAILABLE:
@@ -90,6 +91,13 @@ FIXED_YELLOW_DURATION: float = 5.0   # seconds per yellow phase (fixed-time)
 CHECKPOINT_PATH: Path = _BACKEND_DIR / "data" / "models" / "dqn_agent.pt"
 EVAL_RESULTS_DIR: Path = _BACKEND_DIR / "evaluation_results"
 SUMO_CONFIG_PATH: Path = _BACKEND_DIR / "sumo" / "config" / "intelliroads.sumocfg"
+ROUTE_FILE_PATH: Path = _BACKEND_DIR / "sumo" / "routes" / "intelliroads.rou.xml"
+
+# Large offset keeps evaluation seeds disjoint from training epoch seeds
+# (train_dqn.py defaults to seeds 1..epochs, i.e. small integers), so
+# evaluation never accidentally replays a traffic pattern the model was
+# trained on.
+EVAL_SEED_OFFSET = 1_000_000
 
 CONTROLLER_NAMES = ["fixed_time", "rule_based", "dqn"]
 CONTROLLER_LABELS = {
@@ -583,6 +591,11 @@ def main() -> None:
         for ep_idx in range(1, N_EPISODES + 1):
             ep_counter += 1
             t0 = time.time()
+
+            # Fresh, held-out randomized traffic demand for this episode -
+            # without this, all N_EPISODES replay the same static scenario
+            # and every metric comes out identical (std = 0.0).
+            generate_routefile(seed=EVAL_SEED_OFFSET + ep_counter, output_path=ROUTE_FILE_PATH)
 
             session = make_session()
             try:
