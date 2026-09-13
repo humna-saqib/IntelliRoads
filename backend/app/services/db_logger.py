@@ -15,7 +15,7 @@ import time
 from typing import Dict, List, Optional, Tuple
 
 from app.core.database import Database
-from app.models.congestion import CongestionResponse
+from app.models.congestion import CongestionEvent, CongestionResponse
 from app.models.density import DensityResponse
 from app.models.emergency import EmergencyEvent, PriorityOverrideEvent
 from app.models.occupancy import OccupancyResponse
@@ -443,6 +443,71 @@ class DBLogger:
             )
             self._last_signal_duration[junction_id] = new_duration
 
+    async def get_congestion_history(
+        self,
+        start_time: Optional[float] = None,
+        end_time: Optional[float] = None,
+        status: Optional[str] = None,
+        intersection_id: Optional[str] = None,
+        limit: int = 100,
+    ) -> List[CongestionEvent]:
+        """
+        Query historical congestion events from SQLite with optional filtering.
+        """
+        query = (
+            "SELECT event_id, intersection_id, direction, status, density_value, "
+            "threshold, timestamp, resolved_at FROM congestion_events WHERE 1=1"
+        )
+        params: List[object] = []
+        if start_time is not None:
+            query += " AND timestamp >= ?"
+            params.append(start_time)
+        if end_time is not None:
+            query += " AND timestamp <= ?"
+            params.append(end_time)
+        if status and status.upper() != "ALL":
+            st = status.upper()
+            if st in ("ACTIVE", "CONGESTED"):
+                query += " AND status = 'CONGESTED' AND resolved_at IS NULL"
+            elif st in ("RESOLVED", "CLEAR"):
+                query += " AND (status = 'CLEAR' OR resolved_at IS NOT NULL)"
+            else:
+                query += " AND status = ?"
+                params.append(st)
+        if intersection_id and intersection_id.strip():
+            target = intersection_id.strip()
+            query += " AND (intersection_id = ? OR intersection_id LIKE ?)"
+            params.append(target)
+            params.append(f"%{target}%")
+
+        query += " ORDER BY timestamp DESC LIMIT ?"
+        params.append(limit)
+
+        cursor = await self._db.connection.execute(query, tuple(params))
+        rows = await cursor.fetchall()
+        return [
+            CongestionEvent(
+                id=r[0] or f"evt_{r[1]}_{int(r[6])}",
+                intersection_id=r[1],
+                direction=r[2],
+                status=r[3],
+                density_value=r[4],
+                threshold=r[5],
+                timestamp=r[6],
+                resolved_at=r[7],
+            )
+            for r in rows
+        ]
+
+    async def mark_event_resolved(self, event_id: str) -> None:
+        """Mark a specific congestion event as resolved in SQLite DB."""
+        now = time.time()
+        await self._db.connection.execute(
+            "UPDATE congestion_events SET status = 'CLEAR', resolved_at = ? WHERE (event_id = ? OR intersection_id = ?) AND resolved_at IS NULL",
+            (now, event_id, event_id),
+        )
+        await self._db.connection.commit()
+
     async def _log_congestion_events(
         self, sim_time: float, congestion_response: CongestionResponse, ts: float
     ) -> None:
@@ -453,18 +518,39 @@ class DBLogger:
             if previous_status == status:
                 continue  # No transition – skip logging this tick.
 
-            if previous_status is not None or status == "CONGESTED":
-                # Log CLEAR->CONGESTED (start) and CONGESTED->CLEAR (resolved),
-                # but not the very first CLEAR baseline reading (no event yet).
+            if status == "CONGESTED":
+                # Start of a congestion event: INSERT a single row
                 await self._db.connection.execute(
                     "INSERT INTO congestion_events "
-                    "(sim_time, intersection_id, direction, status, density_value, "
+                    "(event_id, sim_time, intersection_id, direction, status, density_value, "
                     " threshold, timestamp, resolved_at) "
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     (
-                        sim_time, event.intersection_id, event.direction, status,
-                        event.density_value, event.threshold, ts, event.resolved_at,
+                        event.id, sim_time, event.intersection_id, event.direction, "CONGESTED",
+                        event.density_value, event.threshold, ts, None,
                     ),
                 )
+            elif status == "CLEAR" and previous_status == "CONGESTED":
+                # Resolution of a congestion event: UPDATE the existing row
+                resolved_time = event.resolved_at or ts
+                if event.id:
+                    cursor = await self._db.connection.execute(
+                        "UPDATE congestion_events SET status = 'CLEAR', resolved_at = ? WHERE event_id = ?",
+                        (resolved_time, event.id),
+                    )
+                    if cursor.rowcount == 0:
+                        await self._db.connection.execute(
+                            "UPDATE congestion_events SET status = 'CLEAR', resolved_at = ? "
+                            "WHERE id = (SELECT id FROM congestion_events WHERE intersection_id = ? AND resolved_at IS NULL ORDER BY timestamp DESC LIMIT 1)",
+                            (resolved_time, event.intersection_id),
+                        )
+                else:
+                    await self._db.connection.execute(
+                        "UPDATE congestion_events SET status = 'CLEAR', resolved_at = ? "
+                        "WHERE id = (SELECT id FROM congestion_events WHERE intersection_id = ? AND resolved_at IS NULL ORDER BY timestamp DESC LIMIT 1)",
+                        (resolved_time, event.intersection_id),
+                    )
 
             self._last_congestion_status[event.intersection_id] = status
+
+
