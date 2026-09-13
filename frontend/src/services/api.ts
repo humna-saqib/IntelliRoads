@@ -3,6 +3,8 @@ import type {
   ClassificationData,
   DensityResponse,
   CongestionResponse,
+  CongestionEvent,
+  CongestionHistoryParams,
   SignalResponse,
   KPIData,
   IntersectionData,
@@ -50,6 +52,23 @@ export async function fetchDensity(): Promise<DensityResponse> {
 
 export async function fetchCongestion(): Promise<CongestionResponse> {
   return apiFetch<CongestionResponse>('/congestion');
+}
+
+export async function resolveCongestionAlert(eventId: string): Promise<CongestionEvent> {
+  return apiPost<CongestionEvent>('/congestion/resolve', { event_id: eventId });
+}
+
+export async function fetchCongestionHistory(params: CongestionHistoryParams = {}): Promise<CongestionEvent[]> {
+  const searchParams = new URLSearchParams();
+  if (params.start_time) searchParams.append('start_time', params.start_time.toString());
+  if (params.end_time) searchParams.append('end_time', params.end_time.toString());
+  if (params.status) searchParams.append('status', params.status);
+  if (params.intersection_id) searchParams.append('intersection_id', params.intersection_id);
+  if (params.limit) searchParams.append('limit', params.limit.toString());
+
+  const queryString = searchParams.toString();
+  const path = `/congestion/history${queryString ? `?${queryString}` : ''}`;
+  return apiFetch<CongestionEvent[]>(path);
 }
 
 export async function fetchSignals(): Promise<SignalResponse> {
