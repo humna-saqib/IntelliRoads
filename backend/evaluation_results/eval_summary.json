@@ -1,0 +1,60 @@
+{
+  "generated_at": "2026-09-14T19:08:08",
+  "n_episodes": 30,
+  "n_steps_per_ep": 200,
+  "dqn_checkpoint": "dqn_agent.pt",
+  "sumo_config": "intelliroads.sumocfg",
+  "controllers": [
+    {
+      "controller": "Fixed-Time",
+      "avg_waiting_time_mean": 4.3172,
+      "avg_waiting_time_std": 0.1709,
+      "avg_travel_time_mean": 15.6123,
+      "avg_travel_time_std": 0.2222,
+      "avg_queue_length_mean": 10.6722,
+      "avg_queue_length_std": 0.1594,
+      "avg_occupancy_mean": 34.1637,
+      "avg_occupancy_std": 0.5259,
+      "throughput_mean": 541.1333,
+      "throughput_std": 9.1113,
+      "episode_reward_mean": -3011.148,
+      "episode_reward_std": 82.4508,
+      "episode_length_mean": 200,
+      "episode_length_std": 0.0
+    },
+    {
+      "controller": "Rule-Based",
+      "avg_waiting_time_mean": 5.5023,
+      "avg_waiting_time_std": 0.1501,
+      "avg_travel_time_mean": 17.153,
+      "avg_travel_time_std": 0.1951,
+      "avg_queue_length_mean": 10.1472,
+      "avg_queue_length_std": 0.2113,
+      "avg_occupancy_mean": 31.5524,
+      "avg_occupancy_std": 0.6846,
+      "throughput_mean": 543.5333,
+      "throughput_std": 9.2615,
+      "episode_reward_mean": -3023.8421,
+      "episode_reward_std": 109.2092,
+      "episode_length_mean": 200,
+      "episode_length_std": 0.0
+    },
+    {
+      "controller": "Trained DQN",
+      "avg_waiting_time_mean": 3.6283,
+      "avg_waiting_time_std": 0.1051,
+      "avg_travel_time_mean": 14.7168,
+      "avg_travel_time_std": 0.1366,
+      "avg_queue_length_mean": 9.9386,
+      "avg_queue_length_std": 0.2123,
+      "avg_occupancy_mean": 33.6521,
+      "avg_occupancy_std": 0.5321,
+      "throughput_mean": 546.2667,
+      "throughput_std": 9.0627,
+      "episode_reward_mean": 2502.6833,
+      "episode_reward_std": 219.6567,
+      "episode_length_mean": 200,
+      "episode_length_std": 0.0
+    }
+  ]
+}
