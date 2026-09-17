@@ -23,7 +23,9 @@ import { TrafficWebSocket } from '../services/websocket';
 
 function getWebSocketUrl(path: string): string {
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  return `${protocol}//${window.location.host}${path}`;
+  const token = localStorage.getItem('intelliroads_token');
+  const tokenQuery = token ? `?token=${encodeURIComponent(token)}` : '';
+  return `${protocol}//${window.location.host}${path}${tokenQuery}`;
 }
 
 export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';

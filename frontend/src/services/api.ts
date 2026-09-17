@@ -16,11 +16,29 @@ import type {
 
 const BASE_URL = '/api';
 
+function getAuthHeaders(): Record<string, string> {
+  const token = localStorage.getItem('intelliroads_token');
+  const headers: Record<string, string> = { 'Accept': 'application/json' };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
+function handleAuthError(response: Response) {
+  if (response.status === 401) {
+    localStorage.removeItem('intelliroads_token');
+    window.dispatchEvent(new Event('intelliroads:unauthorized'));
+  }
+}
+
+
 async function apiFetch<T>(path: string): Promise<T> {
   const response = await fetch(`${BASE_URL}${path}`, {
-    headers: { 'Accept': 'application/json' },
+    headers: getAuthHeaders(),
   });
   if (!response.ok) {
+    handleAuthError(response);
     throw new Error(`API error ${response.status}: ${response.statusText} at ${path}`);
   }
   return response.json() as Promise<T>;
@@ -29,10 +47,11 @@ async function apiFetch<T>(path: string): Promise<T> {
 async function apiPost<T>(path: string, body: unknown): Promise<T> {
   const response = await fetch(`${BASE_URL}${path}`, {
     method: 'POST',
-    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
   if (!response.ok) {
+    handleAuthError(response);
     throw new Error(`API error ${response.status}: ${response.statusText} at ${path}`);
   }
   return response.json() as Promise<T>;
@@ -41,13 +60,28 @@ async function apiPost<T>(path: string, body: unknown): Promise<T> {
 async function apiPut<T>(path: string, body: unknown): Promise<T> {
   const response = await fetch(`${BASE_URL}${path}`, {
     method: 'PUT',
-    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
   if (!response.ok) {
+    handleAuthError(response);
     throw new Error(`API error ${response.status}: ${response.statusText} at ${path}`);
   }
   return response.json() as Promise<T>;
+}
+
+
+export async function loginApi(username: string, password: string): Promise<{ access_token: string; token_type: string }> {
+  const response = await fetch(`${BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ detail: 'Login failed' }));
+    throw new Error(errorData.detail || `Login error ${response.status}`);
+  }
+  return response.json();
 }
 
 export async function fetchVehicles(): Promise<VehicleListResponse> {

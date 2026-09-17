@@ -40,6 +40,7 @@ from app.models.emergency import EmergencyResponse
 from app.models.signal import SignalResponse
 from app.websocket.manager import WebSocketManager, websocket_endpoint
 from app.utils.logger import get_logger
+from app.core.security import verify_ws_token
 
 logger = get_logger(__name__)
 
@@ -354,9 +355,20 @@ app = FastAPI(
 )
 
 # Enable CORS for frontend dashboard communication
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
+if allowed_origins_env:
+    allowed_origins = [o.strip() for o in allowed_origins_env.split(",") if o.strip()]
+else:
+    allowed_origins = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -385,7 +397,10 @@ def read_health():
 
 # WebSocket live update stream endpoint
 @app.websocket("/ws/live")
-async def ws_live(websocket: WebSocket):
+async def ws_live(websocket: WebSocket, token: str | None = None):
+    if not verify_ws_token(token):
+        await websocket.close(code=1008)
+        return
     await websocket_endpoint(websocket, ws_manager, state_store)
 
 
