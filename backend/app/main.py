@@ -22,6 +22,7 @@ from app.core.database import Database
 from app.core.state_store import InMemoryStateStore
 from app.services.traci_session import TraCISession
 from app.services.vehicle_data_service import VehicleDataService
+from app.core.threshold_config import threshold_config_service
 from app.services.density_calculator import DensityCalculator
 from app.services.congestion_detector import CongestionDetector
 from app.services.signal_controller import SignalController
@@ -269,8 +270,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         session._connected = True
 
     data_service = VehicleDataService(session)
-    density_calculator = DensityCalculator()
-    congestion_detector = CongestionDetector()
+    density_calculator = DensityCalculator(threshold_config=threshold_config_service)
+    congestion_detector = CongestionDetector(threshold_config=threshold_config_service)
     signal_controller = SignalController(session)
     kpi_service = KPIService()
     emergency_detector = EmergencyVehicleDetector()
