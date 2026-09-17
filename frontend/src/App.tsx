@@ -8,6 +8,7 @@ import MapPage from './pages/MapPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import ReportsPage from './pages/ReportsPage';
 import AlertHistoryPage from './pages/AlertHistoryPage';
+import SettingsPage from './pages/SettingsPage';
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -37,6 +38,7 @@ export default function App() {
                   <Route path="/analytics" element={<AnalyticsPage />} />
                   <Route path="/alerts" element={<AlertHistoryPage />} />
                   <Route path="/reports" element={<ReportsPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
                 </Routes>
               </div>
             </main>

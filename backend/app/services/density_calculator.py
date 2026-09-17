@@ -10,6 +10,7 @@ from __future__ import annotations
 import time
 from typing import Dict, List, Optional
 
+from app.core.threshold_config import ThresholdConfigService
 from app.models.density import DensityLevel, DensityResponse, LaneDensity
 from app.models.vehicle import VehicleData
 from app.services.lane_count_service import LaneCountService
@@ -68,10 +69,18 @@ class DensityCalculator:
     MEDIUM_THRESHOLD: float = 40.0
 
     def __init__(
-        self, lane_lengths: Optional[Dict[str, float]] = None
+        self,
+        lane_lengths: Optional[Dict[str, float]] = None,
+        threshold_config: Optional[ThresholdConfigService] = None,
     ) -> None:
         if lane_lengths:
             self.LANE_LENGTHS = {**self.LANE_LENGTHS, **lane_lengths}
+
+        # Optional per-junction threshold overrides (Settings feature). If
+        # not supplied, falls back to the class-level LOW_THRESHOLD/
+        # MEDIUM_THRESHOLD constants for every lane, i.e. unchanged
+        # behavior from before this was configurable.
+        self._threshold_config = threshold_config
 
         self._lane_count_service = LaneCountService()
         logger.info(
@@ -99,7 +108,7 @@ class DensityCalculator:
         """
         length_km = self.LANE_LENGTHS.get(lane_id, _DEFAULT_LANE_LENGTH_KM)
         density = vehicle_count / length_km if length_km > 0 else 0.0
-        level = self.get_density_level(density)
+        level = self.get_density_level(density, lane_id=lane_id)
 
         return LaneDensity(
             lane_id=lane_id,
@@ -148,7 +157,7 @@ class DensityCalculator:
             timestamp=time.time(),
         )
 
-    def get_density_level(self, density: float) -> DensityLevel:
+    def get_density_level(self, density: float, lane_id: Optional[str] = None) -> DensityLevel:
         """
         Map a numeric density to a qualitative :class:`DensityLevel`.
 
@@ -156,14 +165,23 @@ class DensityCalculator:
         ----------
         density : float
             Vehicles per kilometre.
+        lane_id : Optional[str]
+            If given and a threshold_config service was supplied at
+            construction, uses that lane's junction-specific thresholds
+            instead of the global LOW_THRESHOLD/MEDIUM_THRESHOLD constants.
 
         Returns
         -------
         DensityLevel
         """
-        if density < self.LOW_THRESHOLD:
+        low, medium = self.LOW_THRESHOLD, self.MEDIUM_THRESHOLD
+        if lane_id is not None and self._threshold_config is not None:
+            t = self._threshold_config.get_for_lane(lane_id)
+            low, medium = t.low_threshold, t.medium_threshold
+
+        if density < low:
             return DensityLevel.LOW
-        if density < self.MEDIUM_THRESHOLD:
+        if density < medium:
             return DensityLevel.MEDIUM
         return DensityLevel.HIGH
 

@@ -11,6 +11,7 @@ import time
 import uuid
 from typing import Dict, List, Optional
 
+from app.core.threshold_config import ThresholdConfigService
 from app.models.congestion import CongestionEvent, CongestionResponse, CongestionStatus
 from app.models.density import DensityResponse
 from app.utils.logger import get_logger
@@ -62,12 +63,21 @@ class CongestionDetector:
 
     CONGESTION_THRESHOLD: float = 40.0
 
-    def __init__(self) -> None:
+    def __init__(self, threshold_config: Optional[ThresholdConfigService] = None) -> None:
         self._active_events: Dict[str, CongestionEvent] = {}
+        # Optional per-junction threshold overrides (Settings feature).
+        # Falls back to CONGESTION_THRESHOLD for every lane if not supplied,
+        # i.e. unchanged behavior from before this was configurable.
+        self._threshold_config = threshold_config
         logger.info(
             f"CongestionDetector initialised "
             f"(threshold={self.CONGESTION_THRESHOLD} veh/km)."
         )
+
+    def _threshold_for(self, lane_id: str) -> float:
+        if self._threshold_config is not None:
+            return self._threshold_config.get_for_lane(lane_id).congestion_threshold
+        return self.CONGESTION_THRESHOLD
 
     # ------------------------------------------------------------------
     # Public API
@@ -129,7 +139,8 @@ class CongestionDetector:
         CongestionEvent
         """
         now = time.time()
-        is_over_threshold = density > self.CONGESTION_THRESHOLD
+        threshold = self._threshold_for(intersection_id)
+        is_over_threshold = density > threshold
         direction = _LANE_DIRECTION.get(intersection_id)
 
         if is_over_threshold:
@@ -141,7 +152,7 @@ class CongestionDetector:
                     intersection_id=intersection_id,
                     status=CongestionStatus.CONGESTED,
                     density_value=density,
-                    threshold=self.CONGESTION_THRESHOLD,
+                    threshold=threshold,
                     timestamp=now,
                     resolved_at=None,
                     direction=direction,
@@ -151,7 +162,7 @@ class CongestionDetector:
                     f"Congestion DETECTED at {intersection_id} [id={event_id}] "
                     f"(direction={direction or 'unknown'}): "
                     f"density={density:.1f} veh/km "
-                    f"(threshold={self.CONGESTION_THRESHOLD})"
+                    f"(threshold={threshold})"
                 )
             else:
                 # Update density on existing event
@@ -184,7 +195,7 @@ class CongestionDetector:
                     intersection_id=intersection_id,
                     status=CongestionStatus.CLEAR,
                     density_value=density,
-                    threshold=self.CONGESTION_THRESHOLD,
+                    threshold=threshold,
                     timestamp=now,
                     resolved_at=None,
                     direction=direction,

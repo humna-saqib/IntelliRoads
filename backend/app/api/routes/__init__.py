@@ -15,6 +15,7 @@ from app.api.routes.emergency import router as emergency_router
 from app.api.routes.occupancy import router as occupancy_router
 from app.api.routes.performance import router as performance_router
 from app.api.routes.rl import router as rl_router
+from app.api.routes.settings import router as settings_router
 
 api_router = APIRouter(prefix="/api")
 
@@ -29,3 +30,4 @@ api_router.include_router(emergency_router)
 api_router.include_router(occupancy_router)
 api_router.include_router(performance_router)
 api_router.include_router(rl_router)
+api_router.include_router(settings_router)

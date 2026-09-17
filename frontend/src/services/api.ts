@@ -38,6 +38,18 @@ async function apiPost<T>(path: string, body: unknown): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+async function apiPut<T>(path: string, body: unknown): Promise<T> {
+  const response = await fetch(`${BASE_URL}${path}`, {
+    method: 'PUT',
+    headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    throw new Error(`API error ${response.status}: ${response.statusText} at ${path}`);
+  }
+  return response.json() as Promise<T>;
+}
+
 export async function fetchVehicles(): Promise<VehicleListResponse> {
   return apiFetch<VehicleListResponse>('/vehicles');
 }
@@ -103,6 +115,23 @@ export async function fetchControllerMode(): Promise<{ mode: ControllerMode }> {
 
 export async function setControllerMode(mode: ControllerMode): Promise<{ status: string; mode: ControllerMode }> {
   return apiPost<{ status: string; mode: ControllerMode }>('/rl/mode', { mode });
+}
+
+export interface JunctionThresholds {
+  low_threshold: number;
+  medium_threshold: number;
+  congestion_threshold: number;
+}
+
+export async function fetchAllThresholds(): Promise<Record<string, JunctionThresholds>> {
+  return apiFetch<Record<string, JunctionThresholds>>('/settings/thresholds');
+}
+
+export async function updateJunctionThresholds(
+  junctionId: string,
+  thresholds: JunctionThresholds,
+): Promise<JunctionThresholds> {
+  return apiPut<JunctionThresholds>(`/settings/thresholds/${junctionId}`, thresholds);
 }
 
 export async function fetchAllData(): Promise<Omit<TrafficSnapshot, 'vehicles' | 'timestamp'> & { vehicles: VehicleListResponse; timestamp: number }> {
