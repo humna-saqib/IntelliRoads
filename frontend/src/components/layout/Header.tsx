@@ -1,5 +1,5 @@
 import { useLocation } from 'react-router-dom';
-import { Clock, Wifi, WifiOff, RefreshCw, Menu } from 'lucide-react';
+import { Clock, Wifi, WifiOff, RefreshCw, Menu, LogOut } from 'lucide-react';
 import { useTraffic } from '../../context/TrafficContext';
 import clsx from 'clsx';
 
@@ -28,9 +28,10 @@ function formatLastUpdated(ts: number | null): string {
 
 interface HeaderProps {
   onMenuClick: () => void;
+  onLogout?: () => void;
 }
 
-export default function Header({ onMenuClick }: HeaderProps) {
+export default function Header({ onMenuClick, onLogout }: HeaderProps) {
   const location   = useLocation();
   const { kpis, isConnected, lastUpdate, connectionStatus, isLoading } = useTraffic();
   const title = PAGE_TITLES[location.pathname] ?? 'IntelliRoads';
@@ -99,6 +100,17 @@ export default function Header({ onMenuClick }: HeaderProps) {
               : 'Offline'}
           </span>
         </div>
+        {/* Logout Button */}
+        {onLogout && (
+          <button
+            onClick={onLogout}
+            title="Log Out"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 transition-colors text-xs font-medium"
+          >
+            <LogOut size={13} />
+            <span className="hidden sm:inline">Logout</span>
+          </button>
+        )}
       </div>
     </header>
   );

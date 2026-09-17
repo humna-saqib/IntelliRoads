@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { TrafficProvider } from './context/TrafficContext';
 import Sidebar from './components/layout/Sidebar';
@@ -9,9 +9,28 @@ import AnalyticsPage from './pages/AnalyticsPage';
 import ReportsPage from './pages/ReportsPage';
 import AlertHistoryPage from './pages/AlertHistoryPage';
 import SettingsPage from './pages/SettingsPage';
+import LoginPage from './pages/LoginPage';
 
 export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('intelliroads_token'));
+
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      setToken(null);
+    };
+    window.addEventListener('intelliroads:unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('intelliroads:unauthorized', handleUnauthorized);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('intelliroads_token');
+    setToken(null);
+  };
+
+  if (!token) {
+    return <LoginPage onLoginSuccess={(newToken) => setToken(newToken)} />;
+  }
 
   return (
     <TrafficProvider>
@@ -23,7 +42,7 @@ export default function App() {
           {/* Main Panel */}
           <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
             {/* Header / Control Bar */}
-            <Header onMenuClick={() => setSidebarOpen(true)} />
+            <Header onMenuClick={() => setSidebarOpen(true)} onLogout={handleLogout} />
 
             {/* Scrollable Page Body */}
             <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#08080a] relative">
