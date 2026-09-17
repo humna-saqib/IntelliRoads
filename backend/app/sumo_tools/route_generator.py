@@ -164,3 +164,77 @@ def generate_routefile(
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def generate_emergency_validation_routefile(
+    output_path: Path,
+    ambulance_depart: float = 5.0,
+    duration: int = 400,
+) -> None:
+    """Write a route file for validating emergency-priority override behavior.
+
+    Unlike generate_routefile(), this is deterministic, not seeded: it always
+    places a single ambulance on route_top_east (through junctionA) departing
+    at ``ambulance_depart`` seconds, guaranteed - not left to the sparse random
+    EMERGENCY_FLOWS periods (~240-280s), which could easily miss a short
+    validation run's simulated window entirely.
+
+    Background traffic uses plain fixed periods (e.g. period="45"), NOT the
+    period="exp(X)" form used elsewhere in this module. That was a deliberate
+    choice after discovering exp(X) is interpreted by this SUMO version as a
+    Poisson arrival RATE of X vehicles/second, not a mean gap of X seconds as
+    the naming suggests - period="exp(15)" produces ~15 veh/s (confirmed via
+    a minimal isolated test: 8,964 vehicles loaded from one such flow over
+    600s, vs. the ~40 a "mean gap of 15s" reading would predict). That misread
+    is present in the original route file this module was modeled on, and
+    caused total insertion gridlock in this validation scenario - the
+    ambulance was never able to insert at all with the original assumption
+    of a "light" 1.5x-6x jitter on those periods. Using plain fixed periods
+    here sidesteps that entirely for this validation scenario; it does not
+    change generate_routefile() or the already-completed training/evaluation
+    runs, which is a separate, larger decision flagged elsewhere.
+
+    Args:
+        output_path: Path to write the .rou.xml to (overwrites in place).
+        ambulance_depart: Simulation second at which the single validation
+            ambulance departs on route_top_east.
+        duration: Simulation duration in seconds for background flows.
+    """
+    # Deliberately sparse, deterministic periods (one vehicle every N
+    # seconds, N large) - just enough background presence to be a
+    # realistic scenario without risking insertion gridlock blocking
+    # the ambulance, which is the actual subject under test here.
+    background_period = 45.0
+
+    lines: list[str] = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<routes xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
+        'xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/routes_file.xsd">',
+        "    <!-- Vehicle Types (No Trucks) -->",
+        VTYPES_XML,
+        "",
+        "    <!-- 8 Straight Routes Across the Grid -->",
+        ROUTES_XML,
+        "",
+        f"    <!-- EV priority validation scenario: sparse fixed-period background "
+        f"traffic (period={background_period}s, deterministic - see docstring for "
+        f"why not exp()), one guaranteed ambulance departing at "
+        f"t={ambulance_depart}s on route_top_east (junctionA) -->",
+    ]
+
+    for flow in BASE_FLOWS:
+        lines.append(
+            f'    <flow id="{flow.flow_id}" begin="0" end="{duration}" '
+            f'period="{background_period}" route="{flow.route}" type="{flow.vtype}"/>'
+        )
+
+    lines.append("")
+    lines.append(
+        f'    <vehicle id="validation_ambulance" type="ambulance" '
+        f'route="route_top_east" depart="{ambulance_depart}"/>'
+    )
+
+    lines.append("</routes>")
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
