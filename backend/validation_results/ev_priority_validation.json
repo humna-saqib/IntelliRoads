@@ -1,0 +1,1548 @@
+[
+  {
+    "controller": "Rule-Based",
+    "checks": {
+      "1_detection_occurred": true,
+      "2_override_activated_with_forced_green": true,
+      "3_vehicle_cleared_and_override_deactivated": true,
+      "4_normal_control_resumed_after": true
+    },
+    "all_passed": true,
+    "emergency_events": [
+      {
+        "sim_time": 5.0,
+        "event_type": "DETECTED",
+        "vehicle_id": "validation_ambulance",
+        "junction_id": "junctionA"
+      },
+      {
+        "sim_time": 57.0,
+        "event_type": "INTERSECTION_CHANGE",
+        "vehicle_id": "validation_ambulance",
+        "junction_id": null
+      },
+      {
+        "sim_time": 147.0,
+        "event_type": "CLEARED",
+        "vehicle_id": "validation_ambulance",
+        "junction_id": null
+      }
+    ],
+    "priority_events": [
+      {
+        "sim_time": 5.0,
+        "event_type": "ACTIVATED",
+        "junction_id": "junctionA",
+        "vehicle_id": "validation_ambulance"
+      },
+      {
+        "sim_time": 57.0,
+        "event_type": "DEACTIVATED",
+        "junction_id": "junctionA",
+        "vehicle_id": "validation_ambulance"
+      }
+    ],
+    "junctionA_timeline": [
+      {
+        "sim_time": 0.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 1.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 2.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 3.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 4.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 5.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 6.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 7.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 8.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 9.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 10.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 11.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 12.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 13.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 14.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 15.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 16.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 17.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 18.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 19.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 20.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 21.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 22.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 23.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 24.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 25.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 26.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 27.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 28.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 29.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 30.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 31.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 32.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 33.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 34.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 35.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 36.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 37.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 38.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 39.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 40.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 41.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 42.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 43.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 44.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 45.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 46.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 47.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 48.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 49.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 50.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 51.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 52.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 53.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 54.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 55.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 56.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 90.0,
+        "junctionA_priority_override": true
+      },
+      {
+        "sim_time": 57.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 58.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 59.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 60.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 61.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 62.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 63.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 64.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 65.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 66.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 67.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 68.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 69.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 70.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 71.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 72.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 73.0,
+        "junctionA_phase": "YELLOW",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 74.0,
+        "junctionA_phase": "YELLOW",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 75.0,
+        "junctionA_phase": "YELLOW",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 76.0,
+        "junctionA_phase": "YELLOW",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 77.0,
+        "junctionA_phase": "YELLOW",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 78.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 79.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 80.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 81.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 82.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 83.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 84.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 85.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 86.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 87.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 88.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 89.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 90.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 91.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 92.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 93.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 94.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 95.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 96.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 97.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 98.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 99.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 100.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 101.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 102.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 103.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 104.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 105.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 106.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 107.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 108.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 109.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 110.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 111.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 112.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 113.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 114.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 115.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 116.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 117.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 118.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 119.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 120.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 121.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 122.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 123.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 124.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 125.0,
+        "junctionA_phase": "YELLOW",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 126.0,
+        "junctionA_phase": "YELLOW",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 127.0,
+        "junctionA_phase": "YELLOW",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 128.0,
+        "junctionA_phase": "YELLOW",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 129.0,
+        "junctionA_phase": "YELLOW",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 130.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 131.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 132.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 133.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 134.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 135.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 136.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 137.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 138.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 139.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 140.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 141.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 142.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 143.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 144.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 145.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 146.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 147.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 148.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 149.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 150.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 151.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 152.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 153.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 154.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 155.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 156.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 157.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 158.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 159.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 160.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 161.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 162.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 163.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 164.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 165.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 166.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 167.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 168.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 169.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 170.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 171.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 172.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 173.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 174.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 175.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 176.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 177.0,
+        "junctionA_phase": "YELLOW",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 178.0,
+        "junctionA_phase": "YELLOW",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 179.0,
+        "junctionA_phase": "YELLOW",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 180.0,
+        "junctionA_phase": "YELLOW",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 181.0,
+        "junctionA_phase": "YELLOW",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 182.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 183.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 184.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 185.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 186.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 187.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 188.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 189.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 190.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 191.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 192.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 193.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 194.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 195.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 196.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 197.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 198.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 199.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 200.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 201.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 202.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 203.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 204.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 205.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 206.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 207.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 208.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 209.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 210.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 211.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 212.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 213.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 214.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 215.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 216.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 217.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 218.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 219.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 220.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 221.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 222.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 223.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 224.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 225.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 226.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 227.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 228.0,
+        "junctionA_phase": "GREEN",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 229.0,
+        "junctionA_phase": "YELLOW",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 230.0,
+        "junctionA_phase": "YELLOW",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 231.0,
+        "junctionA_phase": "YELLOW",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 232.0,
+        "junctionA_phase": "YELLOW",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 233.0,
+        "junctionA_phase": "YELLOW",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 234.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 235.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 236.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 237.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 238.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 239.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 240.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 241.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 242.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 243.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 244.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 245.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 246.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 247.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 248.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      },
+      {
+        "sim_time": 249.0,
+        "junctionA_phase": "RED",
+        "junctionA_duration": 20.0,
+        "junctionA_priority_override": false
+      }
+    ]
+  }
+]
