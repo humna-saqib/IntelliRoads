@@ -16,3 +16,8 @@ traci
 torch
 numpy
 matplotlib
+# Testing dependencies
+pytest
+pytest-cov
+httpx
+pytest-asyncio

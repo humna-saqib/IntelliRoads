@@ -168,3 +168,20 @@ All API routes are prefixed with `/api`.
 ## License
 
 See [LICENSE](LICENSE) for licensing details.
+
+
+## Running Backend Tests
+
+To run the backend test suite (unit tests + SUMO E2E smoke test):
+
+```bash
+cd backend
+pytest
+```
+
+To run tests with code coverage:
+
+```bash
+cd backend
+pytest --cov=app --cov-report=term-missing
+```
