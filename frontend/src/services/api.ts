@@ -2,15 +2,19 @@ import type {
   VehicleListResponse,
   ClassificationData,
   DensityResponse,
+  DensityReading,
+  DensityHistoryParams,
   CongestionResponse,
   CongestionEvent,
   CongestionHistoryParams,
+  PerformanceHistoryParams,
   SignalResponse,
   KPIData,
   IntersectionData,
   TrafficSnapshot,
   OccupancyResponse,
   PerformanceResponse,
+  PerformanceSnapshot,
   EmergencyResponse,
 } from '../types/traffic';
 
@@ -115,6 +119,30 @@ export async function fetchCongestionHistory(params: CongestionHistoryParams = {
   const queryString = searchParams.toString();
   const path = `/congestion/history${queryString ? `?${queryString}` : ''}`;
   return apiFetch<CongestionEvent[]>(path);
+}
+
+export async function fetchDensityHistory(params: DensityHistoryParams = {}): Promise<DensityReading[]> {
+  const searchParams = new URLSearchParams();
+  if (params.lane_id) searchParams.append('lane_id', params.lane_id);
+  if (params.start_time) searchParams.append('start_time', params.start_time.toString());
+  if (params.end_time) searchParams.append('end_time', params.end_time.toString());
+  if (params.level) searchParams.append('level', params.level);
+  if (params.limit) searchParams.append('limit', params.limit.toString());
+
+  const queryString = searchParams.toString();
+  const path = `/density/history${queryString ? `?${queryString}` : ''}`;
+  return apiFetch<DensityReading[]>(path);
+}
+
+export async function fetchPerformanceHistory(params: PerformanceHistoryParams = {}): Promise<PerformanceSnapshot[]> {
+  const searchParams = new URLSearchParams();
+  if (params.start_time) searchParams.append('start_time', params.start_time.toString());
+  if (params.end_time) searchParams.append('end_time', params.end_time.toString());
+  if (params.limit) searchParams.append('limit', params.limit.toString());
+
+  const queryString = searchParams.toString();
+  const path = `/performance/history${queryString ? `?${queryString}` : ''}`;
+  return apiFetch<PerformanceSnapshot[]>(path);
 }
 
 export async function fetchSignals(): Promise<SignalResponse> {

@@ -40,6 +40,26 @@ export interface LaneDensity {
   timestamp: number;
 }
 
+export interface DensityReading {
+  id?: number;
+  sim_time: number;
+  lane_id: string;
+  vehicle_count: number;
+  density: number;
+  level: DensityLevel;
+  queue_length: number;
+  avg_waiting_time: number;
+  timestamp: number;
+}
+
+export interface DensityHistoryParams {
+  lane_id?: string;
+  start_time?: number;
+  end_time?: number;
+  level?: string;
+  limit?: number;
+}
+
 export interface DensityResponse {
   lanes: LaneDensity[];
   average_density: number;
@@ -62,6 +82,12 @@ export interface CongestionHistoryParams {
   end_time?: number;
   status?: string;
   intersection_id?: string;
+  limit?: number;
+}
+
+export interface PerformanceHistoryParams {
+  start_time?: number;
+  end_time?: number;
   limit?: number;
 }
 

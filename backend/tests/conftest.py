@@ -11,8 +11,13 @@ sys.path.insert(0, os.path.abspath("backend"))
 from app.models.vehicle import VehicleData, VehicleType
 from app.services.traci_session import TraCISession
 from app.core.state_store import InMemoryStateStore
+from app.core.security import create_access_token
 from app.main import app
 from httpx import AsyncClient, ASGITransport
+
+@pytest.fixture
+def auth_token() -> str:
+    return create_access_token("admin")
 
 @pytest.fixture
 def mock_session() -> TraCISession:
@@ -95,7 +100,12 @@ def state_store() -> InMemoryStateStore:
     return store
 
 @pytest.fixture
-async def async_client(state_store) -> AsyncClient:
+async def async_client(state_store, auth_token) -> AsyncClient:
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://testserver") as client:
+    async with AsyncClient(
+        transport=transport,
+        base_url="http://testserver",
+        headers={"Authorization": f"Bearer {auth_token}"},
+    ) as client:
         yield client
+
