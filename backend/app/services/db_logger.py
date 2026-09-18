@@ -508,10 +508,17 @@ class DBLogger:
         limit: int = 100,
     ) -> List[DensityReading]:
         """
-        Query historical density readings from SQLite with optional filtering.
+        Query historical per-lane density readings from SQLite with optional filters.
 
-        Mirrors get_congestion_history() exactly: WHERE 1=1 + conditional
-        filter appending + ORDER BY timestamp DESC LIMIT ?.
+        Args:
+            lane_id: Optional lane ID string filter. Performs exact or partial (LIKE) match.
+            start_time: Optional minimum Unix timestamp filter (inclusive).
+            end_time: Optional maximum Unix timestamp filter (inclusive).
+            level: Optional density level string filter ("LOW", "MEDIUM", "HIGH", or "ALL").
+            limit: Maximum number of records to return (default: 100, max: 1000).
+
+        Returns:
+            List[DensityReading]: List of historical density readings ordered by timestamp DESC.
         """
         query = (
             "SELECT id, sim_time, lane_id, vehicle_count, density, level, "
@@ -561,14 +568,18 @@ class DBLogger:
         limit: int = 100,
     ) -> List["PerformanceSnapshot"]:
         """
-        Query raw per-tick performance metric rows from SQLite.
+        Query raw per-tick performance metric snapshots from SQLite with optional filters.
 
-        The existing /performance endpoint only exposes aggregated per-minute
-        summaries. This method returns the underlying PerformanceSnapshot rows
-        for the new GET /performance/history endpoint.
+        Returns underlying individual simulation tick snapshots recorded in the `performance_metrics`
+        table, allowing high-resolution performance analysis over time windows.
 
-        Mirrors get_congestion_history() exactly: WHERE 1=1 + conditional
-        filter appending + ORDER BY timestamp DESC LIMIT ?.
+        Args:
+            start_time: Optional minimum Unix timestamp filter (inclusive).
+            end_time: Optional maximum Unix timestamp filter (inclusive).
+            limit: Maximum number of records to return (default: 100, max: 1000).
+
+        Returns:
+            List[PerformanceSnapshot]: List of raw per-tick performance metric snapshots ordered by timestamp DESC.
         """
         from app.models.performance import PerformanceSnapshot  # local import avoids circular
         query = (

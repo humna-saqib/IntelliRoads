@@ -49,11 +49,21 @@ async def get_performance(
     )
 
 
-@router.get("/history", response_model=List[PerformanceSnapshot])
+@router.get(
+    "/history",
+    response_model=List[PerformanceSnapshot],
+    summary="Query raw per-tick performance metric snapshots",
+    description=(
+        "Query raw per-tick performance metric snapshots from SQLite with optional filtering. "
+        "Unlike GET /performance (which aggregates per-minute summaries), this endpoint returns "
+        "high-resolution individual tick snapshots including average waiting time, travel time, "
+        "queue length, occupancy, throughput, emergency priority activations, and tick processing timing."
+    ),
+)
 async def get_performance_history(
-    start_time: Optional[float] = Query(None, description="Start unix timestamp filter"),
-    end_time: Optional[float] = Query(None, description="End unix timestamp filter"),
-    limit: int = Query(100, ge=1, le=1000, description="Max records to return"),
+    start_time: Optional[float] = Query(None, description="Start Unix timestamp filter (inclusive)"),
+    end_time: Optional[float] = Query(None, description="End Unix timestamp filter (inclusive)"),
+    limit: int = Query(100, ge=1, le=1000, description="Max number of historical snapshots to return (1..1000)"),
     db_logger=Depends(get_db_logger_optional),
 ) -> List[PerformanceSnapshot]:
     """

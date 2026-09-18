@@ -32,13 +32,22 @@ async def get_density(store: InMemoryStateStore = Depends(get_store)) -> Density
     return density
 
 
-@router.get("/history", response_model=List[DensityReading])
+@router.get(
+    "/history",
+    response_model=List[DensityReading],
+    summary="Query historical per-lane density readings",
+    description=(
+        "Query historical per-lane density readings from SQLite with filtering options. "
+        "Returns time-series density data recorded per simulation tick. Supports filtering by "
+        "lane ID (exact or partial), density level (LOW, MEDIUM, HIGH, ALL), or timestamp window."
+    ),
+)
 async def get_density_history(
-    lane_id: Optional[str] = Query(None, description="Lane ID filter (exact or partial match)"),
-    start_time: Optional[float] = Query(None, description="Start unix timestamp filter"),
-    end_time: Optional[float] = Query(None, description="End unix timestamp filter"),
-    level: Optional[str] = Query(None, description="Density level filter (LOW, MEDIUM, HIGH, ALL)"),
-    limit: int = Query(100, ge=1, le=1000, description="Max records to return"),
+    lane_id: Optional[str] = Query(None, description="Lane ID filter (exact or partial match, e.g. 'lane_A_west_in')"),
+    start_time: Optional[float] = Query(None, description="Start Unix timestamp filter (inclusive)"),
+    end_time: Optional[float] = Query(None, description="End Unix timestamp filter (inclusive)"),
+    level: Optional[str] = Query(None, description="Density level filter ('LOW', 'MEDIUM', 'HIGH', or 'ALL')"),
+    limit: int = Query(100, ge=1, le=1000, description="Max number of historical records to return (1..1000)"),
     db_logger=Depends(get_db_logger),
 ) -> List[DensityReading]:
     """
