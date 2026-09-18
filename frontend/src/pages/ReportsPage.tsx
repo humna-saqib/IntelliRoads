@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { fetchPerformance } from '../services/api';
-import type { PerformanceResponse } from '../types/traffic';
+import { fetchPerformance, fetchPerformanceHistory, fetchDensityHistory } from '../services/api';
+import type { PerformanceResponse, PerformanceSnapshot, DensityReading } from '../types/traffic';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
@@ -15,7 +15,11 @@ import {
   Layers, 
   Activity, 
   CheckCircle2,
-  FileType
+  FileType,
+  ChevronDown,
+  ChevronRight,
+  Database,
+  BarChart2
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -37,6 +41,19 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [perfData, setPerfData] = useState<PerformanceResponse | null>(null);
 
+  // Raw tick history panel state
+  const [historyOpen, setHistoryOpen] = useState<boolean>(false);
+  const [historyTab, setHistoryTab] = useState<'performance' | 'density'>('performance');
+  const [historyLoading, setHistoryLoading] = useState<boolean>(false);
+  const [perfHistory, setPerfHistory] = useState<PerformanceSnapshot[]>([]);
+  const [densityHistory, setDensityHistory] = useState<DensityReading[]>([]);
+  // Density history filters
+  const [densityLaneFilter, setDensityLaneFilter] = useState<string>('');
+  const [densityLevelFilter, setDensityLevelFilter] = useState<string>('ALL');
+  const [densityLimit, setDensityLimit] = useState<number>(50);
+  // Performance history filters
+  const [perfLimit, setPerfLimit] = useState<number>(50);
+
   const loadData = async () => {
     try {
       const data = await fetchPerformance(timeWindow);
@@ -48,12 +65,39 @@ export default function ReportsPage() {
     }
   };
 
+  const loadHistoryData = async () => {
+    setHistoryLoading(true);
+    try {
+      if (historyTab === 'performance') {
+        const data = await fetchPerformanceHistory({ limit: perfLimit });
+        setPerfHistory(data);
+      } else {
+        const params: any = { limit: densityLimit };
+        if (densityLaneFilter.trim()) params.lane_id = densityLaneFilter.trim();
+        if (densityLevelFilter !== 'ALL') params.level = densityLevelFilter;
+        const data = await fetchDensityHistory(params);
+        setDensityHistory(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch history data:', err);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
   useEffect(() => {
     loadData();
     // Poll performance data every 5 seconds to keep metrics updated
     const id = setInterval(loadData, 5000);
     return () => clearInterval(id);
   }, [timeWindow]);
+
+  // Reload history whenever the panel opens or filters change
+  useEffect(() => {
+    if (historyOpen) {
+      loadHistoryData();
+    }
+  }, [historyOpen, historyTab, densityLaneFilter, densityLevelFilter, densityLimit, perfLimit]);
 
   const handleExportCSV = () => {
     if (!perfData || perfData.per_minute.length === 0) return;
@@ -507,6 +551,235 @@ export default function ReportsPage() {
           </table>
         </div>
       </Card>
+      {/* Raw Tick History – collapsible panel */}
+      <div className="bg-slate-900/40 border border-white/5 rounded-2xl backdrop-blur-md overflow-hidden">
+        {/* Collapsible header */}
+        <button
+          id="raw-tick-history-toggle"
+          onClick={() => setHistoryOpen(!historyOpen)}
+          className="w-full flex items-center justify-between px-5 py-4 hover:bg-white/5 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-400">
+              <Database size={16} />
+            </div>
+            <div className="text-left">
+              <p className="text-sm font-bold text-white">Raw Tick History</p>
+              <p className="text-[10px] text-slate-400 mt-0.5">Per-tick performance snapshots &amp; per-lane density readings from SQLite</p>
+            </div>
+          </div>
+          <span className="text-slate-400">
+            {historyOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+          </span>
+        </button>
+
+        {historyOpen && (
+          <div className="px-5 pb-5">
+            {/* Tab switcher */}
+            <div className="flex gap-2 mb-4 border-b border-white/10 pb-3">
+              <button
+                id="history-tab-performance"
+                onClick={() => setHistoryTab('performance')}
+                className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
+                  historyTab === 'performance'
+                    ? 'bg-primary-600 text-white'
+                    : 'text-slate-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <Activity size={13} />
+                Performance Ticks
+              </button>
+              <button
+                id="history-tab-density"
+                onClick={() => setHistoryTab('density')}
+                className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors ${
+                  historyTab === 'density'
+                    ? 'bg-primary-600 text-white'
+                    : 'text-slate-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <BarChart2 size={13} />
+                Density Readings
+              </button>
+            </div>
+
+            {/* Performance history tab */}
+            {historyTab === 'performance' && (
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Limit</label>
+                  <select
+                    id="perf-history-limit"
+                    value={perfLimit}
+                    onChange={(e) => setPerfLimit(Number(e.target.value))}
+                    className="bg-slate-950 border border-white/10 text-slate-200 text-xs rounded-xl px-3 py-1.5 focus:outline-none focus:border-primary-500 transition-colors"
+                  >
+                    <option value={25}>25 rows</option>
+                    <option value={50}>50 rows</option>
+                    <option value={100}>100 rows</option>
+                    <option value={200}>200 rows</option>
+                  </select>
+                  <button
+                    id="perf-history-refresh"
+                    onClick={loadHistoryData}
+                    className="ml-auto text-xs text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 border border-white/10 px-3 py-1.5 rounded-xl transition-all"
+                  >
+                    Refresh
+                  </button>
+                </div>
+
+                {historyLoading ? (
+                  <div className="flex justify-center py-10"><LoadingSpinner size="md" /></div>
+                ) : perfHistory.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-10 text-slate-500">
+                    <Activity className="h-8 w-8 text-slate-600 mb-2" />
+                    <p className="text-sm">No performance tick data yet — start the simulation.</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse text-[11px]">
+                      <thead>
+                        <tr className="border-b border-white/10 text-slate-400 font-semibold uppercase tracking-wider">
+                          <th className="py-2.5 px-3">Timestamp</th>
+                          <th className="py-2.5 px-3">Sim Time (s)</th>
+                          <th className="py-2.5 px-3">Wait (s)</th>
+                          <th className="py-2.5 px-3">Queue</th>
+                          <th className="py-2.5 px-3">Occupancy (%)</th>
+                          <th className="py-2.5 px-3">Throughput (total)</th>
+                          <th className="py-2.5 px-3">Congestion Events</th>
+                          <th className="py-2.5 px-3">Controller (ms)</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5 text-slate-200">
+                        {perfHistory.map((row, idx) => (
+                          <tr key={idx} className="hover:bg-white/2 transition-colors">
+                            <td className="py-2 px-3 font-mono text-slate-400">
+                              {new Date(row.timestamp * 1000).toLocaleTimeString()}
+                            </td>
+                            <td className="py-2 px-3 font-mono">{row.sim_time.toFixed(1)}</td>
+                            <td className="py-2 px-3 font-mono">{row.avg_waiting_time.toFixed(2)}</td>
+                            <td className="py-2 px-3 font-mono">{row.avg_queue_length.toFixed(2)}</td>
+                            <td className="py-2 px-3 font-mono">{row.avg_occupancy.toFixed(2)}</td>
+                            <td className="py-2 px-3 font-mono">{row.throughput_total}</td>
+                            <td className="py-2 px-3 font-mono">{row.congestion_event_count}</td>
+                            <td className="py-2 px-3 font-mono">{row.controller_response_time_ms.toFixed(2)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Density history tab */}
+            {historyTab === 'density' && (
+              <div>
+                <div className="flex flex-wrap items-center gap-3 mb-4">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Lane ID</label>
+                    <input
+                      id="density-history-lane-filter"
+                      type="text"
+                      placeholder="e.g. junctionA"
+                      value={densityLaneFilter}
+                      onChange={(e) => setDensityLaneFilter(e.target.value)}
+                      className="bg-slate-950 border border-white/10 text-slate-200 text-xs rounded-xl px-3 py-1.5 focus:outline-none focus:border-primary-500 transition-colors w-40"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Level</label>
+                    <select
+                      id="density-history-level-filter"
+                      value={densityLevelFilter}
+                      onChange={(e) => setDensityLevelFilter(e.target.value)}
+                      className="bg-slate-950 border border-white/10 text-slate-200 text-xs rounded-xl px-3 py-1.5 focus:outline-none focus:border-primary-500 transition-colors"
+                    >
+                      <option value="ALL">All Levels</option>
+                      <option value="LOW">LOW</option>
+                      <option value="MEDIUM">MEDIUM</option>
+                      <option value="HIGH">HIGH</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Limit</label>
+                    <select
+                      id="density-history-limit"
+                      value={densityLimit}
+                      onChange={(e) => setDensityLimit(Number(e.target.value))}
+                      className="bg-slate-950 border border-white/10 text-slate-200 text-xs rounded-xl px-3 py-1.5 focus:outline-none focus:border-primary-500 transition-colors"
+                    >
+                      <option value={25}>25 rows</option>
+                      <option value={50}>50 rows</option>
+                      <option value={100}>100 rows</option>
+                      <option value={200}>200 rows</option>
+                    </select>
+                  </div>
+                  <button
+                    id="density-history-refresh"
+                    onClick={loadHistoryData}
+                    className="mt-4 ml-auto text-xs text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 border border-white/10 px-3 py-1.5 rounded-xl transition-all"
+                  >
+                    Refresh
+                  </button>
+                </div>
+
+                {historyLoading ? (
+                  <div className="flex justify-center py-10"><LoadingSpinner size="md" /></div>
+                ) : densityHistory.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-10 text-slate-500">
+                    <BarChart2 className="h-8 w-8 text-slate-600 mb-2" />
+                    <p className="text-sm">No density history yet — start the simulation or adjust filters.</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse text-[11px]">
+                      <thead>
+                        <tr className="border-b border-white/10 text-slate-400 font-semibold uppercase tracking-wider">
+                          <th className="py-2.5 px-3">Timestamp</th>
+                          <th className="py-2.5 px-3">Sim Time (s)</th>
+                          <th className="py-2.5 px-3">Lane ID</th>
+                          <th className="py-2.5 px-3">Vehicles</th>
+                          <th className="py-2.5 px-3">Density (veh/km)</th>
+                          <th className="py-2.5 px-3 text-center">Level</th>
+                          <th className="py-2.5 px-3">Queue</th>
+                          <th className="py-2.5 px-3">Avg Wait (s)</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5 text-slate-200">
+                        {densityHistory.map((row, idx) => (
+                          <tr key={idx} className="hover:bg-white/2 transition-colors">
+                            <td className="py-2 px-3 font-mono text-slate-400">
+                              {new Date(row.timestamp * 1000).toLocaleTimeString()}
+                            </td>
+                            <td className="py-2 px-3 font-mono">{row.sim_time.toFixed(1)}</td>
+                            <td className="py-2 px-3 font-mono text-cyan-300">{row.lane_id}</td>
+                            <td className="py-2 px-3 font-mono">{row.vehicle_count}</td>
+                            <td className="py-2 px-3 font-mono">{row.density.toFixed(2)}</td>
+                            <td className="py-2 px-3 text-center">
+                              <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold ${
+                                row.level === 'HIGH'
+                                  ? 'bg-red-500/15 text-red-400 border border-red-500/20'
+                                  : row.level === 'MEDIUM'
+                                  ? 'bg-amber-500/15 text-amber-400 border border-amber-500/20'
+                                  : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
+                              }`}>
+                                {row.level}
+                              </span>
+                            </td>
+                            <td className="py-2 px-3 font-mono">{row.queue_length}</td>
+                            <td className="py-2 px-3 font-mono">{row.avg_waiting_time.toFixed(2)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
