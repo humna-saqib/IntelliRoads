@@ -16,7 +16,7 @@ from typing import Dict, List, Optional, Tuple
 
 from app.core.database import Database
 from app.models.congestion import CongestionEvent, CongestionResponse
-from app.models.density import DensityResponse
+from app.models.density import DensityReading, DensityResponse
 from app.models.emergency import EmergencyEvent, PriorityOverrideEvent
 from app.models.occupancy import OccupancyResponse
 from app.models.performance import PerformanceSnapshot, PerformanceSummary
@@ -495,6 +495,116 @@ class DBLogger:
                 threshold=r[5],
                 timestamp=r[6],
                 resolved_at=r[7],
+            )
+            for r in rows
+        ]
+
+    async def get_density_history(
+        self,
+        lane_id: Optional[str] = None,
+        start_time: Optional[float] = None,
+        end_time: Optional[float] = None,
+        level: Optional[str] = None,
+        limit: int = 100,
+    ) -> List[DensityReading]:
+        """
+        Query historical density readings from SQLite with optional filtering.
+
+        Mirrors get_congestion_history() exactly: WHERE 1=1 + conditional
+        filter appending + ORDER BY timestamp DESC LIMIT ?.
+        """
+        query = (
+            "SELECT id, sim_time, lane_id, vehicle_count, density, level, "
+            "queue_length, avg_waiting_time, timestamp "
+            "FROM density_readings WHERE 1=1"
+        )
+        params: List[object] = []
+        if lane_id and lane_id.strip():
+            target = lane_id.strip()
+            query += " AND (lane_id = ? OR lane_id LIKE ?)"
+            params.append(target)
+            params.append(f"%{target}%")
+        if start_time is not None:
+            query += " AND timestamp >= ?"
+            params.append(start_time)
+        if end_time is not None:
+            query += " AND timestamp <= ?"
+            params.append(end_time)
+        if level and level.upper() != "ALL":
+            query += " AND level = ?"
+            params.append(level.upper())
+
+        query += " ORDER BY timestamp DESC LIMIT ?"
+        params.append(limit)
+
+        cursor = await self._db.connection.execute(query, tuple(params))
+        rows = await cursor.fetchall()
+        return [
+            DensityReading(
+                id=r[0],
+                sim_time=r[1],
+                lane_id=r[2],
+                vehicle_count=r[3],
+                density=r[4],
+                level=r[5],
+                queue_length=r[6],
+                avg_waiting_time=r[7],
+                timestamp=r[8],
+            )
+            for r in rows
+        ]
+
+    async def get_performance_history(
+        self,
+        start_time: Optional[float] = None,
+        end_time: Optional[float] = None,
+        limit: int = 100,
+    ) -> List["PerformanceSnapshot"]:
+        """
+        Query raw per-tick performance metric rows from SQLite.
+
+        The existing /performance endpoint only exposes aggregated per-minute
+        summaries. This method returns the underlying PerformanceSnapshot rows
+        for the new GET /performance/history endpoint.
+
+        Mirrors get_congestion_history() exactly: WHERE 1=1 + conditional
+        filter appending + ORDER BY timestamp DESC LIMIT ?.
+        """
+        from app.models.performance import PerformanceSnapshot  # local import avoids circular
+        query = (
+            "SELECT sim_time, avg_waiting_time, avg_queue_length, avg_occupancy, "
+            "throughput_total, throughput_tick, congestion_event_count, "
+            "emergency_priority_activations, signal_decision_frequency, "
+            "controller_response_time_ms, tick_processing_time_ms, timestamp "
+            "FROM performance_metrics WHERE 1=1"
+        )
+        params: List[object] = []
+        if start_time is not None:
+            query += " AND timestamp >= ?"
+            params.append(start_time)
+        if end_time is not None:
+            query += " AND timestamp <= ?"
+            params.append(end_time)
+
+        query += " ORDER BY timestamp DESC LIMIT ?"
+        params.append(limit)
+
+        cursor = await self._db.connection.execute(query, tuple(params))
+        rows = await cursor.fetchall()
+        return [
+            PerformanceSnapshot(
+                sim_time=r[0],
+                avg_waiting_time=r[1],
+                avg_queue_length=r[2],
+                avg_occupancy=r[3],
+                throughput_total=r[4],
+                throughput_tick=r[5],
+                congestion_event_count=r[6],
+                emergency_priority_activations=r[7],
+                signal_decision_frequency=r[8],
+                controller_response_time_ms=r[9],
+                tick_processing_time_ms=r[10],
+                timestamp=r[11],
             )
             for r in rows
         ]
