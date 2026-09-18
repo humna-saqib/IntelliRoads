@@ -31,6 +31,18 @@ def _base64url_encode(data: bytes) -> str:
 
 
 def create_access_token(username: str) -> str:
+    """
+    Generate a signed HMAC-SHA256 JWT access token for a given user.
+
+    Encodes standard JWT header (HS256) and payload containing subject (`sub`),
+    issued-at (`iat`), and expiration (`exp`) claims, signed with `SECRET_KEY`.
+
+    Args:
+        username: Subject identifier (username) to embed in token payload.
+
+    Returns:
+        str: Standard base64url-encoded JWT string formatted as `header.payload.signature`.
+    """
     header = {"alg": "HS256", "typ": "JWT"}
     payload = {
         "sub": username,
@@ -49,6 +61,18 @@ def create_access_token(username: str) -> str:
 
 
 def verify_token(token: str) -> Optional[Dict[str, Any]]:
+    """
+    Verify and decode an HMAC-SHA256 JWT access token.
+
+    Validates formatting, verifies the signature against `SECRET_KEY` using constant-time
+    comparison (`hmac.compare_digest`), and checks payload expiration (`exp`).
+
+    Args:
+        token: Base64url-encoded JWT string to verify.
+
+    Returns:
+        Optional[Dict[str, Any]]: Decoded payload dictionary if valid and non-expired, or `None` if invalid.
+    """
     try:
         parts = token.strip().split(".")
         if len(parts) != 3:
@@ -77,6 +101,18 @@ def verify_token(token: str) -> Optional[Dict[str, Any]]:
 def get_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
 ) -> Dict[str, Any]:
+    """
+    FastAPI dependency to extract and authenticate current user from Bearer header.
+
+    Args:
+        credentials: Extracted HTTP Authorization Bearer credentials from request.
+
+    Raises:
+        HTTPException (401 Unauthorized): If credentials are missing, signature invalid, or expired.
+
+    Returns:
+        Dict[str, Any]: Dictionary containing authenticated user details (`{"username": ...}`).
+    """
     if not credentials or not credentials.credentials:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -96,7 +132,16 @@ def get_current_user(
 
 
 def verify_ws_token(token: Optional[str]) -> bool:
+    """
+    Validate a WebSocket connection authentication token passed via query string.
+
+    Args:
+        token: Access token string passed by WebSocket client.
+
+    Returns:
+        bool: `True` if token is valid and unexpired, `False` otherwise.
+    """
     if not token:
         return False
     payload = verify_token(token)
-    return payload is not None and "sub" in payload
+    return payload is not None and "sub" in payload
