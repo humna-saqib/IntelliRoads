@@ -5,12 +5,16 @@ IntelliRoads – Controller Evaluation Script
 Benchmarks three traffic signal controllers over the same SUMO scenarios:
   1. Fixed-Time     – hardcoded 30s green / 5s yellow cycle per junction
   2. Rule-Based     – density-based SignalController (LOW→20s, MED→35s, HIGH→55s)
-  3. Trained DQN    – dqn_episode_0950.pt, epsilon=0.0 (pure exploitation)
+  3. Trained DQN    – backend/data/models/dqn_agent.pt, epsilon=0.0 (pure exploitation)
+
+All three controllers are evaluated on the SAME 30 seeded traffic scenarios
+(episode N uses an identical scenario across all three controllers), which
+is what makes a paired statistical comparison valid - see
+evaluation_results/significance_test.py.
 
 Requirements:
   - Real SUMO must be available (SUMO_AVAILABLE=True, mock_mode=False after start).
     Script aborts with a clear error if SUMO is not reachable.
-  - Uses C:\\Users\\muham\\IntelliRoads\\myenv\\Scripts\\python.exe
 
 Usage:
     python evaluate_controllers.py [--episodes 30] [--steps 200]
@@ -239,9 +243,13 @@ def run_episode_fixed_time(session: TraCISession, n_steps: int) -> Dict[str, flo
     step_waits:    List[float] = []
     step_queues:   List[float] = []
     step_occ:      List[float] = []
+    step_cong:     List[float] = []
     step_rewards:  List[float] = []
     step_veh:      List[float] = []
     total_throughput: int = 0
+
+    depart_times: Dict[str, float] = {}
+    travel_times: List[float] = []
 
     _last_phase: Dict[str, int] = {}
 
@@ -249,6 +257,16 @@ def run_episode_fixed_time(session: TraCISession, n_steps: int) -> Dict[str, flo
         session.step()
         tp = _get_throughput()
         total_throughput += tp
+
+        # Real per-vehicle travel time: record each vehicle's departure
+        # time, then compute elapsed time when it actually arrives.
+        now = traci.simulation.getTime()
+        for vid in traci.simulation.getDepartedIDList():
+            depart_times[vid] = now
+        for vid in traci.simulation.getArrivedIDList():
+            dt = depart_times.pop(vid, None)
+            if dt is not None:
+                travel_times.append(now - dt)
 
         episode_wait = 0.0
         episode_queue = 0.0
@@ -287,15 +305,17 @@ def run_episode_fixed_time(session: TraCISession, n_steps: int) -> Dict[str, flo
         step_queues.append(avg_queue)
         step_occ.append(avg_occ)
         step_veh.append(avg_veh)
+        step_cong.append(float(is_cong))
         step_rewards.append(reward)
 
     avg_wait_time = statistics.mean(step_waits) if step_waits else 0.0
 
     return {
         "avg_waiting_time":  avg_wait_time,
-        "avg_travel_time":   round(avg_wait_time * 1.3 + 10.0, 4),
+        "avg_travel_time":   round(statistics.mean(travel_times), 4) if travel_times else 0.0,
         "avg_queue_length":  statistics.mean(step_queues)  if step_queues  else 0.0,
         "avg_occupancy":     statistics.mean(step_occ)     if step_occ     else 0.0,
+        "pct_congested":     round(statistics.mean(step_cong) * 100.0, 2) if step_cong else 0.0,
         "throughput":        total_throughput,
         "episode_reward":    round(sum(step_rewards), 4),
         "episode_length":    n_steps,
@@ -311,13 +331,25 @@ def run_episode_rule_based(session: TraCISession, n_steps: int) -> Dict[str, flo
     step_waits:   List[float] = []
     step_queues:  List[float] = []
     step_occ:     List[float] = []
+    step_cong:    List[float] = []
     step_rewards: List[float] = []
     total_throughput: int = 0
+
+    depart_times: Dict[str, float] = {}
+    travel_times: List[float] = []
 
     for _ in range(n_steps):
         session.step()
         tp = _get_throughput()
         total_throughput += tp
+
+        now = traci.simulation.getTime()
+        for vid in traci.simulation.getDepartedIDList():
+            depart_times[vid] = now
+        for vid in traci.simulation.getArrivedIDList():
+            dt = depart_times.pop(vid, None)
+            if dt is not None:
+                travel_times.append(now - dt)
 
         density_resp = _build_density_response()
         sc.update_all_signals(density_resp)
@@ -346,15 +378,17 @@ def run_episode_rule_based(session: TraCISession, n_steps: int) -> Dict[str, flo
         step_waits.append(avg_wait)
         step_queues.append(avg_queue)
         step_occ.append(avg_occ)
+        step_cong.append(float(is_cong))
         step_rewards.append(reward)
 
     avg_wait_time = statistics.mean(step_waits) if step_waits else 0.0
 
     return {
         "avg_waiting_time":  avg_wait_time,
-        "avg_travel_time":   round(avg_wait_time * 1.3 + 10.0, 4),
+        "avg_travel_time":   round(statistics.mean(travel_times), 4) if travel_times else 0.0,
         "avg_queue_length":  statistics.mean(step_queues)  if step_queues  else 0.0,
         "avg_occupancy":     statistics.mean(step_occ)     if step_occ     else 0.0,
+        "pct_congested":     round(statistics.mean(step_cong) * 100.0, 2) if step_cong else 0.0,
         "throughput":        total_throughput,
         "episode_reward":    round(sum(step_rewards), 4),
         "episode_length":    n_steps,
@@ -376,17 +410,30 @@ def run_episode_dqn(
     step_waits:   List[float] = []
     step_queues:  List[float] = []
     step_occ:     List[float] = []
+    step_cong:    List[float] = []
     step_rewards: List[float] = []
     total_throughput: int = 0
+
+    depart_times: Dict[str, float] = {}
+    travel_times: List[float] = []
 
     for _ in range(n_steps):
         session.step()
         tp = _get_throughput()
         total_throughput += tp
 
+        now = traci.simulation.getTime()
+        for vid in traci.simulation.getDepartedIDList():
+            depart_times[vid] = now
+        for vid in traci.simulation.getArrivedIDList():
+            dt = depart_times.pop(vid, None)
+            if dt is not None:
+                travel_times.append(now - dt)
+
         episode_wait  = 0.0
         episode_queue = 0.0
         episode_occ   = 0.0
+        episode_veh   = 0.0
 
         for jid in JUNCTION_IDS:
             state = env.get_state(junction_id=jid)
@@ -401,23 +448,28 @@ def run_episode_dqn(
             episode_wait  += m["avg_wait"]
             episode_queue += m["queue_len"]
             episode_occ   += m["occupancy"]
+            episode_veh   += m["veh_count"]
             step_rewards.append(reward)
 
             if done:
                 break
 
         n = len(JUNCTION_IDS)
+        avg_occ_step = episode_occ / n
+        avg_veh_step = episode_veh / n
         step_waits.append(episode_wait  / n)
         step_queues.append(episode_queue / n)
-        step_occ.append(episode_occ     / n)
+        step_occ.append(avg_occ_step)
+        step_cong.append(float((avg_occ_step > 70.0) or (avg_veh_step > 15.0)))
 
     avg_wait_time = statistics.mean(step_waits) if step_waits else 0.0
 
     return {
         "avg_waiting_time":  avg_wait_time,
-        "avg_travel_time":   round(avg_wait_time * 1.3 + 10.0, 4),
+        "avg_travel_time":   round(statistics.mean(travel_times), 4) if travel_times else 0.0,
         "avg_queue_length":  statistics.mean(step_queues)  if step_queues  else 0.0,
         "avg_occupancy":     statistics.mean(step_occ)     if step_occ     else 0.0,
+        "pct_congested":     round(statistics.mean(step_cong) * 100.0, 2) if step_cong else 0.0,
         "throughput":        total_throughput,
         "episode_reward":    round(sum(step_rewards), 4),
         "episode_length":    n_steps,
@@ -450,6 +502,7 @@ METRIC_KEYS = [
     "avg_travel_time",
     "avg_queue_length",
     "avg_occupancy",
+    "pct_congested",
     "throughput",
     "episode_reward",
     "episode_length",
@@ -460,6 +513,7 @@ METRIC_LABELS = {
     "avg_travel_time":  "Avg Travel Time (s)",
     "avg_queue_length": "Avg Queue Length (veh)",
     "avg_occupancy":    "Avg Occupancy (%)",
+    "pct_congested":    "Congested Steps (%)",
     "throughput":       "Throughput (veh/ep)",
     "episode_reward":   "Episode Reward",
     "episode_length":   "Episode Length (steps)",
@@ -515,7 +569,7 @@ def _print_summary_table(summary_rows: List[Dict[str, Any]]) -> None:
     # Best/worst call-out per metric
     print("  Performance Call-Outs (mean values):")
     print("-" * 60)
-    improvement_metrics = ["avg_waiting_time", "avg_travel_time", "avg_queue_length", "avg_occupancy"]
+    improvement_metrics = ["avg_waiting_time", "avg_travel_time", "avg_queue_length", "avg_occupancy", "pct_congested"]
     higher_is_better    = ["throughput", "episode_reward"]
 
     for mk in METRIC_KEYS:
@@ -595,7 +649,14 @@ def main() -> None:
             # Fresh, held-out randomized traffic demand for this episode -
             # without this, all N_EPISODES replay the same static scenario
             # and every metric comes out identical (std = 0.0).
-            generate_routefile(seed=EVAL_SEED_OFFSET + ep_counter, output_path=ROUTE_FILE_PATH)
+            #
+            # Seeded by ep_idx (not the cumulative ep_counter): this means
+            # episode 1 uses the same traffic scenario for all three
+            # controllers, episode 2 uses the same scenario for all three,
+            # etc. This is what makes the comparison paired/fair - each
+            # controller is judged on identical traffic, not just traffic
+            # from the same random distribution.
+            generate_routefile(seed=EVAL_SEED_OFFSET + ep_idx, output_path=ROUTE_FILE_PATH)
 
             session = make_session()
             try:
