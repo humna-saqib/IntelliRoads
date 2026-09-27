@@ -96,6 +96,8 @@ BASELINE_END: float = AMBULANCE_DEPART
 
 RECOVERY_TOLERANCE: float = 0.15          # within 15% of baseline counts as "recovered"
 RECOVERY_SUSTAIN_SECONDS: int = 5         # must hold for this many consecutive seconds
+WAIT_ABSOLUTE_FLOOR: float = 0.5          # seconds - floor for near-zero baselines
+QUEUE_ABSOLUTE_FLOOR: float = 0.5         # vehicles - floor for near-zero baselines
 
 RESULTS_DIR = _BACKEND_DIR / "validation_results"
 ROUTE_FILE_PATH = _BACKEND_DIR / "sumo" / "routes" / "intelliroads.rou.xml"
@@ -107,15 +109,22 @@ def _find_recovery_time(
     override_end: float,
     tolerance: float,
     sustain_seconds: int,
+    absolute_floor: float,
 ) -> Optional[float]:
     """
     series: list of (sim_time, value) pairs, in time order.
     Returns seconds from override_end to sustained recovery, or None if
     the series never recovers within the observed window.
+
+    Tolerance band is max(baseline * tolerance, absolute_floor) on each
+    side - a pure percentage band breaks down when baseline is at or
+    near zero (common here: the validation scenario's background
+    traffic is deliberately sparse, so junctions B/C/D can have a
+    genuinely ~0s baseline wait). absolute_floor keeps the check
+    meaningful in that case instead of requiring an exact 0.0 match.
     """
-    if baseline == 0:
-        return None
-    lo, hi = baseline * (1 - tolerance), baseline * (1 + tolerance)
+    band = max(baseline * tolerance, absolute_floor)
+    lo, hi = baseline - band, baseline + band
 
     post = [(t, v) for t, v in series if t >= override_end]
     consecutive = 0
@@ -233,11 +242,11 @@ def run_scenario(mode: ControllerMode) -> Dict:
     if override_deactivated_at is not None:
         recovery_wait = _find_recovery_time(
             combined_wait, baseline_wait, override_deactivated_at,
-            RECOVERY_TOLERANCE, RECOVERY_SUSTAIN_SECONDS,
+            RECOVERY_TOLERANCE, RECOVERY_SUSTAIN_SECONDS, WAIT_ABSOLUTE_FLOOR,
         )
         recovery_queue = _find_recovery_time(
             combined_queue, baseline_queue, override_deactivated_at,
-            RECOVERY_TOLERANCE, RECOVERY_SUSTAIN_SECONDS,
+            RECOVERY_TOLERANCE, RECOVERY_SUSTAIN_SECONDS, QUEUE_ABSOLUTE_FLOOR,
         )
 
     # Peak disruption during the override window, for context alongside
