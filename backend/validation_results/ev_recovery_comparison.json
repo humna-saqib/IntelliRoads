@@ -1,0 +1,28 @@
+{
+  "RULE_BASED": {
+    "mode": "RULE_BASED",
+    "override_activated_at": 31.0,
+    "override_deactivated_at": 65.0,
+    "override_duration_s": 34.0,
+    "baseline_avg_wait_s": 0.0,
+    "baseline_avg_queue_veh": 0.0,
+    "peak_avg_wait_during_override_s": 7.5,
+    "recovery_time_wait_s": 0.0,
+    "recovery_time_queue_s": 0.0,
+    "recovery_tolerance": 0.15,
+    "recovery_sustain_seconds": 5
+  },
+  "DQN": {
+    "mode": "DQN",
+    "override_activated_at": 31.0,
+    "override_deactivated_at": 76.0,
+    "override_duration_s": 45.0,
+    "baseline_avg_wait_s": 0.0,
+    "baseline_avg_queue_veh": 0.0,
+    "peak_avg_wait_during_override_s": 15.833,
+    "recovery_time_wait_s": 0.0,
+    "recovery_time_queue_s": 0.0,
+    "recovery_tolerance": 0.15,
+    "recovery_sustain_seconds": 5
+  }
+}
