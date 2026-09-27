@@ -31,9 +31,20 @@ import sys
 from pathlib import Path
 from statistics import mean, stdev
 
-METRICS = ["avg_waiting_time", "avg_travel_time", "avg_queue_length", "pct_congested", "episode_reward"]
+METRICS = ["avg_waiting_time", "avg_travel_time", "avg_queue_length", "pct_congested"]
 COMPARE_AGAINST = "Fixed-Time"  # the stronger of the two baselines
 TARGET = "Trained DQN"
+
+# episode_reward is deliberately excluded: it is not a fair metric across
+# these controllers. DQN incurs a real -1.5 "action changed" penalty (see
+# REWARD_WEIGHT_ACTION_CHANGE in app/environment/sumo_environment.py) on
+# nearly every one of its ~7,200 per-episode decisions, since it actively
+# chooses an action at every junction every step. Fixed-Time and Rule-Based
+# are evaluated with action_changed hardcoded to False in
+# evaluate_controllers.py regardless of what they actually do, so they
+# never incur this penalty - even though Rule-Based visibly changes signal
+# timings during an episode. Reward is a meaningful signal for DQN's own
+# training progress, not a valid head-to-head comparison point here.
 
 # Two-tailed 95% critical t-values, keyed by degrees of freedom (n-1 for
 # a paired test). Covers the df range this script will realistically see
@@ -124,9 +135,8 @@ def main() -> None:
             f"{mean_diff:>10.3f} {ci_str:>22} {t_stat:>8.3f} {df:>4} {sig:>16}"
         )
     print(
-        "\nNote: mean diff = DQN - Fixed-Time. Negative is better for "
-        "avg_waiting_time / avg_travel_time / avg_queue_length / pct_congested "
-        "(DQN performing lower); positive is better for episode_reward."
+        "\nNote: mean diff = DQN - Fixed-Time. Negative is better for all "
+        "four metrics above (DQN performing lower on each)."
     )
 
 
