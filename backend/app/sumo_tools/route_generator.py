@@ -144,7 +144,22 @@ def generate_routefile(
         if flow_to_direction.get(flow.flow_id) == biased_direction:
             jitter *= bias_multiplier
         period = round(flow.base_period * jitter, 2)
-        period_attr = f"exp({period})" if flow.exp_distributed else str(period)
+        # exp(X) in SUMO means "expected X vehicles per second" (rate), NOT
+        # "average X-second gap between vehicles" as the parameter naming
+        # here (base_period = "seconds between spawns") suggests. Confirmed
+        # against SUMO's own docs: https://sumo.dlr.de/docs/Simulation/Randomness.html
+        # ("insertion an expected value of X vehicles per second").
+        #
+        # For a Poisson process, mean gap = 1 / rate, so to get the intended
+        # mean gap of `period` seconds, the rate passed to exp() must be
+        # 1/period - not period itself. Passing period directly (the
+        # previous behaviour) requested period vehicles/second on each flow
+        # (e.g. exp(15) -> ~15 veh/s), causing severe, unintended network
+        # oversaturation - confirmed via eval_summary.csv showing ~97.6%
+        # of simulation steps flagged congested and ~280-300s average
+        # travel time across a tiny 4-junction network.
+        rate = round(1.0 / period, 4)
+        period_attr = f"exp({rate})" if flow.exp_distributed else str(period)
         lines.append(
             f'    <flow id="{flow.flow_id}" begin="0" end="{duration}" '
             f'period="{period_attr}" route="{flow.route}" type="{flow.vtype}"/>'
