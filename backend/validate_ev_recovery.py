@@ -318,8 +318,8 @@ def main() -> None:
         print(f"  Recovery time (wait):       {r['recovery_time_wait_s']}s after override ended")
         print(f"  Recovery time (queue):      {r['recovery_time_queue_s']}s after override ended")
 
-    rb = summary.get("rule_based", {})
-    dqn = summary.get("dqn", {})
+    rb = summary.get("RULE_BASED", {})
+    dqn = summary.get("DQN", {})
     rb_rt, dqn_rt = rb.get("recovery_time_wait_s"), dqn.get("recovery_time_wait_s")
     print("\n" + "-" * 78)
     if rb_rt is not None and dqn_rt is not None:
