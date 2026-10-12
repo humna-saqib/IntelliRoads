@@ -1,0 +1,7 @@
+,n_steps_measured,n_steps_measured,n_junction_obs,n_junction_obs,n_travel_time_obs,n_travel_time_obs
+,min,max,min,max,min,max
+controller,,,,,,
+Always-Keep,1800,1800,7200,7200,870,1345
+Fixed-Time,1800,1800,7200,7200,866,1336
+Rule-Based,1800,1800,7200,7200,874,1332
+Trained DQN,1800,1800,7200,7200,870,1345

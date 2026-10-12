@@ -1,0 +1,58 @@
+MEASUREMENT COUNTS (min/max over episodes)
+             n_steps_measured       n_junction_obs       n_travel_time_obs      
+                         min   max            min   max               min   max
+controller                                                                     
+Always-Keep             1800  1800           7200  7200               870  1345
+Fixed-Time              1800  1800           7200  7200               866  1336
+Rule-Based              1800  1800           7200  7200               874  1332
+Trained DQN             1800  1800           7200  7200               870  1345 
+
+episodes per controller: {'Always-Keep': 30, 'Fixed-Time': 30, 'Rule-Based': 30, 'Trained DQN': 30}
+controller                Fixed-Time  Rule-Based  Always-Keep  Trained DQN
+n                             30.000      30.000       30.000       30.000
+avg_waiting_time_mean          2.848       2.546        2.343        2.343
+avg_waiting_time_sd            0.392       0.532        0.284        0.284
+avg_travel_time_mean         160.935     151.086      155.130      155.130
+avg_travel_time_sd             5.455       5.942        5.354        5.354
+avg_queue_length_mean          1.368       1.059        1.202        1.202
+avg_queue_length_sd            0.704       0.237        0.656        0.656
+avg_occupancy_mean             7.208       6.639        6.938        6.938
+avg_occupancy_sd               1.991       1.207        1.957        1.957
+pct_congested_mean             0.011       0.000        0.019        0.019
+pct_congested_sd               0.061       0.000        0.101        0.101
+throughput_arrived_mean     1106.433    1112.200     1112.467     1112.467
+throughput_arrived_sd        121.187     120.422      120.873      120.873
+throughput_departed_mean    1219.100    1220.067     1219.033     1219.033
+throughput_departed_sd       133.279     133.901      133.358      133.358 
+
+          a           b           metric  mean_diff       pct    ci_lo   ci_hi        t      p  n_identical
+Trained DQN Always-Keep avg_waiting_time     0.0000    0.0000   0.0000  0.0000      NaN    NaN           30
+Trained DQN Always-Keep  avg_travel_time     0.0000    0.0000   0.0000  0.0000      NaN    NaN           30
+Trained DQN Always-Keep avg_queue_length     0.0000    0.0000   0.0000  0.0000      NaN    NaN           30
+Trained DQN Always-Keep    avg_occupancy     0.0000    0.0000   0.0000  0.0000      NaN    NaN           30
+Trained DQN Always-Keep    pct_congested     0.0000    0.0000   0.0000  0.0000      NaN    NaN           30
+Trained DQN  Fixed-Time avg_waiting_time    -0.5055  -17.7477  -0.5996 -0.4114 -10.9862 0.0000            0
+Trained DQN  Fixed-Time  avg_travel_time    -5.8051   -3.6071  -6.2292 -5.3810 -27.9984 0.0000            0
+Trained DQN  Fixed-Time avg_queue_length    -0.1662  -12.1457  -0.2043 -0.1281  -8.9292 0.0000            0
+Trained DQN  Fixed-Time    avg_occupancy    -0.2709   -3.7577  -0.3384 -0.2033  -8.2043 0.0000            0
+Trained DQN  Fixed-Time    pct_congested     0.0074   66.6667  -0.0077  0.0226   1.0000 0.3256           29
+Trained DQN  Rule-Based avg_waiting_time    -0.2031   -7.9791  -0.4271  0.0209  -1.8548 0.0738            0
+Trained DQN  Rule-Based  avg_travel_time     4.0445    2.6770   2.5862  5.5029   5.6721 0.0000            0
+Trained DQN  Rule-Based avg_queue_length     0.1431   13.5066  -0.0583  0.3444   1.4533 0.1569            0
+Trained DQN  Rule-Based    avg_occupancy     0.2982    4.4908  -0.1002  0.6965   1.5308 0.1366            0
+Trained DQN  Rule-Based    pct_congested     0.0185       NaN  -0.0194  0.0564   1.0000 0.3256           29
+Always-Keep  Fixed-Time avg_waiting_time    -0.5055  -17.7477  -0.5996 -0.4114 -10.9862 0.0000            0
+Always-Keep  Fixed-Time  avg_travel_time    -5.8051   -3.6071  -6.2292 -5.3810 -27.9984 0.0000            0
+Always-Keep  Fixed-Time avg_queue_length    -0.1662  -12.1457  -0.2043 -0.1281  -8.9292 0.0000            0
+Always-Keep  Fixed-Time    avg_occupancy    -0.2709   -3.7577  -0.3384 -0.2033  -8.2043 0.0000            0
+Always-Keep  Fixed-Time    pct_congested     0.0074   66.6667  -0.0077  0.0226   1.0000 0.3256           29
+Always-Keep  Rule-Based avg_waiting_time    -0.2031   -7.9791  -0.4271  0.0209  -1.8548 0.0738            0
+Always-Keep  Rule-Based  avg_travel_time     4.0445    2.6770   2.5862  5.5029   5.6721 0.0000            0
+Always-Keep  Rule-Based avg_queue_length     0.1431   13.5066  -0.0583  0.3444   1.4533 0.1569            0
+Always-Keep  Rule-Based    avg_occupancy     0.2982    4.4908  -0.1002  0.6965   1.5308 0.1366            0
+Always-Keep  Rule-Based    pct_congested     0.0185       NaN  -0.0194  0.0564   1.0000 0.3256           29
+ Rule-Based  Fixed-Time avg_waiting_time    -0.3023  -10.6156  -0.5533 -0.0514  -2.4642 0.0199            0
+ Rule-Based  Fixed-Time  avg_travel_time    -9.8496   -6.1202 -11.3180 -8.3812 -13.7191 0.0000            0
+ Rule-Based  Fixed-Time avg_queue_length    -0.3093  -22.5999  -0.5273 -0.0912  -2.9008 0.0070            0
+ Rule-Based  Fixed-Time    avg_occupancy    -0.5690   -7.8940  -0.9750 -0.1631  -2.8668 0.0076            0
+ Rule-Based  Fixed-Time    pct_congested    -0.0111 -100.0000  -0.0338  0.0116  -1.0000 0.3256           29

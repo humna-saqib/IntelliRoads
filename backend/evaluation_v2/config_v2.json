@@ -1,0 +1,63 @@
+{
+  "n_episodes": 30,
+  "n_steps": 1800,
+  "junctions": [
+    "junctionA",
+    "junctionB",
+    "junctionC",
+    "junctionD"
+  ],
+  "seed_offset": 1000000,
+  "seeds": [
+    1000001,
+    1000002,
+    1000003,
+    1000004,
+    1000005,
+    1000006,
+    1000007,
+    1000008,
+    1000009,
+    1000010,
+    1000011,
+    1000012,
+    1000013,
+    1000014,
+    1000015,
+    1000016,
+    1000017,
+    1000018,
+    1000019,
+    1000020,
+    1000021,
+    1000022,
+    1000023,
+    1000024,
+    1000025,
+    1000026,
+    1000027,
+    1000028,
+    1000029,
+    1000030
+  ],
+  "controllers": [
+    "Fixed-Time",
+    "Rule-Based",
+    "Always-Keep",
+    "Trained DQN"
+  ],
+  "checkpoint": "data/models/dqn_agent.pt",
+  "checkpoint_sha256": "17ec9ead10a11dde1fe82ec3e58f51259c579c958df27f5a0d0b3d79eba407a1",
+  "epsilon": 0.0,
+  "sumo_step_length": 1.0,
+  "sumo_seed": "SUMO default (not set in sumocfg)",
+  "env_max_steps_override": 1000000000,
+  "metric_definitions": {
+    "avg_waiting_time": "mean over steps of mean over 4 junctions of primary-lane getWaitingTime/max(vehicles,1)",
+    "avg_queue_length": "mean over steps of mean over 4 junctions of primary-lane getLastStepHaltingNumber",
+    "avg_occupancy": "mean over steps of mean over 4 junctions of primary-lane getLastStepOccupancy*100",
+    "avg_travel_time": "mean (arrival - departure) over vehicles that ARRIVED within the horizon",
+    "throughput_arrived": "vehicles arrived within horizon",
+    "throughput_departed": "vehicles inserted within horizon"
+  }
+}
