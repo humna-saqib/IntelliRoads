@@ -16,7 +16,7 @@ from collections import deque
 from dataclasses import dataclass
 import random
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional, Sequence, Tuple
 
 import torch
 import torch.nn as nn
@@ -143,8 +143,13 @@ class DQNAgent:
         learning_rate: Optional[float] = None,
         hidden_size: Optional[int] = None,
         batch_size: Optional[int] = None,
+        normalize_inputs: bool = True,
     ) -> None:
         self.state_size = state_size
+        # normalize_inputs=True (default) applies the legacy 5-feature min-max scaling above.
+        # False is for environments that already return a normalised vector of ``state_size``
+        # entries (app.environment.traffic_env); the legacy scaling would silently truncate it.
+        self.normalize_inputs = normalize_inputs
         self.action_size = action_size
         self.device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
 
@@ -173,11 +178,19 @@ class DQNAgent:
             f"gamma={self.gamma}, batch_size={self.batch_size}, memory_capacity={capacity}"
         )
 
+    def _prepare(self, state: List[float]) -> List[float]:
+        """Network input for ``state``: legacy normalisation, or a length-checked pass-through."""
+        if self.normalize_inputs:
+            return normalize_state(state)
+        if len(state) != self.state_size:
+            raise ValueError(f"expected a state of {self.state_size} features, got {len(state)}")
+        return [float(v) for v in state]
+
     # ------------------------------------------------------------------
     # Core API: select_action, store_transition, train_step, update_target
     # ------------------------------------------------------------------
 
-    def select_action(self, state: List[float], epsilon: float = 0.1) -> int:
+    def select_action(self, state: List[float], epsilon: float = 0.1, legal_mask: Optional[Sequence[bool]] = None) -> int:
         """
         Select action using Epsilon-Greedy Policy.
 
@@ -187,23 +200,38 @@ class DQNAgent:
             5-element traffic state vector.
         epsilon : float
             Exploration probability (0.0 <= epsilon <= 1.0).
+        legal_mask : sequence of bool, optional
+            Action mask (True = legal), e.g. ``TrafficSignalEnv.action_masks()[junction]``. When given,
+            exploration samples only legal actions and the greedy action is the best *legal* one; an
+            all-False mask raises ``ValueError``. ``None`` (default) keeps the legacy unmasked behaviour.
 
         Returns
         -------
         int
             Selected discrete action index (0: KEEP, 1: SWITCH, 2: EXTEND, 3: REDUCE).
         """
+        legal: Optional[List[int]] = None
+        if legal_mask is not None:
+            if len(legal_mask) != self.action_size:
+                raise ValueError(f"legal_mask must have {self.action_size} entries, got {len(legal_mask)}")
+            legal = [i for i, ok in enumerate(legal_mask) if ok]
+            if not legal:
+                raise ValueError("legal_mask has no legal action")
         if random.random() < epsilon:
-            # Random exploration action
-            return random.randrange(self.action_size)
+            # Random exploration action (among the legal ones when a mask is given)
+            return random.choice(legal) if legal is not None else random.randrange(self.action_size)
         else:
             # Exploitation: Select action with highest predicted Q-value
             with torch.no_grad():
-                norm_state = normalize_state(state)
+                norm_state = self._prepare(state)
                 state_tensor = torch.tensor(
                     [norm_state], dtype=torch.float32, device=self.device
                 )
                 q_values = self.policy_net(state_tensor)
+                if legal is not None:
+                    masked = torch.full_like(q_values, float("-inf"))
+                    masked[:, legal] = q_values[:, legal]
+                    q_values = masked
                 action_index = int(torch.argmax(q_values, dim=1).item())
                 return action_index
 
@@ -241,7 +269,7 @@ class DQNAgent:
         batch = self.memory.sample(batch_size)
 
         states = torch.tensor(
-            [normalize_state(exp.state) for exp in batch],
+            [self._prepare(exp.state) for exp in batch],
             dtype=torch.float32,
             device=self.device,
         )
@@ -256,7 +284,7 @@ class DQNAgent:
             device=self.device,
         )
         next_states = torch.tensor(
-            [normalize_state(exp.next_state) for exp in batch],
+            [self._prepare(exp.next_state) for exp in batch],
             dtype=torch.float32,
             device=self.device,
         )

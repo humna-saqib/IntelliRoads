@@ -13,7 +13,7 @@ structure, metric definitions, statistical procedure and baseline controllers ar
 
 ```bash
 cd backend
-python evaluate_fyp.py --plan --controllers fixed_time rule_based actuated_style dqn       # print the protocol + runtime estimate, simulate nothing
+python evaluate_fyp.py --mode final --plan --controllers fixed_time rule_based actuated_style dqn   # print the final protocol + runtime estimate, simulate nothing
 python evaluate_fyp.py --mode smoke --run-id chk --controllers fixed_time rule_based actuated_style   # plumbing check, system temp dir, smoke seeds
 python evaluate_fyp.py --mode final --run-id fyp_final --dqn-run training_runs/<run> --confirm-final --controllers fixed_time rule_based actuated_style dqn
 ```
