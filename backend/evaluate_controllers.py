@@ -97,10 +97,8 @@ EVAL_RESULTS_DIR: Path = _BACKEND_DIR / "evaluation_results"
 SUMO_CONFIG_PATH: Path = _BACKEND_DIR / "sumo" / "config" / "intelliroads.sumocfg"
 ROUTE_FILE_PATH: Path = _BACKEND_DIR / "sumo" / "routes" / "intelliroads.rou.xml"
 
-# Large offset keeps evaluation seeds disjoint from training epoch seeds
-# (train_dqn.py defaults to seeds 1..epochs, i.e. small integers), so
-# evaluation never accidentally replays a traffic pattern the model was
-# trained on.
+# Large offset keeps these legacy evaluation seeds (1,000,001 ...) disjoint from the seeds of the removed legacy trainer
+# (it used 1..epochs); the current train_dqn.py trains on 2,000,001 ... and refuses this range (app/training/seeds.py).
 EVAL_SEED_OFFSET = 1_000_000
 
 CONTROLLER_NAMES = ["fixed_time", "rule_based", "dqn"]
@@ -113,14 +111,42 @@ CONTROLLER_LABELS = {
 
 # ── SUMO session helpers ───────────────────────────────────────────────────────
 
-def make_session() -> TraCISession:
+def assert_not_tracked_route(path: Path) -> None:
+    """Refuse to write generated demand into the tracked route file (Stage 4 safety rule)."""
+    if Path(path).resolve() == ROUTE_FILE_PATH.resolve():
+        raise RuntimeError(f"refusing to write evaluation demand into the tracked route file {ROUTE_FILE_PATH}")
+
+
+def make_episode_config(work_dir: Path, seed: int) -> Path:
+    """Write a per-episode route file and a sumocfg copy (absolute paths) into ``work_dir``.
+
+    The tracked route file and sumocfg are never modified.
+    """
+    import re
+    work_dir = Path(work_dir)
+    work_dir.mkdir(parents=True, exist_ok=True)
+    route = work_dir / f"episode_{seed}.rou.xml"
+    assert_not_tracked_route(route)
+    generate_routefile(seed=seed, output_path=route)
+    text = SUMO_CONFIG_PATH.read_text()
+    net = (SUMO_CONFIG_PATH.parent / "../network/intelliroads.net.xml").resolve()
+    for attr, value in (("net-file", net), ("route-files", route)):
+        text, n = re.subn(rf'(<{attr} value=")[^"]*(")', lambda m, v=value: m.group(1) + str(v) + m.group(2), text)
+        if n != 1:
+            raise RuntimeError(f"{SUMO_CONFIG_PATH}: expected exactly one <{attr} value=...> entry to rewrite, found {n}")
+    cfg = work_dir / f"episode_{seed}.sumocfg"
+    cfg.write_text(text)
+    return cfg
+
+
+def make_session(config_path: Optional[Path] = None) -> TraCISession:
     """Create and start a fresh real-SUMO TraCI session. Aborts if mock mode."""
     if not SUMO_AVAILABLE:
         raise RuntimeError(
             "SUMO/TraCI libraries not found. "
             "Evaluation requires real SUMO — cannot run in mock mode."
         )
-    session = TraCISession(config_path=SUMO_CONFIG_PATH, step_length=1.0)
+    session = TraCISession(config_path=config_path or SUMO_CONFIG_PATH, step_length=1.0)
     session.start()
     if session.mock_mode:
         session.close()
@@ -589,7 +615,9 @@ def _print_summary_table(summary_rows: List[Dict[str, Any]]) -> None:
 
 # == Main =======================================================================
 
-def main() -> None:
+def main(argv: Optional[List[str]] = None) -> None:
+    import tempfile
+    from app.training.runs import create_run_dir
     parser = argparse.ArgumentParser(
         description="Evaluate Fixed-Time, Rule-Based, and DQN controllers on real SUMO."
     )
@@ -597,132 +625,150 @@ def main() -> None:
                         help="Number of evaluation episodes per controller (default: 30)")
     parser.add_argument("--steps",    type=int, default=200,
                         help="Simulation steps per episode (default: 200)")
-    args = parser.parse_args()
+    parser.add_argument("--output-dir", type=str, default=None,
+                        help="NEW directory for the results (default: evaluation_runs/legacy_<timestamp>). "
+                             "Existing result directories are never overwritten.")
+    parser.add_argument("--checkpoint", type=str, default=None,
+                        help="Legacy 5-feature checkpoint (read only; default: data/models/dqn_agent.pt)")
+    args = parser.parse_args(argv)
 
     N_EPISODES = args.episodes
     N_STEPS    = args.steps
+    checkpoint_path = Path(args.checkpoint) if args.checkpoint else CHECKPOINT_PATH      # local: the module default is never changed
 
-    EVAL_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-
-    # == Validate checkpoint ==================================================
-    if not CHECKPOINT_PATH.exists():
+    # == Validate checkpoint (before any output directory is created) =========
+    if not checkpoint_path.exists():
         raise FileNotFoundError(
-            f"DQN checkpoint not found: {CHECKPOINT_PATH}\n"
-            "Ensure the trained checkpoint exists at backend/data/models/dqn_agent.pt."
+            f"DQN checkpoint not found: {checkpoint_path}\n"
+            "Ensure the trained checkpoint exists at backend/data/models/dqn_agent.pt or pass --checkpoint."
         )
 
-    print(f"\n{'='*60}")
-    print(f"  IntelliRoads - Evaluation Phase")
-    print(f"{'='*60}")
-    print(f"  Controllers : {', '.join(CONTROLLER_LABELS.values())}")
-    print(f"  Episodes    : {N_EPISODES} per controller")
-    print(f"  Steps/ep    : {N_STEPS}")
-    print(f"  Total steps : {N_EPISODES * N_STEPS * len(CONTROLLER_NAMES):,}")
-    print(f"  DQN model   : {CHECKPOINT_PATH.name}")
-    print(f"  SUMO config : {SUMO_CONFIG_PATH}")
-    print(f"  Output dir  : {EVAL_RESULTS_DIR}")
-    print(f"{'='*60}\n")
+    # LEGACY protocol: 5-feature legacy state, no warm-up, lane-proxy metrics. Use evaluate_fyp.py for the
+    # fair protocol.  Results always go to a NEW directory and routes to a temp directory.
+    if args.output_dir:
+        out = Path(args.output_dir)
+        out_dir = create_run_dir(out.parent, out.name)
+    else:
+        out_dir = create_run_dir(_BACKEND_DIR / "evaluation_runs", "legacy_" + time.strftime("%Y%m%d_%H%M%S"))
+    route_tmp = tempfile.TemporaryDirectory(prefix="ir_legacy_eval_")
+    route_dir = Path(route_tmp.name)
+    try:
+        print("  *** LEGACY evaluation (5-feature state, no warm-up). Use evaluate_fyp.py for the fair protocol. ***")
 
-    # == Pre-load DQN agent (one instance, reused across episodes) ============
-    print("Loading DQN checkpoint …")
-    dqn_agent = DQNAgent(state_size=5, action_size=4)
-    dqn_agent.load(CHECKPOINT_PATH)
-    dqn_agent.policy_net.eval()   # inference mode
-    print(f"  Loaded: {CHECKPOINT_PATH}")
-    print(f"  Train steps in checkpoint: {dqn_agent.train_step_count:,}\n")
+        print(f"\n{'='*60}")
+        print(f"  IntelliRoads - Evaluation Phase")
+        print(f"{'='*60}")
+        print(f"  Controllers : {', '.join(CONTROLLER_LABELS.values())}")
+        print(f"  Episodes    : {N_EPISODES} per controller")
+        print(f"  Steps/ep    : {N_STEPS}")
+        print(f"  Total steps : {N_EPISODES * N_STEPS * len(CONTROLLER_NAMES):,}")
+        print(f"  DQN model   : {checkpoint_path.name}")
+        print(f"  SUMO config : {SUMO_CONFIG_PATH}")
+        print(f"  Output dir  : {out_dir}")
+        print(f"{'='*60}\n")
 
-    # == Main evaluation loop =================================================
-    results: Dict[str, List[Dict[str, float]]] = {k: [] for k in CONTROLLER_NAMES}
-    raw_rows: List[Dict[str, Any]] = []
+        # == Pre-load DQN agent (one instance, reused across episodes) ============
+        print("Loading DQN checkpoint …")
+        dqn_agent = DQNAgent(state_size=5, action_size=4)
+        dqn_agent.load(checkpoint_path)
+        dqn_agent.policy_net.eval()   # inference mode
+        print(f"  Loaded: {checkpoint_path}")
+        print(f"  Train steps in checkpoint: {dqn_agent.train_step_count:,}\n")
 
-    total_episodes = N_EPISODES * len(CONTROLLER_NAMES)
-    ep_counter = 0
+        # == Main evaluation loop =================================================
+        results: Dict[str, List[Dict[str, float]]] = {k: [] for k in CONTROLLER_NAMES}
+        raw_rows: List[Dict[str, Any]] = []
 
-    for ctrl_key in CONTROLLER_NAMES:
-        ctrl_label = CONTROLLER_LABELS[ctrl_key]
-        print(f"-- Running {ctrl_label} controller ({N_EPISODES} episodes) --")
+        total_episodes = N_EPISODES * len(CONTROLLER_NAMES)
+        ep_counter = 0
 
-        for ep_idx in range(1, N_EPISODES + 1):
-            ep_counter += 1
-            t0 = time.time()
+        for ctrl_key in CONTROLLER_NAMES:
+            ctrl_label = CONTROLLER_LABELS[ctrl_key]
+            print(f"-- Running {ctrl_label} controller ({N_EPISODES} episodes) --")
 
-            # Fresh, held-out randomized traffic demand for this episode -
-            # without this, all N_EPISODES replay the same static scenario
-            # and every metric comes out identical (std = 0.0).
-            #
-            # Seeded by ep_idx (not the cumulative ep_counter): this means
-            # episode 1 uses the same traffic scenario for all three
-            # controllers, episode 2 uses the same scenario for all three,
-            # etc. This is what makes the comparison paired/fair - each
-            # controller is judged on identical traffic, not just traffic
-            # from the same random distribution.
-            generate_routefile(seed=EVAL_SEED_OFFSET + ep_idx, output_path=ROUTE_FILE_PATH)
+            for ep_idx in range(1, N_EPISODES + 1):
+                ep_counter += 1
+                t0 = time.time()
 
-            session = make_session()
-            try:
-                if ctrl_key == "fixed_time":
-                    ep_metrics = run_episode_fixed_time(session, N_STEPS)
-                elif ctrl_key == "rule_based":
-                    ep_metrics = run_episode_rule_based(session, N_STEPS)
-                else:  # dqn
-                    ep_metrics = run_episode_dqn(session, dqn_agent, N_STEPS)
-            finally:
-                session.close()
+                # Fresh, held-out randomized traffic demand for this episode -
+                # without this, all N_EPISODES replay the same static scenario
+                # and every metric comes out identical (std = 0.0).
+                #
+                # Seeded by ep_idx (not the cumulative ep_counter): this means
+                # episode 1 uses the same traffic scenario for all three
+                # controllers, episode 2 uses the same scenario for all three,
+                # etc. This is what makes the comparison paired/fair - each
+                # controller is judged on identical traffic, not just traffic
+                # from the same random distribution.
+                episode_cfg = make_episode_config(route_dir, EVAL_SEED_OFFSET + ep_idx)
 
-            elapsed = time.time() - t0
-            results[ctrl_key].append(ep_metrics)
+                session = make_session(episode_cfg)
+                try:
+                    if ctrl_key == "fixed_time":
+                        ep_metrics = run_episode_fixed_time(session, N_STEPS)
+                    elif ctrl_key == "rule_based":
+                        ep_metrics = run_episode_rule_based(session, N_STEPS)
+                    else:  # dqn
+                        ep_metrics = run_episode_dqn(session, dqn_agent, N_STEPS)
+                finally:
+                    session.close()
 
-            raw_rows.append({
-                "controller":      ctrl_label,
-                "episode":         ep_idx,
-                **ep_metrics,
-                "wall_time_s":     round(elapsed, 2),
-            })
+                elapsed = time.time() - t0
+                results[ctrl_key].append(ep_metrics)
 
-            print(
-                f"  [{ep_counter:>3}/{total_episodes}] ep {ep_idx:>2}/{N_EPISODES}"
-                f"  reward={ep_metrics['episode_reward']:+.1f}"
-                f"  wait={ep_metrics['avg_waiting_time']:.2f}s"
-                f"  queue={ep_metrics['avg_queue_length']:.2f}"
-                f"  tp={ep_metrics['throughput']}"
-                f"  ({elapsed:.1f}s)"
-            )
+                raw_rows.append({
+                    "controller":      ctrl_label,
+                    "episode":         ep_idx,
+                    **ep_metrics,
+                    "wall_time_s":     round(elapsed, 2),
+                })
 
-        print()
+                print(
+                    f"  [{ep_counter:>3}/{total_episodes}] ep {ep_idx:>2}/{N_EPISODES}"
+                    f"  reward={ep_metrics['episode_reward']:+.1f}"
+                    f"  wait={ep_metrics['avg_waiting_time']:.2f}s"
+                    f"  queue={ep_metrics['avg_queue_length']:.2f}"
+                    f"  tp={ep_metrics['throughput']}"
+                    f"  ({elapsed:.1f}s)"
+                )
 
-    # ── Build and write summary ──────────────────────────────────────────────
-    summary_rows = _build_summary(results)
+            print()
 
-    # Write raw CSV
-    raw_csv_path = EVAL_RESULTS_DIR / "eval_raw.csv"
-    _write_raw_csv(raw_rows, raw_csv_path)
-    print(f"Raw results written  -> {raw_csv_path}")
+        # ── Build and write summary ──────────────────────────────────────────────
+        summary_rows = _build_summary(results)
 
-    # Write summary CSV
-    summary_csv_path = EVAL_RESULTS_DIR / "eval_summary.csv"
-    if summary_rows:
-        with open(summary_csv_path, "w", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=list(summary_rows[0].keys()))
-            writer.writeheader()
-            writer.writerows(summary_rows)
-    print(f"Summary CSV written  -> {summary_csv_path}")
+        # Write raw CSV
+        raw_csv_path = out_dir / "eval_raw.csv"
+        _write_raw_csv(raw_rows, raw_csv_path)
+        print(f"Raw results written  -> {raw_csv_path}")
 
-    # Write summary JSON
-    summary_json_path = EVAL_RESULTS_DIR / "eval_summary.json"
-    meta = {
-        "generated_at":      time.strftime("%Y-%m-%dT%H:%M:%S"),
-        "n_episodes":        N_EPISODES,
-        "n_steps_per_ep":    N_STEPS,
-        "dqn_checkpoint":    str(CHECKPOINT_PATH.name),
-        "sumo_config":       str(SUMO_CONFIG_PATH.name),
-        "controllers":       summary_rows,
-    }
-    with open(summary_json_path, "w") as f:
-        json.dump(meta, f, indent=2)
-    print(f"Summary JSON written -> {summary_json_path}\n")
+        # Write summary CSV
+        summary_csv_path = out_dir / "eval_summary.csv"
+        if summary_rows:
+            with open(summary_csv_path, "w", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=list(summary_rows[0].keys()))
+                writer.writeheader()
+                writer.writerows(summary_rows)
+        print(f"Summary CSV written  -> {summary_csv_path}")
 
-    # ── Print table ──────────────────────────────────────────────────────────
-    _print_summary_table(summary_rows)
+        # Write summary JSON
+        summary_json_path = out_dir / "eval_summary.json"
+        meta = {
+            "generated_at":      time.strftime("%Y-%m-%dT%H:%M:%S"),
+            "n_episodes":        N_EPISODES,
+            "n_steps_per_ep":    N_STEPS,
+            "dqn_checkpoint":    str(checkpoint_path.name),
+            "sumo_config":       str(SUMO_CONFIG_PATH.name),
+            "controllers":       summary_rows,
+        }
+        with open(summary_json_path, "w") as f:
+            json.dump(meta, f, indent=2)
+        print(f"Summary JSON written -> {summary_json_path}\n")
+
+        # ── Print table ──────────────────────────────────────────────────────────
+        _print_summary_table(summary_rows)
+    finally:
+        route_tmp.cleanup()                                  # also on errors
 
 
 if __name__ == "__main__":
