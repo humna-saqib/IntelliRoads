@@ -41,8 +41,9 @@ DB_PATH: Path = Path(__file__).resolve().parent.parent.parent / "data" / "intell
 # - rl_experiences: (state, action, reward, next_state) transitions from
 #   RLEnvironment — observational only, the rule-based controller stays
 #   fully in control.
-# - dqn_training_stats: per-epoch training metrics from the standalone
-#   offline train_dqn.py script (not written by the live backend).
+# - dqn_training_stats: per-epoch training metrics written by the former legacy
+#   offline trainer (its --epochs interface was removed; the current train_dqn.py
+#   writes training_runs/<run-id>/ and never this table; not written by the live backend).
 # ---------------------------------------------------------------------------
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS vehicle_counts (
