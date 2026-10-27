@@ -1,28 +1,28 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Cpu, SlidersHorizontal, Loader2, AlertTriangle } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Loader2 } from 'lucide-react';
 import clsx from 'clsx';
 import Card from '../ui/Card';
-import { fetchControllerMode, setControllerMode, type ControllerMode } from '../../services/api';
+import { fetchActiveModel, fetchControllerMode, setControllerMode, type ActiveModelInfo, type ControllerMode } from '../../services/api';
 
 const POLL_INTERVAL_MS = 5000;
 
-const MODES: { value: ControllerMode; label: string; description: string; icon: React.ReactNode }[] = [
-  {
-    value: 'RULE_BASED',
-    label: 'Rule-Based',
-    description: 'Fixed-threshold signal logic',
-    icon: <SlidersHorizontal size={15} />,
-  },
-  {
-    value: 'DQN',
-    label: 'DQN (AI)',
-    description: 'Trained reinforcement-learning agent',
-    icon: <Cpu size={15} />,
-  },
+const MODES: { value: ControllerMode; label: string; description: string }[] = [
+  { value: 'RULE_BASED', label: 'Rule-based', description: 'Green time follows fixed density thresholds.' },
+  { value: 'DQN', label: 'DQN', description: 'A trained Double DQN agent chooses the signal action every 5 seconds.' },
 ];
+
+function Row({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 text-xs">
+      <dt className="text-faint">{label}</dt>
+      <dd className="text-right font-mono tabular-nums text-muted">{children}</dd>
+    </div>
+  );
+}
 
 export default function ControlModePanel() {
   const [mode, setMode] = useState<ControllerMode | null>(null);
+  const [model, setModel] = useState<ActiveModelInfo | null>(null);
   const [switching, setSwitching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -33,7 +33,13 @@ export default function ControlModePanel() {
       setMode(res.mode);
       setError(null);
     } catch {
-      setError('Unable to reach controller mode service.');
+      setError('Unable to reach the controller service.');
+      return;
+    }
+    try {
+      setModel(await fetchActiveModel());
+    } catch {
+      setModel(null); // older backends do not have /rl/model
     }
   }, []);
 
@@ -54,78 +60,63 @@ export default function ControlModePanel() {
       const res = await setControllerMode(target);
       setMode(res.mode);
     } catch {
-      setError(`Failed to switch to ${target === 'DQN' ? 'DQN' : 'Rule-Based'} mode. Still running previous mode.`);
+      setError(`Could not switch to ${target === 'DQN' ? 'DQN' : 'rule-based'} mode. Still running the previous mode.`);
       setMode(previousMode);
     } finally {
       setSwitching(false);
     }
   };
 
+  const active = MODES.find((m) => m.value === mode);
+
   return (
-    <Card
-      title="Signal Control Mode"
-      subtitle="Active traffic signal controller"
-      icon={<Cpu size={16} />}
-    >
-      <div className="flex flex-col gap-3">
-        <div className="grid grid-cols-2 gap-2">
-          {MODES.map((m) => {
-            const active = mode === m.value;
-            return (
-              <button
-                key={m.value}
-                type="button"
-                disabled={switching || mode === null}
-                onClick={() => handleSwitch(m.value)}
-                className={clsx(
-                  'relative flex flex-col items-start gap-1 rounded-xl border p-3 text-left transition-all duration-200',
-                  'disabled:cursor-not-allowed disabled:opacity-60',
-                  active
-                    ? 'border-primary-500/50 bg-primary-600/15 shadow-[0_0_16px_rgba(59,130,246,0.15)]'
-                    : 'border-white/8 bg-white/[0.02] hover:bg-white/[0.05]',
-                )}
-              >
-                <div className="flex items-center gap-1.5">
-                  <span className={clsx(active ? 'text-primary-400' : 'text-slate-400')}>
-                    {m.icon}
-                  </span>
-                  <span className={clsx('text-xs font-semibold', active ? 'text-white' : 'text-slate-300')}>
-                    {m.label}
-                  </span>
-                  {active && (
-                    <span className="ml-auto flex items-center gap-1 text-[9px] font-bold uppercase tracking-wide text-primary-400">
-                      <span className="h-1.5 w-1.5 rounded-full bg-primary-400 animate-pulse" />
-                      Active
-                    </span>
-                  )}
-                </div>
-                <p className="text-[10px] text-slate-500">{m.description}</p>
-              </button>
-            );
-          })}
-        </div>
-
-        {switching && (
-          <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
-            <Loader2 size={12} className="animate-spin" />
-            Switching controller mode…
-          </div>
-        )}
-
-        {error && (
-          <div className="flex items-center gap-1.5 text-[11px] text-danger-400">
-            <AlertTriangle size={12} />
-            {error}
-          </div>
-        )}
-
-        {mode === null && !error && (
-          <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
-            <Loader2 size={12} className="animate-spin" />
-            Loading current mode…
-          </div>
-        )}
+    <Card title="Signal controller" subtitle="Which logic sets the signals">
+      <div role="radiogroup" aria-label="Signal controller" className="grid grid-cols-2 gap-0.5 rounded-md bg-subtle p-0.5">
+        {MODES.map((m) => {
+          const selected = mode === m.value;
+          return (
+            <button
+              key={m.value}
+              type="button"
+              role="radio"
+              aria-checked={selected}
+              disabled={switching || mode === null}
+              onClick={() => handleSwitch(m.value)}
+              className={clsx(
+                'h-7 rounded text-[13px] font-medium transition-colors disabled:cursor-not-allowed',
+                selected ? 'border border-line bg-surface text-ink shadow-sm' : 'border border-transparent text-muted hover:text-ink',
+              )}
+            >
+              {m.label}
+            </button>
+          );
+        })}
       </div>
+
+      <p className="mt-3 min-h-[2.5rem] text-xs leading-relaxed text-muted">{active?.description ?? ' '}</p>
+
+      {mode === 'DQN' && model && (
+        <dl className="mt-3 space-y-1.5 border-t border-line pt-3">
+          {model.file ? (
+            <>
+              <Row label="Model">{model.obs_version}</Row>
+              <Row label="Checkpoint">episode {model.selected_episode}</Row>
+              <Row label="Inputs">{model.state_size} features</Row>
+              {model.stats && <Row label="Decisions made">{model.stats.decisions.toLocaleString()}</Row>}
+            </>
+          ) : (
+            <Row label="Model">legacy 5-feature demo</Row>
+          )}
+        </dl>
+      )}
+
+      {switching && (
+        <p className="mt-3 flex items-center gap-1.5 text-xs text-faint">
+          <Loader2 size={12} className="animate-spin" />
+          Switching…
+        </p>
+      )}
+      {error && <p className="mt-3 text-xs text-bad">{error}</p>}
     </Card>
   );
 }

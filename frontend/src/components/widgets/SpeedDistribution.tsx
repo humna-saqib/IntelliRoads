@@ -1,17 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTraffic } from '../../context/TrafficContext';
+import { useChartTheme } from '../../theme/chartTheme';
 import Card from '../ui/Card';
-import { Activity } from 'lucide-react';
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ReferenceLine,
-  ResponsiveContainer,
-} from 'recharts';
+import ChartTooltip from '../ui/ChartTooltip';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer } from 'recharts';
 
 interface SpeedHistoryPoint {
   simTime: number;
@@ -21,100 +13,44 @@ interface SpeedHistoryPoint {
 
 export default function SpeedDistribution() {
   const { kpis } = useTraffic();
+  const c = useChartTheme();
   const [history, setHistory] = useState<SpeedHistoryPoint[]>([]);
 
   useEffect(() => {
     if (!kpis) return;
-
     setHistory((prev) => {
-      // Avoid duplicate points for the same simulation second
-      if (prev.length > 0 && prev[prev.length - 1].simTime === kpis.simulation_time) {
-        return prev;
-      }
-
-      const label = `${Math.floor(kpis.simulation_time)}s`;
-      const newPoint: SpeedHistoryPoint = {
+      if (prev.length > 0 && prev[prev.length - 1].simTime === kpis.simulation_time) return prev;
+      const point: SpeedHistoryPoint = {
         simTime: kpis.simulation_time,
-        timeLabel: label,
+        timeLabel: `${Math.floor(kpis.simulation_time)} s`,
         speed: kpis.average_speed,
       };
-
-      const updated = [...prev, newPoint];
-      // Keep only last 30 readings
-      if (updated.length > 30) {
-        return updated.slice(updated.length - 30);
-      }
-      return updated;
+      const updated = [...prev, point];
+      return updated.length > 30 ? updated.slice(updated.length - 30) : updated; // last 30 readings
     });
   }, [kpis]);
 
   return (
-    <Card
-      title="Vehicle Speed Timeline"
-      subtitle="Rolling average speed of active vehicles"
-      icon={<Activity className="h-5 w-5 text-emerald-500" />}
-    >
-      <div className="h-[250px] w-full mt-4">
+    <Card title="Average speed" subtitle="Rolling mean speed of vehicles in the network">
+      <div className="h-[240px] w-full">
         {history.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-slate-500 text-sm">
-            Waiting for simulation data...
-          </div>
+          <div className="flex h-full items-center justify-center text-[13px] text-faint">Waiting for simulation data…</div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={history} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="speedGlow" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.15} />
-              <XAxis
-                dataKey="timeLabel"
-                stroke="#64748b"
-                fontSize={10}
-                tickLine={false}
-                axisLine={false}
-              />
-              <YAxis
-                stroke="#64748b"
-                fontSize={10}
-                tickLine={false}
-                axisLine={false}
-                domain={[0, 'auto']}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#0f172a',
-                  border: '1px solid #334155',
-                  borderRadius: '6px',
-                  color: '#f8fafc',
-                  fontSize: '11px',
-                }}
-                labelClassName="font-bold"
-              />
-              {/* Reference line at 2 m/s for congestion indicator */}
+            <LineChart data={history} margin={{ top: 10, right: 12, left: -16, bottom: 0 }}>
+              <CartesianGrid stroke={c.grid} vertical={false} />
+              <XAxis dataKey="timeLabel" tick={{ fill: c.axis, fontSize: 11 }} tickLine={false} axisLine={false} minTickGap={24} />
+              <YAxis tick={{ fill: c.axis, fontSize: 11 }} tickLine={false} axisLine={false} domain={[0, 'auto']} />
+              <Tooltip content={<ChartTooltip unit="m/s" />} cursor={{ stroke: c.grid }} />
               <ReferenceLine
                 y={2}
-                stroke="#ef4444"
-                strokeDasharray="3 3"
-                label={{
-                  value: 'Congestion Threshold (2 m/s)',
-                  fill: '#ef4444',
-                  fontSize: 8,
-                  position: 'top',
-                }}
+                stroke={c.bad}
+                strokeDasharray="3 4"
+                strokeOpacity={0.7}
+                label={{ value: 'Congestion threshold 2 m/s', fill: c.axis, fontSize: 11, position: 'insideTopRight' }}
               />
-              <Area
-                type="monotone"
-                dataKey="speed"
-                name="Avg Speed (m/s)"
-                stroke="#10b981"
-                strokeWidth={2}
-                fillOpacity={1}
-                fill="url(#speedGlow)"
-              />
-            </AreaChart>
+              <Line type="monotone" dataKey="speed" name="Average speed" stroke={c.series[0]} strokeWidth={1.75} dot={false} activeDot={{ r: 3 }} isAnimationActive={false} />
+            </LineChart>
           </ResponsiveContainer>
         )}
       </div>

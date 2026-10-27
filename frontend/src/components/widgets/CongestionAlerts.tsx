@@ -1,9 +1,24 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTraffic } from '../../context/TrafficContext';
 import { resolveCongestionAlert } from '../../services/api';
 import Card from '../ui/Card';
 import Badge from '../ui/Badge';
-import { AlertTriangle, CheckCircle, Clock, Check } from 'lucide-react';
+import clsx from 'clsx';
+
+const formatTime = (ts: unknown) => {
+  if (!ts) return '';
+  const date = typeof ts === 'number' ? new Date(ts * 1000) : new Date(String(ts));
+  if (isNaN(date.getTime())) return String(ts);
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+};
+
+const junctionName = (id: string) => {
+  if (id.includes('A')) return 'Junction A';
+  if (id.includes('B')) return 'Junction B';
+  if (id.includes('C')) return 'Junction C';
+  if (id.includes('D')) return 'Junction D';
+  return id;
+};
 
 export default function CongestionAlerts() {
   const { congestion } = useTraffic();
@@ -11,130 +26,75 @@ export default function CongestionAlerts() {
   const [manuallyResolved, setManuallyResolved] = useState<Record<string, boolean>>({});
 
   const events = congestion?.events ?? [];
-  const activeEvents = events.filter(
-    (e) => e.status === 'CONGESTED' && !e.resolved_at && !manuallyResolved[e.id || e.intersection_id]
-  );
+  const isOpen = (e: (typeof events)[number]) =>
+    e.status === 'CONGESTED' && !e.resolved_at && !manuallyResolved[e.id || e.intersection_id];
+  const activeCount = events.filter(isOpen).length;
 
-  const getJunctionName = (id: string) => {
-    if (id.includes('A') || id.includes('junctionA')) return 'Intersection A';
-    if (id.includes('B') || id.includes('junctionB')) return 'Intersection B';
-    if (id.includes('C') || id.includes('junctionC')) return 'Intersection C';
-    if (id.includes('D') || id.includes('junctionD')) return 'Intersection D';
-    return id;
-  };
-
-  const formatTime = (ts: any) => {
-    if (!ts) return '';
-    // If it's a number (unix timestamp)
-    if (typeof ts === 'number') {
-      return new Date(ts * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    }
-    // If it is already a string
+  const handleResolve = async (key: string) => {
+    setResolvingIds((prev) => ({ ...prev, [key]: true }));
     try {
-      const date = new Date(ts);
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    } catch {
-      return String(ts);
-    }
-  };
-
-  const handleResolve = async (eventIdOrIntersectionId: string) => {
-    setResolvingIds((prev) => ({ ...prev, [eventIdOrIntersectionId]: true }));
-    try {
-      await resolveCongestionAlert(eventIdOrIntersectionId);
-      setManuallyResolved((prev) => ({ ...prev, [eventIdOrIntersectionId]: true }));
+      await resolveCongestionAlert(key);
+      setManuallyResolved((prev) => ({ ...prev, [key]: true }));
     } catch (err) {
-      console.error('Failed to manually resolve alert:', err);
+      console.error('Failed to resolve alert:', err);
     } finally {
-      setResolvingIds((prev) => ({ ...prev, [eventIdOrIntersectionId]: false }));
+      setResolvingIds((prev) => ({ ...prev, [key]: false }));
     }
   };
 
   return (
     <Card
-      title="Congestion Alerts"
-      subtitle="Real-time traffic bottleneck warnings"
-      icon={<AlertTriangle className="h-5 w-5 text-red-500" />}
+      title="Congestion alerts"
+      subtitle="Lane density above the junction threshold"
+      action={<Badge label={`${activeCount} active`} variant={activeCount > 0 ? 'danger' : 'success'} size="sm" />}
+      padded={false}
     >
-      <div className="flex items-center justify-between mb-4">
-        <span className="text-sm text-slate-400">Status</span>
-        <Badge
-          label={`${activeEvents.length} Active`}
-          variant={activeEvents.length > 0 ? 'danger' : 'success'}
-        />
-      </div>
-
-      <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
-        {events.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-slate-500">
-            <CheckCircle className="h-8 w-8 text-green-500 mb-2" />
-            <p className="text-sm font-medium">All lanes clear</p>
-          </div>
-        ) : (
-          events.map((event, index) => {
-            const eventKey = event.id || event.intersection_id || `evt-${index}`;
-            const isManuallyCleared = manuallyResolved[event.id || event.intersection_id];
-            const isActive = event.status === 'CONGESTED' && !event.resolved_at && !isManuallyCleared;
-            const isResolving = resolvingIds[event.id || event.intersection_id];
-
+      {events.length === 0 ? (
+        <p className="px-4 py-8 text-center text-[13px] text-faint">All lanes clear</p>
+      ) : (
+        <ul className="max-h-[300px] divide-y divide-line overflow-y-auto">
+          {events.map((event, index) => {
+            const key = event.id || event.intersection_id;
+            const active = isOpen(event);
+            const cleared = event.resolved_at || manuallyResolved[key];
             return (
-              <div
-                key={`${eventKey}-${index}`}
-                className={`p-3 rounded-lg border bg-slate-900/40 transition-all ${
-                  isActive
-                    ? 'border-red-500/40 border-l-4 border-l-red-500 animate-pulse-slow'
-                    : 'border-slate-800 opacity-60'
-                }`}
+              <li
+                key={`${key || 'evt'}-${index}`}
+                className={clsx('border-l-2 px-4 py-2.5', active ? 'border-l-bad' : 'border-l-transparent opacity-60')}
               >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h4 className="font-semibold text-sm text-slate-200">
-                      {getJunctionName(event.intersection_id)}
-                      {event.direction && (
-                        <span className="ml-2 text-[10px] font-semibold text-amber-400 align-middle">
-                          {event.direction} approach
-                        </span>
-                      )}
-                    </h4>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Density: <span className="font-semibold text-slate-300">{event.density_value} veh/km</span> (Threshold: {event.threshold})
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-medium">
+                      {junctionName(event.intersection_id)}
+                      {event.direction && <span className="ml-2 text-xs font-normal text-muted">{event.direction} approach</span>}
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted">
+                      <span className="font-mono tabular-nums">{event.density_value}</span> veh/km
+                      <span className="text-faint"> (threshold {event.threshold})</span>
                     </p>
                   </div>
-                  <div className="flex flex-col items-end gap-1.5">
-                    <Badge
-                      label={isActive ? 'CONGESTED' : 'RESOLVED'}
-                      variant={isActive ? 'danger' : 'success'}
-                      size="sm"
-                    />
-                    {isActive && (
+                  <div className="flex flex-shrink-0 flex-col items-end gap-1">
+                    <Badge label={active ? 'Congested' : 'Resolved'} variant={active ? 'danger' : 'success'} size="sm" />
+                    {active && (
                       <button
-                        onClick={() => handleResolve(event.id || event.intersection_id)}
-                        disabled={isResolving}
-                        className="inline-flex items-center gap-1 text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium px-2 py-0.5 rounded border border-white/10 transition-colors disabled:opacity-50"
-                        title="Manually override and resolve alert"
+                        onClick={() => handleResolve(key)}
+                        disabled={resolvingIds[key]}
+                        className="text-xs text-muted underline decoration-strong underline-offset-2 hover:text-ink disabled:opacity-50"
                       >
-                        <Check size={10} className="text-emerald-400" />
-                        {isResolving ? 'Resolving...' : 'Mark Resolved'}
+                        {resolvingIds[key] ? 'Resolving…' : 'Mark resolved'}
                       </button>
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-1 mt-2 text-[10px] text-slate-500">
-                  <Clock className="h-3 w-3" />
-                  <span>Detected: {formatTime(event.timestamp)}</span>
-                  {(event.resolved_at || isManuallyCleared) && (
-                    <>
-                      <span className="mx-1">•</span>
-                      <span>Cleared: {formatTime(event.resolved_at || Date.now() / 1000)}</span>
-                    </>
-                  )}
-                </div>
-              </div>
+                <p className="mt-1 text-2xs text-faint">
+                  Detected {formatTime(event.timestamp)}
+                  {cleared && ` · cleared ${formatTime(event.resolved_at || Date.now() / 1000)}`}
+                </p>
+              </li>
             );
-          })
-        )}
-      </div>
+          })}
+        </ul>
+      )}
     </Card>
   );
 }
-

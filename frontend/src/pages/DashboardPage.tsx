@@ -1,4 +1,3 @@
-import React from 'react';
 import KPICards from '../components/widgets/KPICards';
 import SignalStatusGrid from '../components/widgets/SignalStatusGrid';
 import CongestionAlerts from '../components/widgets/CongestionAlerts';
@@ -11,38 +10,30 @@ import ControlModePanel from '../components/widgets/ControlModePanel';
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-4 sm:space-y-6">
-      {/* Emergency vehicle indicator banner */}
+    <div>
       <EmergencyPriorityBanner />
 
-      {/* Top row: KPI cards */}
-      <KPICards />
+      <div className="space-y-4">
+        <KPICards />
 
-      {/* Grid row 2: Signals and Alerts */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
-        <div className="xl:col-span-2">
-          <SignalStatusGrid />
+        {/* left column: what the signals are doing; right column: how they are controlled */}
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+          <div className="space-y-4 xl:col-span-2">
+            <SignalStatusGrid />
+            <CongestionAlerts />
+          </div>
+          <div className="space-y-4">
+            <ControlModePanel />
+            <VehicleClassChart />
+          </div>
         </div>
-        <div className="space-y-4 sm:space-y-6">
-          <ControlModePanel />
-          <CongestionAlerts />
-        </div>
-      </div>
 
-      {/* Grid row 3: Density and Occupancy Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <DensityChart />
-        <OccupancyChart />
-      </div>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <DensityChart />
+          <OccupancyChart />
+        </div>
 
-      {/* Grid row 4: Class Distribution and Vehicle Table */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
-        <div className="xl:col-span-1">
-          <VehicleClassChart />
-        </div>
-        <div className="xl:col-span-2">
-          <VehicleTable />
-        </div>
+        <VehicleTable />
       </div>
     </div>
   );

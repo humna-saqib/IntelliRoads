@@ -179,6 +179,22 @@ export async function setControllerMode(mode: ControllerMode): Promise<{ status:
   return apiPost<{ status: string; mode: ControllerMode }>('/rl/mode', { mode });
 }
 
+/** Which model drives DQN mode. The final obs-v2 model reports its file, schema and live decision counts. */
+export interface ActiveModelInfo {
+  model: string;
+  mode: ControllerMode;
+  file?: string;
+  obs_version?: string;
+  state_size?: number;
+  selected_episode?: number;
+  sha256?: string;
+  stats?: { decisions: number; action_counts: Record<string, number> };
+}
+
+export async function fetchActiveModel(): Promise<ActiveModelInfo> {
+  return apiFetch<ActiveModelInfo>('/rl/model');
+}
+
 export interface JunctionThresholds {
   low_threshold: number;
   medium_threshold: number;

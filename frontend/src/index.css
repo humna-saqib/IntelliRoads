@@ -2,64 +2,153 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ------------------------------------------------------------------
+   Design tokens. Values are "r g b" so Tailwind can add opacity.
+   Light is the default; the .dark class on <html> switches the set.
+   ------------------------------------------------------------------ */
+:root {
+  --page:        250 250 250;
+  --surface:     255 255 255;
+  --subtle:      244 244 245;
+  --line:        228 228 231;
+  --line-strong: 212 212 216;
+
+  --ink:         24 24 27;
+  --muted:       82 82 91;
+  --faint:       113 113 122;
+
+  --accent:      24 24 27;
+  --accent-fg:   255 255 255;
+
+  /* status colours: dark enough for text on white */
+  --ok:          21 128 61;
+  --warn:        180 83 9;
+  --bad:         185 28 28;
+  --info:        29 78 216;
+
+  /* signal lamps */
+  --sig-red:     220 38 38;
+  --sig-yellow:  234 179 8;
+  --sig-green:   22 163 74;
+
+  color-scheme: light;
+}
+
+.dark {
+  --page:        9 9 11;
+  --surface:     18 18 21;
+  --subtle:      28 28 32;
+  --line:        39 39 45;
+  --line-strong: 63 63 70;
+
+  --ink:         244 244 245;
+  --muted:       161 161 170;
+  --faint:       128 128 138;
+
+  --accent:      244 244 245;
+  --accent-fg:   24 24 27;
+
+  --ok:          74 222 128;
+  --warn:        251 191 36;
+  --bad:         248 113 113;
+  --info:        96 165 250;
+
+  --sig-red:     239 68 68;
+  --sig-yellow:  250 204 21;
+  --sig-green:   34 197 94;
+
+  color-scheme: dark;
+}
+
 @layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
   body {
-    @apply bg-[#08080a] text-slate-100 antialiased;
-    font-family: 'Inter', sans-serif;
+    @apply bg-page text-ink font-sans text-[14px] leading-5 antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  h1, h2, h3, h4 {
+    @apply font-medium tracking-tight;
+  }
+  ::selection {
+    background: rgb(var(--ink) / 0.14);
+  }
+  :focus-visible {
+    @apply outline outline-2 outline-offset-2 outline-ink/40;
   }
 }
 
-/* Custom Scrollbar styling */
+/* ------------------------------------------------------------------
+   Small component classes shared by every page
+   ------------------------------------------------------------------ */
+@layer components {
+  .btn {
+    @apply inline-flex h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded-md border border-line bg-surface px-3 text-[13px] font-medium text-ink transition-colors hover:bg-subtle disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply border-transparent bg-accent text-accent-fg hover:bg-accent/90;
+  }
+  .btn-ghost {
+    @apply border-transparent bg-transparent text-muted hover:bg-subtle hover:text-ink;
+  }
+  .btn-icon {
+    @apply h-8 w-8 px-0;
+  }
+
+  .input {
+    @apply h-8 w-full rounded-md border border-line bg-surface px-2.5 text-[13px] text-ink placeholder:text-faint focus:border-strong focus:outline-none focus:ring-2 focus:ring-ink/10;
+  }
+  .field-label {
+    @apply mb-1.5 block text-xs font-medium text-muted;
+  }
+
+  .tbl {
+    @apply w-full text-[13px];
+  }
+  .tbl th {
+    @apply whitespace-nowrap border-b border-line px-3 py-2 text-left text-xs font-medium text-faint;
+  }
+  .tbl td {
+    @apply border-b border-line/70 px-3 py-2.5 align-middle text-ink;
+  }
+  .tbl tbody tr:last-child td {
+    @apply border-b-0;
+  }
+  .tbl th:first-child,
+  .tbl td:first-child {
+    @apply pl-4;
+  }
+  .tbl th:last-child,
+  .tbl td:last-child {
+    @apply pr-4;
+  }
+  .tbl tbody tr:hover td {
+    @apply bg-subtle/60;
+  }
+}
+
+/* Thin neutral scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--line-strong)) transparent;
+}
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
-
 ::-webkit-scrollbar-track {
-  background: rgba(8, 8, 10, 0.1);
+  background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: rgba(39, 39, 42, 0.4);
-  border-radius: 4px;
+  background: rgb(var(--line-strong));
+  border-radius: 8px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(63, 63, 70, 0.6);
-}
-
-/* Glassmorphism style helper */
-.glass-card {
-  background: rgba(14, 14, 18, 0.65);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-/* Animation utilities */
-@keyframes pulse-glow {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
+/* Respect the OS "reduce motion" setting */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
-  50% {
-    opacity: 0.7;
-    transform: scale(1.05);
-  }
-}
-
-.animate-pulse-slow {
-  animation: pulse-glow 3s infinite ease-in-out;
-}
-
-/* Signal light glow effects */
-.signal-green-glow {
-  box-shadow: 0 0 16px rgba(34, 197, 94, 0.6);
-}
-
-.signal-yellow-glow {
-  box-shadow: 0 0 16px rgba(234, 179, 8, 0.6);
-}
-
-.signal-red-glow {
-  box-shadow: 0 0 16px rgba(239, 68, 68, 0.6);
 }

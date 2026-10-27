@@ -1,8 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useTraffic } from '../../context/TrafficContext';
+import { useChartTheme } from '../../theme/chartTheme';
 import Card from '../ui/Card';
-import Badge from '../ui/Badge';
-import { Map, Info } from 'lucide-react';
 import type { IntersectionData, VehicleData } from '../../types/traffic';
 
 const JUNCTION_SHORT_NAMES: Record<string, string> = {
@@ -12,361 +11,143 @@ const JUNCTION_SHORT_NAMES: Record<string, string> = {
   junctionD: 'Southwest Crossing',
 };
 
+// 2x2 grid in SVG space (400 x 400)
+const JUNCTION_COORDS: Record<string, { x: number; y: number }> = {
+  junctionA: { x: 120, y: 120 },
+  junctionB: { x: 280, y: 120 },
+  junctionC: { x: 280, y: 280 },
+  junctionD: { x: 120, y: 280 },
+};
+
+const SIGNAL_FILL: Record<string, string> = {
+  GREEN: 'fill-sig-green',
+  YELLOW: 'fill-sig-yellow',
+  RED: 'fill-sig-red',
+};
+
+/** Density thresholds (veh/km): under 20 free flow, 20 to 40 congested, over 40 severe. */
+const densityState = (density: number) =>
+  density < 20 ? { stroke: 'stroke-ok', label: 'Free flow', tone: 'text-ok' } :
+  density < 40 ? { stroke: 'stroke-warn', label: 'Congested', tone: 'text-warn' } :
+  { stroke: 'stroke-bad', label: 'Severe', tone: 'text-bad' };
+
+const VEHICLE_TYPES = ['car', 'motorcycle', 'bus', 'emergency'] as const;
+
 export default function IntersectionMap() {
   const { intersections, vehicles } = useTraffic();
-  const [hoveredJunction, setHoveredJunction] = useState<IntersectionData | null>(null);
+  const c = useChartTheme();
+  const [hovered, setHovered] = useState<IntersectionData | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // 2x2 Grid Junction Coordinates in SVG space (400x400)
-  // Junction A (Top-Left): (120, 120)
-  // Junction B (Top-Right): (280, 120)
-  // Junction C (Bottom-Left): (120, 280)
-  // Junction D (Bottom-Right): (280, 280)
-  const junctionCoords: Record<string, { x: number; y: number }> = {
-    junctionA: { x: 120, y: 120 },
-    junctionB: { x: 280, y: 120 },
-    junctionC: { x: 280, y: 280 },
-    junctionD: { x: 120, y: 280 },
+  const vehicleColor = (type: string) => {
+    const i = VEHICLE_TYPES.indexOf(type?.toLowerCase() as (typeof VEHICLE_TYPES)[number]);
+    return i >= 0 ? c.series[i] : c.axis;
   };
 
-  const getSignalColor = (signal: string) => {
-    switch (signal?.toUpperCase()) {
-      case 'GREEN': return '#22c55e';
-      case 'YELLOW': return '#eab308';
-      case 'RED': return '#ef4444';
-      default: return '#64748b';
-    }
-  };
-
-  const handleJunctionHover = (e: React.MouseEvent, junction: IntersectionData) => {
+  const handleHover = (e: React.MouseEvent, junction: IntersectionData) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
-    setHoveredJunction(junction);
+    setHovered(junction);
     setTooltipPos({
-      x: Math.min(Math.max(e.clientX - rect.left + 15, 10), rect.width - 160),
-      y: Math.min(Math.max(e.clientY - rect.top + 15, 10), rect.height - 140),
+      x: Math.min(Math.max(e.clientX - rect.left + 15, 10), rect.width - 170),
+      y: Math.min(Math.max(e.clientY - rect.top + 15, 10), rect.height - 130),
     });
   };
 
-  // Helper to map vehicle SUMO positions to SVG space
-  const getVehicleCoords = (v: VehicleData) => {
+  // SUMO coordinates to SVG space, with a small per-vehicle offset so the two directions stay apart
+  const vehicleCoords = (v: VehicleData) => {
     const posX = typeof v.position_x === 'number' ? v.position_x : 0;
     const posY = typeof v.position_y === 'number' ? v.position_y : 0;
 
-    let x = (posX + 500) * 0.4;
-    let y = (500 - posY) * 0.4;
+    let x = Math.min(Math.max((posX + 500) * 0.4, 5), 395);
+    let y = Math.min(Math.max((500 - posY) * 0.4, 5), 395);
 
-    // Constrain to SVG boundaries with a small padding
-    x = Math.min(Math.max(x, 5), 395);
-    y = Math.min(Math.max(y, 5), 395);
-
-    // Add a tiny offset depending on direction to keep dots distinct (e.g. left vs right lane offset)
     const lane = (v.lane_id || '').toLowerCase();
-    const isEven = v.vehicle_id.charCodeAt(v.vehicle_id.length - 1) % 2 === 0;
-    const offsetVal = isEven ? 3 : -3;
-
-    if (lane.includes('a') || lane.includes('d')) {
-      // Horizontal lanes A and D: add y-offset to distinguish lanes
-      y += offsetVal;
-    } else if (lane.includes('b') || lane.includes('c')) {
-      // Vertical lanes B and C: add x-offset to distinguish lanes
-      x += offsetVal;
-    }
-
+    const offset = v.vehicle_id.charCodeAt(v.vehicle_id.length - 1) % 2 === 0 ? 3 : -3;
+    if (lane.includes('a') || lane.includes('d')) y += offset;
+    else if (lane.includes('b') || lane.includes('c')) x += offset;
     return { x, y };
   };
 
-  const getVehicleColor = (type: string) => {
-    switch (type?.toLowerCase()) {
-      case 'car': return '#3b82f6'; // Blue
-      case 'motorcycle': return '#a855f7'; // Purple
-      case 'bus': return '#f59e0b'; // Amber
-      case 'emergency': return '#ef4444'; // Red
-      default: return '#94a3b8'; // Slate
-    }
-  };
-
-  // Map density to color-coded status
-  // Based on thresholds: Low (<20), Medium (20-40), High (>40) v/km
-  const getDensityColor = (density: number) => {
-    if (density < 20) {
-      return {
-        ring: '#22c55e',      // Green - Free flow
-        glow: 'rgba(34, 197, 94, 0.3)',
-        label: 'Free Flow'
-      };
-    } else if (density < 40) {
-      return {
-        ring: '#f59e0b',      // Orange - Congested
-        glow: 'rgba(245, 158, 11, 0.3)',
-        label: 'Congested'
-      };
-    } else {
-      return {
-        ring: '#ef4444',      // Red - Severely congested
-        glow: 'rgba(239, 68, 68, 0.3)',
-        label: 'Severe'
-      };
-    }
-  };
-
   return (
-    <Card
-      title="Interactive Intersection Map"
-      subtitle="Live traffic network simulation view"
-      icon={<Map className="h-5 w-5 text-purple-500" />}
-      className="relative"
-    >
-      <div 
-        ref={containerRef}
-        className="relative border border-slate-800/80 rounded-lg overflow-hidden bg-slate-950/80 aspect-square max-w-[400px] mx-auto"
-      >
-        {/* Dark Grid Background */}
-        <div 
-          className="absolute inset-0 opacity-[0.03] pointer-events-none" 
-          style={{
-            backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)',
-            backgroundSize: '20px 20px',
-          }}
-        />
+    <Card title="Network map" subtitle="Live view of the four junctions and the vehicles between them">
+      <div ref={containerRef} className="relative mx-auto aspect-square max-w-[440px] overflow-hidden rounded-md border border-line bg-page">
+        <svg viewBox="0 0 400 400" className="h-full w-full" role="img" aria-label="Road network with four signalised junctions">
+          {/* roads */}
+          {[120, 280].map((p) => (
+            <g key={p}>
+              <line x1="0" y1={p} x2="400" y2={p} className="stroke-line" strokeWidth="22" />
+              <line x1="0" y1={p} x2="400" y2={p} className="stroke-surface" strokeWidth="1" strokeDasharray="6 6" />
+              <line x1={p} y1="0" x2={p} y2="400" className="stroke-line" strokeWidth="22" />
+              <line x1={p} y1="0" x2={p} y2="400" className="stroke-surface" strokeWidth="1" strokeDasharray="6 6" />
+            </g>
+          ))}
 
-        <svg viewBox="0 0 400 400" className="w-full h-full">
-          {/* Define gradients for all density levels */}
-          <defs>
-            <style>{`
-              @keyframes density-pulse {
-                0%, 100% { opacity: 0.5; }
-                50% { opacity: 1; }
-              }
-              .pulse-animation { animation: density-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-            `}</style>
-            <radialGradient id="glow-green" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#22c55e" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
-            </radialGradient>
-            <radialGradient id="glow-orange" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
-            </radialGradient>
-            <radialGradient id="glow-red" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#ef4444" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
-            </radialGradient>
-          </defs>
-          {/* Roads (Thick Gray Paths) */}
-          {/* Horizontal Road 1 (A-B) */}
-          <line x1="0" y1="120" x2="400" y2="120" stroke="#334155" strokeWidth="24" strokeLinecap="round" />
-          <line x1="0" y1="120" x2="400" y2="120" stroke="#0f172a" strokeWidth="1" strokeDasharray="6,6" />
-
-          {/* Horizontal Road 2 (C-D) */}
-          <line x1="0" y1="280" x2="400" y2="280" stroke="#334155" strokeWidth="24" strokeLinecap="round" />
-          <line x1="0" y1="280" x2="400" y2="280" stroke="#0f172a" strokeWidth="1" strokeDasharray="6,6" />
-
-          {/* Vertical Road 1 (A-C) */}
-          <line x1="120" y1="0" x2="120" y2="400" stroke="#334155" strokeWidth="24" strokeLinecap="round" />
-          <line x1="120" y1="0" x2="120" y2="400" stroke="#0f172a" strokeWidth="1" strokeDasharray="6,6" />
-
-          {/* Vertical Road 2 (B-D) */}
-          <line x1="280" y1="0" x2="280" y2="400" stroke="#334155" strokeWidth="24" strokeLinecap="round" />
-          <line x1="280" y1="0" x2="280" y2="400" stroke="#0f172a" strokeWidth="1" strokeDasharray="6,6" />
-
-          {/* Intersections (Junctions) */}
+          {/* junctions */}
           {intersections.map((junction) => {
-            const coords = junctionCoords[junction.id];
+            const coords = JUNCTION_COORDS[junction.id];
             if (!coords) return null;
-            const signalColor = getSignalColor(junction.signal);
-            const densityInfo = getDensityColor(junction.density);
-            const isHighDensity = junction.density >= 40;
-
-            // Select the appropriate gradient ID based on density
-            let gradientId = 'glow-green';
-            if (junction.density < 20) {
-              gradientId = 'glow-green';
-            } else if (junction.density < 40) {
-              gradientId = 'glow-orange';
-            } else {
-              gradientId = 'glow-red';
-            }
-
+            const state = densityState(junction.density);
             return (
-              <g 
+              <g
                 key={junction.id}
                 className="cursor-pointer"
-                onMouseEnter={(e) => handleJunctionHover(e, junction)}
-                onMouseMove={(e) => handleJunctionHover(e, junction)}
-                onMouseLeave={() => setHoveredJunction(null)}
-                onClick={(e) => handleJunctionHover(e, junction)}
+                onMouseEnter={(e) => handleHover(e, junction)}
+                onMouseMove={(e) => handleHover(e, junction)}
+                onMouseLeave={() => setHovered(null)}
+                onClick={(e) => handleHover(e, junction)}
               >
-                {/* Hit area for smooth hovering */}
-                <circle
-                  cx={coords.x}
-                  cy={coords.y}
-                  r="32"
-                  fill="transparent"
-                  pointerEvents="all"
-                />
-
-                {/* Background Glow Circle */}
-                <circle
-                  cx={coords.x}
-                  cy={coords.y}
-                  r="26"
-                  fill={`url(#${gradientId})`}
-                  className="pointer-events-none"
-                />
-
-                {/* Animated Pulse Ring (High density only) */}
-                {isHighDensity && (
-                  <circle
-                    cx={coords.x}
-                    cy={coords.y}
-                    r="22"
-                    fill="none"
-                    stroke={densityInfo.ring}
-                    strokeWidth="2"
-                    className="pulse-animation"
-                    opacity="0.5"
-                    style={{ transformOrigin: `${coords.x}px ${coords.y}px` }}
-                  />
-                )}
-
-                {/* Base Intersection Circle - Color coded by density */}
-                <circle
-                  cx={coords.x}
-                  cy={coords.y}
-                  r="16"
-                  fill="#1e293b"
-                  stroke={densityInfo.ring}
-                  strokeWidth="2.5"
-                  className="hover:fill-slate-800 transition-all duration-300 pointer-events-none"
-                  style={{
-                    boxShadow: `0 0 8px ${densityInfo.ring}40`
-                  }}
-                />
-
-                {/* Signal Light Center */}
-                <circle
-                  cx={coords.x}
-                  cy={coords.y}
-                  r="6"
-                  fill={signalColor}
-                  className="pointer-events-none transition-colors duration-300"
-                  style={{
-                    filter: `drop-shadow(0 0 6px ${signalColor})`
-                  }}
-                />
-
-                {/* Text Label */}
-                <text
-                  x={coords.x}
-                  y={coords.y - 20}
-                  fill="#94a3b8"
-                  fontSize="10"
-                  fontWeight="bold"
-                  textAnchor="middle"
-                  className="pointer-events-none select-none"
-                >
+                <circle cx={coords.x} cy={coords.y} r="30" fill="transparent" />
+                <circle cx={coords.x} cy={coords.y} r="15" className={`fill-surface ${state.stroke}`} strokeWidth={junction.density >= 40 ? 3 : 2} />
+                <circle cx={coords.x} cy={coords.y} r="5.5" className={SIGNAL_FILL[junction.signal?.toUpperCase()] ?? 'fill-faint'} />
+                <text x={coords.x} y={coords.y - 22} textAnchor="middle" fontSize="10" fontWeight="500" className="pointer-events-none select-none fill-muted">
                   {JUNCTION_SHORT_NAMES[junction.id] || junction.id}
                 </text>
               </g>
             );
           })}
 
-          {/* Live Vehicle Dots */}
+          {/* vehicles */}
           {vehicles.map((v) => {
-            const coords = getVehicleCoords(v);
-            const color = getVehicleColor(v.vehicle_type);
+            const p = vehicleCoords(v);
             return (
-              <circle
-                key={v.vehicle_id}
-                cx={coords.x}
-                cy={coords.y}
-                r="4"
-                fill={color}
-                className="pointer-events-none"
-                style={{
-                  filter: `drop-shadow(0 0 2px ${color})`,
-                  transition: 'cx 0.9s linear, cy 0.9s linear'
-                }}
-              >
+              <circle key={v.vehicle_id} cx={p.x} cy={p.y} r="3" fill={vehicleColor(v.vehicle_type)} className="pointer-events-none" style={{ transition: 'cx 0.9s linear, cy 0.9s linear' }}>
                 <title>{`${v.vehicle_id} (${v.vehicle_type}): ${v.speed} m/s`}</title>
               </circle>
             );
           })}
         </svg>
 
-        {/* Hover Tooltip Overlay */}
-        {hoveredJunction && (
+        {hovered && (
           <div
-            className="absolute z-50 p-3 rounded-lg border border-slate-700 bg-slate-900/95 backdrop-blur-md text-xs space-y-1.5 text-slate-200 pointer-events-none shadow-2xl min-w-[150px]"
-            style={{ left: `${tooltipPos.x}px`, top: `${tooltipPos.y}px` }}
+            className="pointer-events-none absolute z-10 min-w-[160px] rounded-md border border-line bg-surface px-3 py-2 text-xs shadow-sm"
+            style={{ left: tooltipPos.x, top: tooltipPos.y }}
           >
-            <div className="flex items-center gap-1.5 font-bold text-slate-100">
-              <Info className="h-3.5 w-3.5 text-purple-400" />
-              <span>{hoveredJunction.name || JUNCTION_SHORT_NAMES[hoveredJunction.id] || hoveredJunction.id}</span>
-            </div>
-            <div className="border-t border-slate-800 my-1" />
-            <div className="flex justify-between items-center">
-              <span className="text-slate-400">Signal:</span>
-              <span className="font-semibold" style={{ color: getSignalColor(hoveredJunction.signal) }}>{hoveredJunction.signal}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-400">Density:</span>
-              <span className="font-semibold text-slate-100">{Number(hoveredJunction.density || 0).toFixed(1)} veh/km</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-400">Status:</span>
-              <span className={`font-semibold px-1.5 py-0.5 rounded text-[10px] ${
-                hoveredJunction.density < 20 
-                  ? 'bg-green-500/20 text-green-300' 
-                  : hoveredJunction.density < 40 
-                    ? 'bg-orange-500/20 text-orange-300'
-                    : 'bg-red-500/20 text-red-300'
-              }`}>
-                {hoveredJunction.density < 20 ? 'Free Flow' : hoveredJunction.density < 40 ? 'Congested' : 'Severe'}
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-400">Vehicles:</span>
-              <span className="font-semibold text-slate-100">{hoveredJunction.vehicle_count}</span>
-            </div>
+            <p className="mb-1.5 font-medium text-ink">{hovered.name || JUNCTION_SHORT_NAMES[hovered.id] || hovered.id}</p>
+            <dl className="space-y-1">
+              <div className="flex justify-between gap-4"><dt className="text-muted">Signal</dt><dd className="text-ink">{hovered.signal.charAt(0) + hovered.signal.slice(1).toLowerCase()}</dd></div>
+              <div className="flex justify-between gap-4"><dt className="text-muted">Density</dt><dd className="font-mono tabular-nums text-ink">{Number(hovered.density || 0).toFixed(1)} veh/km</dd></div>
+              <div className="flex justify-between gap-4"><dt className="text-muted">State</dt><dd className={densityState(hovered.density).tone}>{densityState(hovered.density).label}</dd></div>
+              <div className="flex justify-between gap-4"><dt className="text-muted">Vehicles</dt><dd className="font-mono tabular-nums text-ink">{hovered.vehicle_count}</dd></div>
+            </dl>
           </div>
         )}
       </div>
 
-      {/* Map Legend */}
-      <div className="flex flex-wrap items-center justify-center gap-3 mt-4 text-[10px] text-slate-400 border-t border-slate-850 pt-3">
-        <div className="flex items-center gap-1">
-          <span className="h-2 w-2 rounded-full bg-[#3b82f6]" />
-          <span>Car</span>
+      <div className="mt-4 space-y-2 border-t border-line pt-3 text-xs text-faint">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
+          {VEHICLE_TYPES.map((t, i) => (
+            <span key={t} className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full" style={{ background: c.series[i] }} />
+              {t.charAt(0).toUpperCase() + t.slice(1)}
+            </span>
+          ))}
         </div>
-        <div className="flex items-center gap-1">
-          <span className="h-2 w-2 rounded-full bg-[#a855f7]" />
-          <span>Motorcycle</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="h-2 w-2 rounded-full bg-[#f59e0b]" />
-          <span>Bus</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="h-2 w-2 rounded-full bg-[#ef4444]" />
-          <span>Emergency</span>
-        </div>
-
-        <div className="w-full h-px bg-slate-700/50 my-1" />
-
-        <div className="flex items-center gap-1">
-          <span className="h-2.5 w-2.5 rounded-full border-2 border-[#22c55e] bg-slate-900" />
-          <span>Green - Free Flow (&lt;20 v/km)</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="h-2.5 w-2.5 rounded-full border-2 border-[#f59e0b] bg-slate-900" />
-          <span>Orange - Congested (20-40 v/km)</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <span className="h-2.5 w-2.5 rounded-full border-2 border-[#ef4444] bg-slate-900" />
-          <span>Red - Severe (&gt;40 v/km)</span>
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
+          <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full border-2 border-ok" />Free flow, under 20 veh/km</span>
+          <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full border-2 border-warn" />Congested, 20 to 40</span>
+          <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full border-2 border-bad" />Severe, over 40</span>
         </div>
       </div>
     </Card>

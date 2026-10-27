@@ -1,7 +1,9 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { fetchAllThresholds, updateJunctionThresholds, type JunctionThresholds } from '../services/api';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import { Settings2, Save, RotateCcw, CheckCircle, AlertTriangle } from 'lucide-react';
+import PageIntro from '../components/ui/PageIntro';
+import Card from '../components/ui/Card';
+import { Check } from 'lucide-react';
 
 const JUNCTION_LABELS: Record<string, string> = {
   junctionA: 'Junction A',
@@ -39,15 +41,11 @@ export default function SettingsPage() {
 
   const handleChange = (junctionId: string, field: keyof JunctionThresholds, value: string) => {
     const num = parseFloat(value);
-    setForm((prev) => ({
-      ...prev,
-      [junctionId]: { ...prev[junctionId], [field]: isNaN(num) ? 0 : num },
-    }));
+    setForm((prev) => ({ ...prev, [junctionId]: { ...prev[junctionId], [field]: isNaN(num) ? 0 : num } }));
     setSaveState((prev) => ({ ...prev, [junctionId]: 'idle' }));
   };
 
-  const isDirty = (junctionId: string) =>
-    JSON.stringify(form[junctionId]) !== JSON.stringify(original[junctionId]);
+  const isDirty = (junctionId: string) => JSON.stringify(form[junctionId]) !== JSON.stringify(original[junctionId]);
 
   const handleReset = (junctionId: string) => {
     setForm((prev) => ({ ...prev, [junctionId]: original[junctionId] }));
@@ -58,10 +56,7 @@ export default function SettingsPage() {
   const handleSave = async (junctionId: string) => {
     const values = form[junctionId];
     if (values.low_threshold >= values.medium_threshold) {
-      setErrors((prev) => ({
-        ...prev,
-        [junctionId]: 'Low threshold must be less than medium threshold.',
-      }));
+      setErrors((prev) => ({ ...prev, [junctionId]: 'The low threshold must be less than the medium threshold.' }));
       return;
     }
     setErrors((prev) => ({ ...prev, [junctionId]: '' }));
@@ -71,40 +66,23 @@ export default function SettingsPage() {
       setOriginal((prev) => ({ ...prev, [junctionId]: saved }));
       setForm((prev) => ({ ...prev, [junctionId]: saved }));
       setSaveState((prev) => ({ ...prev, [junctionId]: 'saved' }));
-      setTimeout(() => {
-        setSaveState((prev) => ({ ...prev, [junctionId]: 'idle' }));
-      }, 2000);
+      setTimeout(() => setSaveState((prev) => ({ ...prev, [junctionId]: 'idle' })), 2000);
     } catch (err) {
       console.error(`Failed to save thresholds for ${junctionId}:`, err);
-      setErrors((prev) => ({
-        ...prev,
-        [junctionId]: 'Failed to save — please try again.',
-      }));
+      setErrors((prev) => ({ ...prev, [junctionId]: 'Could not save. Please try again.' }));
       setSaveState((prev) => ({ ...prev, [junctionId]: 'error' }));
     }
   };
 
   if (loading) {
-    return <LoadingSpinner label="Loading threshold settings…" center />;
+    return <LoadingSpinner label="Loading settings…" center />;
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-slate-900/40 p-5 rounded-2xl border border-white/5 backdrop-blur-md">
-        <div>
-          <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            <Settings2 className="h-6 w-6 text-primary-400" />
-            Intersection Settings
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Configure density and congestion thresholds per intersection
-          </p>
-        </div>
-      </div>
+    <div>
+      <PageIntro description="Density and congestion thresholds for each junction, in vehicles per kilometre. They decide how lane density is classified and when an alert is raised." />
 
-      {/* Per-junction threshold cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {Object.keys(form)
           .sort()
           .map((junctionId) => {
@@ -114,70 +92,47 @@ export default function SettingsPage() {
             const error = errors[junctionId];
 
             return (
-              <div
+              <Card
                 key={junctionId}
-                className="rounded-2xl border border-white/5 bg-slate-900/40 backdrop-blur-md p-5"
+                title={JUNCTION_LABELS[junctionId] ?? junctionId}
+                action={dirty ? <span className="text-xs text-warn">Unsaved changes</span> : undefined}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-sm font-semibold text-white">
-                    {JUNCTION_LABELS[junctionId] ?? junctionId}
-                  </h2>
-                  {!dirty && state === 'idle' && (
-                    <span className="text-[10px] text-slate-500 uppercase tracking-wide">
-                      No unsaved changes
-                    </span>
-                  )}
-                </div>
-
-                <div className="space-y-3">
+                <div className="space-y-3.5">
                   <ThresholdField
+                    id={`${junctionId}-low`}
                     label="Low density threshold"
-                    hint="Below this, density is LOW (veh/km)"
+                    hint="Below this value density is low."
                     value={values.low_threshold}
                     onChange={(v) => handleChange(junctionId, 'low_threshold', v)}
                   />
                   <ThresholdField
+                    id={`${junctionId}-medium`}
                     label="Medium density threshold"
-                    hint="Below this, density is MEDIUM; at/above is HIGH (veh/km)"
+                    hint="Below this value density is medium; at or above it is high."
                     value={values.medium_threshold}
                     onChange={(v) => handleChange(junctionId, 'medium_threshold', v)}
                   />
                   <ThresholdField
+                    id={`${junctionId}-congestion`}
                     label="Congestion threshold"
-                    hint="Density above this triggers a congestion alert (veh/km)"
+                    hint="Density above this value raises a congestion alert."
                     value={values.congestion_threshold}
                     onChange={(v) => handleChange(junctionId, 'congestion_threshold', v)}
                   />
                 </div>
 
-                {error && (
-                  <div className="flex items-center gap-1.5 mt-3 text-[11px] text-danger-400">
-                    <AlertTriangle size={12} />
-                    {error}
-                  </div>
-                )}
+                {error && <p className="mt-3 text-xs text-bad">{error}</p>}
 
-                <div className="flex items-center gap-2 mt-4">
-                  <button
-                    type="button"
-                    disabled={!dirty || state === 'saving'}
-                    onClick={() => handleSave(junctionId)}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-primary-600/20 text-primary-300 border border-primary-500/30 hover:bg-primary-600/30 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                  >
-                    {state === 'saved' ? <CheckCircle size={13} /> : <Save size={13} />}
+                <div className="mt-4 flex items-center gap-2">
+                  <button type="button" disabled={!dirty || state === 'saving'} onClick={() => handleSave(junctionId)} className="btn btn-primary">
+                    {state === 'saved' && <Check size={14} />}
                     {state === 'saving' ? 'Saving…' : state === 'saved' ? 'Saved' : 'Save changes'}
                   </button>
-                  <button
-                    type="button"
-                    disabled={!dirty}
-                    onClick={() => handleReset(junctionId)}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-white/5 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <RotateCcw size={13} />
+                  <button type="button" disabled={!dirty} onClick={() => handleReset(junctionId)} className="btn btn-ghost">
                     Reset
                   </button>
                 </div>
-              </div>
+              </Card>
             );
           })}
       </div>
@@ -186,11 +141,13 @@ export default function SettingsPage() {
 }
 
 function ThresholdField({
+  id,
   label,
   hint,
   value,
   onChange,
 }: {
+  id: string;
   label: string;
   hint: string;
   value: number;
@@ -198,16 +155,9 @@ function ThresholdField({
 }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-slate-300 mb-1">{label}</label>
-      <input
-        type="number"
-        step="0.1"
-        min="0"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full px-3 py-2 rounded-lg bg-white/[0.03] border border-white/8 text-sm text-white focus:outline-none focus:border-primary-500/50 focus:bg-white/[0.05] transition-colors"
-      />
-      <p className="text-[10px] text-slate-500 mt-1">{hint}</p>
+      <label htmlFor={id} className="field-label">{label}</label>
+      <input id={id} type="number" step="0.1" min="0" value={value} onChange={(e) => onChange(e.target.value)} className="input font-mono tabular-nums" />
+      <p className="mt-1 text-xs text-faint">{hint}</p>
     </div>
   );
 }

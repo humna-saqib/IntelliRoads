@@ -1,109 +1,70 @@
-import { Car, AlertTriangle, Crosshair, Timer } from 'lucide-react';
 import { useTraffic } from '../../context/TrafficContext';
-import Card from '../ui/Card';
+import type { KPIData } from '../../types/traffic';
 import clsx from 'clsx';
 
-interface KPICard {
-  key:        keyof import('../../types/traffic').KPIData;
-  label:      string;
-  icon:       React.ReactNode;
-  color:      string;
-  bgColor:    string;
-  format:     (v: number) => string;
-  subtitle?:  string;
+interface Metric {
+  key: keyof KPIData;
+  label: string;
+  format: (v: number) => string;
+  detail: (k: KPIData) => string;
+  alert?: boolean;
 }
 
-const CARDS: KPICard[] = [
+const METRICS: Metric[] = [
   {
-    key:     'total_vehicles',
-    label:   'Total Vehicles',
-    icon:    <Car size={20} />,
-    color:   'text-accent-400',
-    bgColor: 'from-accent-600/20 to-accent-500/5 border-accent-500/20',
-    format:  (v) => v.toLocaleString(),
+    key: 'total_vehicles',
+    label: 'Vehicles',
+    format: (v) => v.toLocaleString(),
+    detail: (k) => `${k.congestion_percentage.toFixed(0)}% of lanes congested`,
   },
   {
-    key:     'active_intersections',
-    label:   'Active Junctions',
-    icon:    <Crosshair size={20} />,
-    color:   'text-primary-400',
-    bgColor: 'from-primary-600/20 to-primary-500/5 border-primary-500/20',
-    format:  (v) => v.toString(),
+    key: 'active_intersections',
+    label: 'Active junctions',
+    format: (v) => v.toString(),
+    detail: () => 'reporting data',
   },
   {
-    key:     'average_wait_time',
-    label:   'Avg Wait Time',
-    icon:    <Timer size={20} />,
-    color:   'text-success-400',
-    bgColor: 'from-success-600/20 to-success-500/5 border-success-500/20',
-    format:  (v) => `${v.toFixed(1)}s`,
+    key: 'average_wait_time',
+    label: 'Average wait',
+    format: (v) => `${v.toFixed(1)} s`,
+    detail: (k) => `mean speed ${k.average_speed.toFixed(1)} m/s`,
   },
   {
-    key:     'active_alerts',
-    label:   'Active Alerts',
-    icon:    <AlertTriangle size={20} />,
-    color:   'text-danger-400',
-    bgColor: 'from-danger-600/20 to-danger-500/5 border-danger-500/20',
-    format:  (v) => v.toString(),
+    key: 'active_alerts',
+    label: 'Active alerts',
+    format: (v) => v.toString(),
+    detail: (k) => (k.active_alerts > 0 ? 'congestion detected' : 'all clear'),
+    alert: true,
   },
 ];
 
-function AnimatedNumber({ value, format }: { value: number; format: (v: number) => string }) {
-  // Renders the live value directly (with a CSS transition for polish)
-  // rather than driving a requestAnimationFrame count-up loop: rAF is
-  // throttled/suspended by the browser whenever the tab isn't visible or
-  // focused, which would otherwise freeze this KPI on a stale number for
-  // as long as the dashboard tab stays in the background — unacceptable
-  // for a live monitoring display.
-  return <span className="tabular-nums transition-opacity duration-300">{format(value)}</span>;
-}
-
+/** The four headline numbers as one divided strip rather than four separate tiles. */
 export default function KPICards() {
   const { kpis } = useTraffic();
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      {CARDS.map(({ key, label, icon, color, bgColor, format }) => {
+    <section className="grid grid-cols-2 overflow-hidden rounded-lg border border-line bg-surface lg:grid-cols-4" aria-label="Key figures">
+      {METRICS.map(({ key, label, format, detail, alert }, i) => {
         const value = kpis ? (kpis[key] as number) : 0;
+        const raised = alert && value > 0;
         return (
           <div
             key={key}
             className={clsx(
-              'relative overflow-hidden rounded-2xl border bg-gradient-to-br p-5',
-              'transition-all duration-300 hover:scale-[1.02] hover:shadow-card-hover',
-              bgColor,
+              'px-4 py-3.5',
+              i % 2 === 1 && 'border-l border-line',
+              i >= 2 && 'border-t border-line lg:border-t-0',
+              i === 2 && 'lg:border-l',
             )}
           >
-            {/* Background decorative circle */}
-            <div className={clsx('absolute -right-4 -top-4 w-20 h-20 rounded-full opacity-10 blur-xl', color.replace('text-', 'bg-'))} />
-
-            <div className="flex items-start justify-between mb-3">
-              <div className={clsx('flex h-9 w-9 items-center justify-center rounded-xl', color, 'bg-white/5')}>
-                {icon}
-              </div>
-              {/* Trend dot */}
-              <div className="w-2 h-2 rounded-full bg-current animate-pulse" style={{ color: color.replace('text-', '') }} />
-            </div>
-
-            <div className={clsx('text-3xl font-bold tracking-tight', color)}>
-              <AnimatedNumber value={value} format={format} />
-            </div>
-            <p className="text-xs text-slate-400 mt-1 font-medium">{label}</p>
-
-            {/* Extra metrics */}
-            {key === 'average_wait_time' && kpis && (
-              <p className="text-[10px] text-slate-600 mt-1">
-                Speed: {kpis.average_speed.toFixed(1)} m/s avg
-              </p>
-            )}
-            {key === 'total_vehicles' && kpis && (
-              <p className="text-[10px] text-slate-600 mt-1">
-                Congestion: {kpis.congestion_percentage.toFixed(0)}%
-              </p>
-            )}
+            <p className="text-xs text-faint">{label}</p>
+            <p className={clsx('mt-1 text-2xl font-medium tabular-nums tracking-tight', raised ? 'text-bad' : 'text-ink')}>
+              {kpis ? format(value) : '–'}
+            </p>
+            <p className="mt-0.5 text-xs text-faint">{kpis ? detail(kpis) : ' '}</p>
           </div>
         );
       })}
-    </div>
+    </section>
   );
 }

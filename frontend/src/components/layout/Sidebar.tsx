@@ -1,16 +1,17 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Map, BarChart3, FileText, ShieldAlert, Settings2, Zap, X } from 'lucide-react';
+import { LayoutDashboard, Map, BarChart3, FileText, ShieldAlert, Settings2, X } from 'lucide-react';
 import { useTraffic } from '../../context/TrafficContext';
 import StatusIndicator from '../ui/StatusIndicator';
+import Logo from '../ui/Logo';
 import clsx from 'clsx';
 
 const navItems = [
-  { to: '/',          label: 'Dashboard',    icon: LayoutDashboard },
-  { to: '/map',       label: 'Traffic Map',  icon: Map             },
-  { to: '/analytics', label: 'Analytics',    icon: BarChart3       },
-  { to: '/alerts',    label: 'Alert History',icon: ShieldAlert     },
-  { to: '/reports',   label: 'Reports',      icon: FileText        },
-  { to: '/settings',  label: 'Settings',     icon: Settings2       },
+  { to: '/', label: 'Overview', icon: LayoutDashboard },
+  { to: '/map', label: 'Traffic map', icon: Map },
+  { to: '/analytics', label: 'Analytics', icon: BarChart3 },
+  { to: '/alerts', label: 'Alert history', icon: ShieldAlert },
+  { to: '/reports', label: 'Reports', icon: FileText },
+  { to: '/settings', label: 'Settings', icon: Settings2 },
 ];
 
 interface SidebarProps {
@@ -22,61 +23,40 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { connectionStatus, kpis } = useTraffic();
 
   const statusLabel =
-    connectionStatus === 'connected'    ? 'Live Feed'    :
-    connectionStatus === 'connecting'   ? 'Connecting…'  :
-    connectionStatus === 'disconnected' ? 'Offline'      :
-    'Error';
+    connectionStatus === 'connected' ? 'Live feed' :
+    connectionStatus === 'connecting' ? 'Connecting' :
+    connectionStatus === 'disconnected' ? 'Offline' :
+    'Connection error';
 
-  const indicatorStatus =
-    connectionStatus === 'connected'    ? 'online'     :
-    connectionStatus === 'connecting'   ? 'connecting' :
-    connectionStatus === 'error'        ? 'warning'    :
+  const indicator =
+    connectionStatus === 'connected' ? 'online' :
+    connectionStatus === 'connecting' ? 'connecting' :
+    connectionStatus === 'error' ? 'warning' :
     'offline';
 
   return (
     <>
-      {/* Mobile backdrop overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 lg:hidden"
-          onClick={onClose}
-        />
-      )}
+      {isOpen && <div className="fixed inset-0 z-30 bg-black/40 lg:hidden" onClick={onClose} aria-hidden="true" />}
 
-      {/* Sidebar panel */}
       <aside
         className={clsx(
-          'fixed top-0 left-0 h-full z-40 flex flex-col w-64 flex-shrink-0',
-          'bg-slate-950/95 backdrop-blur-md border-r border-white/5',
-          'transition-transform duration-300 ease-in-out',
-          // Mobile: slide in/out; Desktop: always visible
-          'lg:relative lg:translate-x-0 lg:z-auto',
+          'fixed left-0 top-0 z-40 flex h-full w-56 flex-shrink-0 flex-col border-r border-line bg-surface',
+          'transition-transform duration-200 ease-out',
+          'lg:relative lg:z-auto lg:translate-x-0',
           isOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
-        {/* Logo */}
-        <div className="flex items-center justify-between px-6 py-6 border-b border-white/5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-slate-800 to-zinc-900 border border-zinc-700/50 shadow-card">
-              <Zap size={20} className="text-accent-400" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-white tracking-tight">IntelliRoads</h1>
-              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-medium">AI Traffic Control</p>
-            </div>
+        <div className="flex h-14 items-center justify-between border-b border-line px-4">
+          <div className="flex items-center gap-2.5">
+            <Logo size={20} />
+            <span className="text-[15px] font-medium tracking-tight">IntelliRoads</span>
           </div>
-          {/* Close button — mobile only */}
-          <button
-            onClick={onClose}
-            className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
-            aria-label="Close sidebar"
-          >
-            <X size={18} />
+          <button onClick={onClose} className="btn btn-ghost btn-icon lg:hidden" aria-label="Close menu">
+            <X size={16} />
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        <nav className="flex-1 space-y-0.5 px-2 py-3" aria-label="Main">
           {navItems.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
@@ -85,65 +65,29 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               onClick={onClose}
               className={({ isActive }) =>
                 clsx(
-                  'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200',
-                  isActive
-                    ? 'bg-white/5 text-white border border-white/10 shadow-[0_0_12px_rgba(255,255,255,0.03)]'
-                    : 'text-slate-400 hover:text-white hover:bg-white/5',
+                  'flex h-8 items-center gap-2.5 rounded-md px-2.5 text-[13px] transition-colors',
+                  isActive ? 'bg-subtle font-medium text-ink' : 'text-muted hover:bg-subtle/70 hover:text-ink',
                 )
               }
             >
-              {({ isActive }) => (
-                <>
-                  <Icon
-                    size={18}
-                    className={clsx(isActive ? 'text-accent-400' : 'text-slate-500')}
-                  />
-                  {label}
-                  {isActive && (
-                    <div className="ml-auto w-1.5 h-1.5 rounded-full bg-accent-500 shadow-[0_0_6px_rgba(245,158,11,0.6)]" />
-                  )}
-                </>
-              )}
+              <Icon size={16} strokeWidth={1.75} />
+              {label}
             </NavLink>
           ))}
         </nav>
 
-        {/* Stats summary */}
-        {kpis && (
-          <div className="mx-3 mb-3 rounded-xl bg-white/3 border border-white/5 p-3">
-            <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-2 font-medium">Live Stats</p>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="text-center">
-                <p className="text-xl font-bold text-white">{kpis.total_vehicles}</p>
-                <p className="text-[10px] text-slate-500">Vehicles</p>
-              </div>
-              <div className="text-center">
-                <p className="text-xl font-bold text-warning-400">{kpis.active_alerts}</p>
-                <p className="text-[10px] text-slate-500">Alerts</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Connection status */}
-        <div className="border-t border-white/5 px-4 py-4">
-          <StatusIndicator status={indicatorStatus} label={statusLabel} size="sm" />
-          <p className="text-[10px] text-slate-600 mt-1.5 pl-5">
-            {connectionStatus === 'connected' ? 'WebSocket active' : 'Polling REST API'}
-          </p>
+        <div className="space-y-1 border-t border-line px-4 py-3">
+          <StatusIndicator status={indicator} label={statusLabel} size="sm" />
           {kpis && (
             <p
-              className={clsx(
-                'text-[10px] mt-2 pl-5 font-semibold uppercase tracking-widest',
-                kpis.data_source === 'LIVE' ? 'text-success-400' : 'text-amber-400',
-              )}
+              className="pl-3.5 text-2xs text-faint"
               title={
                 kpis.data_source === 'LIVE'
-                  ? 'Data is coming from a connected SUMO/TraCI simulation.'
-                  : 'SUMO is not connected — showing synthetic mock data.'
+                  ? 'Data comes from a connected SUMO / TraCI simulation.'
+                  : 'SUMO is not connected: showing synthetic mock data.'
               }
             >
-              {kpis.data_source === 'LIVE' ? '● Live SUMO Data' : '● Mock Data'}
+              {kpis.data_source === 'LIVE' ? 'SUMO simulation' : 'Mock data'}
             </p>
           )}
         </div>
