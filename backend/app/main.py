@@ -36,6 +36,7 @@ from app.services.rl_environment import RLEnvironment
 from app.agent.dqn_agent import DQNAgent
 from app.environment.sumo_environment import SUMOEnvironment
 from app.controllers.dqn_controller import DQNController, ControllerMode
+from app.controllers.fyp_dqn_controller import try_build_fyp_controller
 from app.models.emergency import EmergencyResponse
 from app.models.signal import SignalResponse
 from app.websocket.manager import WebSocketManager, websocket_endpoint
@@ -296,6 +297,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         rule_based_controller=signal_controller,
         mode=ControllerMode.DQN,
     )
+    # Final FYP model (obs-v2 Double DQN, the one evaluated in the final report) drives the live signals through the
+    # safe action layer. Falls back to the legacy demo controller if SUMO is in mock mode, the model file is missing or
+    # altered, or INTELLIROADS_DQN_MODEL=legacy is set.
+    fyp_controller = try_build_fyp_controller(session, signal_controller, ControllerMode.DQN)
+    if fyp_controller is not None:
+        dqn_controller = fyp_controller
+        logger.info("Live DQN mode now uses the final obs-v2 FYP model.")
 
     # Connect the SQLite telemetry database (Sprint 2 logging layer)
     database = Database()

@@ -45,6 +45,18 @@ async def get_controller_mode(store: InMemoryStateStore = Depends(get_store)) ->
     return {"mode": mode}
 
 
+@router.get("/model")
+async def get_active_model(dqn_controller: Any = Depends(get_dqn_controller)) -> Dict[str, Any]:
+    """
+    Which model drives the live DQN mode: the final obs-v2 FYP model (with its checkpoint hash, observation schema,
+    selected episode and decision statistics) or the legacy 5-feature demo model.
+    """
+    describe = getattr(dqn_controller, "describe", None)
+    if callable(describe):
+        return describe()
+    return {"model": "legacy 5-feature demo model", "mode": dqn_controller.get_mode().value}
+
+
 @router.post("/mode")
 async def set_controller_mode(
     payload: Dict[str, str] = Body(..., example={"mode": "DQN"}),
