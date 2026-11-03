@@ -17,6 +17,7 @@ from app.api.routes.occupancy import router as occupancy_router
 from app.api.routes.performance import router as performance_router
 from app.api.routes.rl import router as rl_router
 from app.api.routes.settings import router as settings_router
+from app.api.routes.scenario import router as scenario_router
 from app.core.security import get_current_user
 
 api_router = APIRouter(prefix="/api")
@@ -36,6 +37,7 @@ api_router.include_router(intersections_router, dependencies=protected_deps)
 api_router.include_router(emergency_router, dependencies=protected_deps)
 api_router.include_router(occupancy_router, dependencies=protected_deps)
 api_router.include_router(performance_router, dependencies=protected_deps)
+api_router.include_router(scenario_router, dependencies=protected_deps)
 
 # Untouched per security constraints (Settings & RL/DQN)
 api_router.include_router(rl_router)

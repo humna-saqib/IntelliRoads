@@ -1,121 +1,64 @@
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, ReferenceLine, Cell,
-} from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from 'recharts';
 import { useTraffic } from '../../context/TrafficContext';
+import { useChartTheme } from '../../theme/chartTheme';
 import type { LaneDensity } from '../../types/traffic';
 import Card from '../ui/Card';
-import { Activity } from 'lucide-react';
 
-interface TooltipPayload {
-  payload?: LaneDensity & { fill: string };
-}
-
-function CustomTooltip({ active, payload }: { active?: boolean; payload?: TooltipPayload[] }) {
-  if (!active || !payload?.length || !payload[0].payload) return null;
-  const d = payload[0].payload as unknown as LaneDensity & { fill: string };
-
-  const levelColor =
-    d.level === 'HIGH'   ? 'text-danger-400'  :
-    d.level === 'MEDIUM' ? 'text-warning-400' :
-    'text-success-400';
-
+function DensityTooltip({ active, payload }: { active?: boolean; payload?: { payload?: LaneDensity }[] }) {
+  const d = payload?.[0]?.payload;
+  if (!active || !d) return null;
+  const tone = d.level === 'HIGH' ? 'text-bad' : d.level === 'MEDIUM' ? 'text-warn' : 'text-ok';
   return (
-    <div className="glass-card rounded-xl p-3 border border-white/10 shadow-xl text-xs min-w-[140px]">
-      <p className="font-semibold text-white mb-1.5">{d.lane_id}</p>
-      <div className="space-y-1">
+    <div className="min-w-[150px] rounded-md border border-line bg-surface px-3 py-2 text-xs shadow-sm">
+      <p className="mb-1.5 font-medium text-ink">{d.lane_id}</p>
+      <dl className="space-y-1">
         <div className="flex justify-between gap-4">
-          <span className="text-slate-400">Density</span>
-          <span className="text-white font-mono">{d.density?.toFixed(2)} veh/km</span>
+          <dt className="text-muted">Density</dt>
+          <dd className="font-mono tabular-nums text-ink">{d.density?.toFixed(2)} veh/km</dd>
         </div>
         <div className="flex justify-between gap-4">
-          <span className="text-slate-400">Vehicles</span>
-          <span className="text-white font-mono">{d.vehicle_count}</span>
+          <dt className="text-muted">Vehicles</dt>
+          <dd className="font-mono tabular-nums text-ink">{d.vehicle_count}</dd>
         </div>
         <div className="flex justify-between gap-4">
-          <span className="text-slate-400">Level</span>
-          <span className={`font-semibold ${levelColor}`}>{d.level}</span>
+          <dt className="text-muted">Level</dt>
+          <dd className={tone}>{d.level.charAt(0) + d.level.slice(1).toLowerCase()}</dd>
         </div>
-      </div>
+      </dl>
     </div>
   );
 }
 
-function getBarColor(density: number): string {
-  if (density > 40) return '#ef4444'; // danger
-  if (density > 20) return '#f59e0b'; // warning
-  return '#22c55e';                   // success
-}
-
 export default function DensityChart() {
   const { density } = useTraffic();
+  const c = useChartTheme();
   const data = density?.lanes ?? [];
+  const barColor = (value: number) => (value > 40 ? c.bad : value > 20 ? c.warn : c.ok);
 
   return (
-    <Card
-      title="Lane Traffic Density"
-      subtitle="Vehicles per kilometre by lane"
-      icon={<Activity size={16} />}
-      gradient
-    >
+    <Card title="Lane density" subtitle="Vehicles per kilometre, by lane">
       <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 8, right: 8, left: -10, bottom: 0 }}>
-            <defs>
-              <linearGradient id="barGreenGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#22c55e" stopOpacity={0.9} />
-                <stop offset="100%" stopColor="#15803d" stopOpacity={0.7} />
-              </linearGradient>
-              <linearGradient id="barAmberGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.9} />
-                <stop offset="100%" stopColor="#b45309" stopOpacity={0.7} />
-              </linearGradient>
-              <linearGradient id="barRedGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#ef4444" stopOpacity={0.9} />
-                <stop offset="100%" stopColor="#991b1b" stopOpacity={0.7} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-            <XAxis
-              dataKey="lane_id"
-              tick={{ fill: '#64748b', fontSize: 11 }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <YAxis
-              tick={{ fill: '#64748b', fontSize: 11 }}
-              axisLine={false}
-              tickLine={false}
-              label={{ value: 'veh/km', angle: -90, position: 'insideLeft', fill: '#475569', fontSize: 10 }}
-            />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
-            <ReferenceLine y={20} stroke="#f59e0b" strokeDasharray="4 4" strokeOpacity={0.6}
-              label={{ value: 'MED', position: 'right', fill: '#f59e0b', fontSize: 9 }} />
-            <ReferenceLine y={40} stroke="#ef4444" strokeDasharray="4 4" strokeOpacity={0.6}
-              label={{ value: 'HIGH', position: 'right', fill: '#ef4444', fontSize: 9 }} />
-            <Bar dataKey="density" radius={[4, 4, 0, 0]} isAnimationActive animationDuration={800}>
+          <BarChart data={data} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
+            <CartesianGrid stroke={c.grid} vertical={false} />
+            <XAxis dataKey="lane_id" tick={{ fill: c.axis, fontSize: 11 }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fill: c.axis, fontSize: 11 }} axisLine={false} tickLine={false} />
+            <Tooltip content={<DensityTooltip />} cursor={{ fill: c.cursor }} />
+            <ReferenceLine y={20} stroke={c.warn} strokeDasharray="3 4" strokeOpacity={0.7} />
+            <ReferenceLine y={40} stroke={c.bad} strokeDasharray="3 4" strokeOpacity={0.7} />
+            <Bar dataKey="density" radius={[2, 2, 0, 0]} maxBarSize={36} isAnimationActive={false}>
               {data.map((entry, idx) => (
-                <Cell
-                  key={`cell-${idx}`}
-                  fill={
-                    entry.density > 40
-                      ? 'url(#barRedGrad)'
-                      : entry.density > 20
-                      ? 'url(#barAmberGrad)'
-                      : 'url(#barGreenGrad)'
-                  }
-                />
+                <Cell key={`cell-${idx}`} fill={barColor(entry.density)} />
               ))}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
 
-      {/* Legend */}
-      <div className="flex items-center justify-center gap-6 mt-2 text-[10px] text-slate-500">
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-success-500" />LOW (&lt;20)</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-warning-500" />MEDIUM (20–40)</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-danger-500" />HIGH (&gt;40)</span>
+      <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-faint">
+        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-ok" />Low, under 20</span>
+        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-warn" />Medium, 20 to 40</span>
+        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-bad" />High, over 40</span>
       </div>
     </Card>
   );

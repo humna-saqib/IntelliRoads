@@ -21,25 +21,25 @@
     <route id="route_right_north" edges="edge_C_south_in edge_BC_north edge_B_north_out"/>
 
     <!-- Low Density Flows for Top Street -->
-    <flow id="flow_car_top_e" begin="0" end="3600" period="exp(15)" route="route_top_east" type="passenger"/>
-    <flow id="flow_moto_top_e" begin="0" end="3600" period="exp(30)" route="route_top_east" type="motorcycle"/>
-    <flow id="flow_car_top_w" begin="0" end="3600" period="exp(15)" route="route_top_west" type="passenger"/>
+    <flow id="flow_car_top_e" begin="0" end="3600" period="exp(0.0667)" route="route_top_east" type="passenger"/>
+    <flow id="flow_moto_top_e" begin="0" end="3600" period="exp(0.0333)" route="route_top_east" type="motorcycle"/>
+    <flow id="flow_car_top_w" begin="0" end="3600" period="exp(0.0667)" route="route_top_west" type="passenger"/>
     <flow id="flow_bus_top_w" begin="0" end="3600" period="180" route="route_top_west" type="bus"/>
 
     <!-- Low Density Flows for Bottom Street -->
-    <flow id="flow_car_bot_e" begin="0" end="3600" period="exp(15)" route="route_bottom_east" type="passenger"/>
-    <flow id="flow_car_bot_w" begin="0" end="3600" period="exp(15)" route="route_bottom_west" type="passenger"/>
-    <flow id="flow_moto_bot_w" begin="0" end="3600" period="exp(35)" route="route_bottom_west" type="motorcycle"/>
+    <flow id="flow_car_bot_e" begin="0" end="3600" period="exp(0.0667)" route="route_bottom_east" type="passenger"/>
+    <flow id="flow_car_bot_w" begin="0" end="3600" period="exp(0.0667)" route="route_bottom_west" type="passenger"/>
+    <flow id="flow_moto_bot_w" begin="0" end="3600" period="exp(0.0286)" route="route_bottom_west" type="motorcycle"/>
 
     <!-- Low Density Flows for Left Street -->
-    <flow id="flow_car_left_s" begin="0" end="3600" period="exp(15)" route="route_left_south" type="passenger"/>
-    <flow id="flow_car_left_n" begin="0" end="3600" period="exp(15)" route="route_left_north" type="passenger"/>
+    <flow id="flow_car_left_s" begin="0" end="3600" period="exp(0.0667)" route="route_left_south" type="passenger"/>
+    <flow id="flow_car_left_n" begin="0" end="3600" period="exp(0.0667)" route="route_left_north" type="passenger"/>
     <flow id="flow_bus_left_n" begin="0" end="3600" period="180" route="route_left_north" type="bus"/>
 
     <!-- Low Density Flows for Right Street -->
-    <flow id="flow_car_right_s" begin="0" end="3600" period="exp(15)" route="route_right_south" type="passenger"/>
-    <flow id="flow_moto_right_s" begin="0" end="3600" period="exp(30)" route="route_right_south" type="motorcycle"/>
-    <flow id="flow_car_right_n" begin="0" end="3600" period="exp(15)" route="route_right_north" type="passenger"/>
+    <flow id="flow_car_right_s" begin="0" end="3600" period="exp(0.0667)" route="route_right_south" type="passenger"/>
+    <flow id="flow_moto_right_s" begin="0" end="3600" period="exp(0.0333)" route="route_right_south" type="motorcycle"/>
+    <flow id="flow_car_right_n" begin="0" end="3600" period="exp(0.0667)" route="route_right_north" type="passenger"/>
 
     <!-- Sparse emergency vehicle flows -->
     <flow id="flow_amb_A" begin="0" end="3600" period="240" route="route_top_east" type="ambulance"/>

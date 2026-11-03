@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { TrafficProvider } from './context/TrafficContext';
 import Sidebar from './components/layout/Sidebar';
@@ -16,9 +16,7 @@ export default function App() {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('intelliroads_token'));
 
   useEffect(() => {
-    const handleUnauthorized = () => {
-      setToken(null);
-    };
+    const handleUnauthorized = () => setToken(null);
     window.addEventListener('intelliroads:unauthorized', handleUnauthorized);
     return () => window.removeEventListener('intelliroads:unauthorized', handleUnauthorized);
   }, []);
@@ -35,22 +33,14 @@ export default function App() {
   return (
     <TrafficProvider>
       <Router>
-        <div className="flex h-screen bg-[#08080a] text-slate-100 overflow-hidden font-sans">
-          {/* Sidebar Navigation */}
+        <div className="flex h-screen overflow-hidden bg-page text-ink">
           <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-          {/* Main Panel */}
-          <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-            {/* Header / Control Bar */}
+          <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
             <Header onMenuClick={() => setSidebarOpen(true)} onLogout={handleLogout} />
 
-            {/* Scrollable Page Body */}
-            <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#08080a] relative">
-              {/* background ambient glow blobs */}
-              <div className="absolute top-[-10%] left-[-10%] w-[50%] aspect-square rounded-full bg-slate-900/5 blur-[120px] pointer-events-none" />
-              <div className="absolute bottom-[-10%] right-[-10%] w-[55%] aspect-square rounded-full bg-slate-900/5 blur-[130px] pointer-events-none" />
-
-              <div className="max-w-7xl mx-auto relative z-10">
+            <main className="flex-1 overflow-y-auto">
+              <div className="mx-auto w-full max-w-[1200px] px-4 py-5 sm:px-6 sm:py-6">
                 <Routes>
                   <Route path="/" element={<DashboardPage />} />
                   <Route path="/map" element={<MapPage />} />

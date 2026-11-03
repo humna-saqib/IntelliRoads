@@ -15,5 +15,6 @@
   </report>
   <gui_only>
     <delay value="200"/>
+    <gui-settings-file value="gui-settings.xml"/>
   </gui_only>
 </configuration>

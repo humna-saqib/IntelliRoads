@@ -139,3 +139,21 @@ def test_mode_strings_and_describe():
     d = ctl.describe()
     assert d["mode"] == "DQN" and d["sha256"] == DEFAULT_MODEL_SHA256 and d["safety"]["max_green_s"] == 60.0
     assert d["stats"]["decisions"] == 0
+
+
+# ------------------------------------------------------------------ Windows compatibility
+def test_live_controller_imports_without_fcntl():
+    """The live backend must start on Windows: the controller may not import any module that needs ``fcntl`` (Linux only)."""
+    import subprocess
+    import sys
+    code = ("import sys; sys.modules['fcntl'] = None\n"      # makes 'import fcntl' raise ImportError, as on Windows
+            "import app.main; import app.controllers.fyp_dqn_controller as c; print('ok', c.DEFAULT_MODEL_SHA256[:8])")
+    out = subprocess.run([sys.executable, "-c", code], cwd=Path(__file__).resolve().parent.parent, capture_output=True, text=True, timeout=120)
+    assert out.returncode == 0 and "ok e7bc8722" in out.stdout, out.stderr[-800:]
+
+
+@needs_model
+def test_policy_hash_matches_the_evaluation_definition():
+    from app.evaluation.protocol import policy_weights_sha256 as eval_hash
+    agent, info = load_fyp_model()
+    assert info["policy_sha256"] == eval_hash(agent)

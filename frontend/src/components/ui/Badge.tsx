@@ -1,38 +1,32 @@
 import clsx from 'clsx';
 
 type Variant = 'success' | 'warning' | 'danger' | 'info' | 'neutral';
-type Size    = 'sm' | 'md';
+type Size = 'sm' | 'md';
 
 interface BadgeProps {
-  label:    string;
+  label: string;
   variant?: Variant;
-  size?:    Size;
-  pulse?:   boolean;
+  size?: Size;
 }
 
 const variantStyles: Record<Variant, string> = {
-  success: 'bg-success-500/20 text-success-400 border border-success-500/30 shadow-[0_0_8px_rgba(34,197,94,0.3)]',
-  warning: 'bg-warning-500/20 text-warning-400 border border-warning-500/30 shadow-[0_0_8px_rgba(245,158,11,0.3)]',
-  danger:  'bg-danger-500/20  text-danger-400  border border-danger-500/30  shadow-[0_0_8px_rgba(239,68,68,0.3)]',
-  info:    'bg-accent-500/20  text-accent-400  border border-accent-500/30  shadow-[0_0_8px_rgba(6,182,212,0.3)]',
-  neutral: 'bg-surface-600/40 text-slate-300   border border-white/10',
+  success: 'bg-ok/10 text-ok',
+  warning: 'bg-warn/10 text-warn',
+  danger: 'bg-bad/10 text-bad',
+  info: 'bg-info/10 text-info',
+  neutral: 'bg-subtle text-muted',
 };
 
 const sizeStyles: Record<Size, string> = {
-  sm: 'px-1.5 py-0.5 text-[10px] font-semibold',
-  md: 'px-2.5 py-1   text-xs     font-semibold',
+  sm: 'px-1.5 py-0.5 text-2xs',
+  md: 'px-2 py-0.5 text-xs',
 };
 
-export default function Badge({ label, variant = 'neutral', size = 'md', pulse = false }: BadgeProps) {
+/** Small status label: a coloured dot and sentence-case text on a faint tint. */
+export default function Badge({ label, variant = 'neutral', size = 'md' }: BadgeProps) {
   return (
-    <span
-      className={clsx(
-        'inline-flex items-center gap-1 rounded-full tracking-wide uppercase',
-        variantStyles[variant],
-        sizeStyles[size],
-        pulse && 'animate-pulse',
-      )}
-    >
+    <span className={clsx('inline-flex items-center gap-1.5 whitespace-nowrap rounded-md font-medium', variantStyles[variant], sizeStyles[size])}>
+      <span className="h-1.5 w-1.5 rounded-full bg-current" />
       {label}
     </span>
   );

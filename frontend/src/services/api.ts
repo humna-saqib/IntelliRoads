@@ -179,6 +179,22 @@ export async function setControllerMode(mode: ControllerMode): Promise<{ status:
   return apiPost<{ status: string; mode: ControllerMode }>('/rl/mode', { mode });
 }
 
+/** Which model drives DQN mode. The final obs-v2 model reports its file, schema and live decision counts. */
+export interface ActiveModelInfo {
+  model: string;
+  mode: ControllerMode;
+  file?: string;
+  obs_version?: string;
+  state_size?: number;
+  selected_episode?: number;
+  sha256?: string;
+  stats?: { decisions: number; action_counts: Record<string, number> };
+}
+
+export async function fetchActiveModel(): Promise<ActiveModelInfo> {
+  return apiFetch<ActiveModelInfo>('/rl/model');
+}
+
 export interface JunctionThresholds {
   low_threshold: number;
   medium_threshold: number;
@@ -222,4 +238,22 @@ export async function fetchAllData(): Promise<Omit<TrafficSnapshot, 'vehicles' |
     emergency,
     timestamp: Date.now(),
   };
+}
+
+export type InjectVehicleType = 'passenger' | 'motorcycle' | 'bus';
+
+export interface InjectResult {
+  status: string;
+  added: number;
+  vehicle_type: InjectVehicleType;
+  per_route: Record<string, number>;
+}
+
+/** Add a manual number of vehicles to the running simulation. */
+export async function injectVehicles(
+  count: number,
+  vehicleType: InjectVehicleType,
+  route: string,
+): Promise<InjectResult> {
+  return apiPost<InjectResult>('/scenario/inject', { count, vehicle_type: vehicleType, route });
 }

@@ -19,6 +19,7 @@ Behaviour
 
 from __future__ import annotations
 
+import hashlib
 import os
 import time
 from dataclasses import dataclass
@@ -49,7 +50,6 @@ from app.environment.signal_safety import (
     command_for,
     legal_action_mask,
 )
-from app.evaluation.protocol import policy_weights_sha256, sha256_file
 from app.models.density import DensityLevel
 from app.models.signal import SignalPhaseType, SignalTiming
 from app.training.double_dqn import MaskedDoubleDQN
@@ -66,6 +66,23 @@ DEFAULT_MODEL_SHA256 = "e7bc8722fe62b1cec0b9d4cf06038347050092c8a6ed6193f398f416
 
 #: ``INTELLIROADS_DQN_MODEL=legacy`` keeps the original 5-feature demo model.
 MODEL_SELECTOR_ENV = "INTELLIROADS_DQN_MODEL"
+
+
+def sha256_file(path: Path) -> str:
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def policy_weights_sha256(agent: Any) -> str:
+    """SHA-256 of the policy weights (names, dtypes, shapes, values): same definition as the evaluation's, so the hash matches.
+
+    Kept here instead of importing ``app.evaluation.protocol``, which needs ``fcntl`` (Linux only) and would stop the live
+    backend from starting on Windows."""
+    h = hashlib.sha256()
+    for name, t in sorted(agent.policy_net.state_dict().items()):
+        t = t.detach().cpu().contiguous()
+        h.update(f"{name}|{t.dtype}|{tuple(t.shape)}|".encode())
+        h.update(t.numpy().tobytes())
+    return h.hexdigest()
 
 
 class FypModelError(RuntimeError):
