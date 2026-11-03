@@ -239,3 +239,21 @@ export async function fetchAllData(): Promise<Omit<TrafficSnapshot, 'vehicles' |
     timestamp: Date.now(),
   };
 }
+
+export type InjectVehicleType = 'passenger' | 'motorcycle' | 'bus';
+
+export interface InjectResult {
+  status: string;
+  added: number;
+  vehicle_type: InjectVehicleType;
+  per_route: Record<string, number>;
+}
+
+/** Add a manual number of vehicles to the running simulation. */
+export async function injectVehicles(
+  count: number,
+  vehicleType: InjectVehicleType,
+  route: string,
+): Promise<InjectResult> {
+  return apiPost<InjectResult>('/scenario/inject', { count, vehicle_type: vehicleType, route });
+}

@@ -70,8 +70,8 @@ export default function ControlModePanel() {
   const active = MODES.find((m) => m.value === mode);
 
   return (
-    <Card title="Signal controller" subtitle="Which logic sets the signals">
-      <div role="radiogroup" aria-label="Signal controller" className="grid grid-cols-2 gap-0.5 rounded-md bg-subtle p-0.5">
+    <Card title="Signal controller" subtitle="Choose what decides when lights change">
+      <div role="radiogroup" aria-label="Signal controller" className="grid grid-cols-2 gap-1 rounded-lg bg-subtle p-1">
         {MODES.map((m) => {
           const selected = mode === m.value;
           return (
@@ -83,8 +83,8 @@ export default function ControlModePanel() {
               disabled={switching || mode === null}
               onClick={() => handleSwitch(m.value)}
               className={clsx(
-                'h-7 rounded text-[13px] font-medium transition-colors disabled:cursor-not-allowed',
-                selected ? 'border border-line bg-surface text-ink shadow-sm' : 'border border-transparent text-muted hover:text-ink',
+                'h-9 rounded-md text-[13px] font-medium transition-all disabled:cursor-not-allowed',
+                selected ? 'bg-surface text-brand shadow-sm' : 'text-muted hover:text-ink',
               )}
             >
               {m.label}

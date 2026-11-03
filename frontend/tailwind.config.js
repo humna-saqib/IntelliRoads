@@ -20,6 +20,7 @@ export default {
         faint:      token('faint'),       // tertiary text, placeholders
         accent:     token('accent'),      // primary button fill
         'accent-fg': token('accent-fg'),  // text on the primary button
+        brand:      token('brand'),
         ok:         token('ok'),
         warn:       token('warn'),
         bad:        token('bad'),
@@ -31,6 +32,9 @@ export default {
       fontFamily: {
         sans: ['"Geist Variable"', 'ui-sans-serif', 'system-ui', '-apple-system', '"Segoe UI"', 'sans-serif'],
         mono: ['"Geist Mono Variable"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
+      },
+      boxShadow: {
+        card: '0 1px 2px rgb(var(--ink) / 0.04), 0 4px 16px -6px rgb(var(--ink) / 0.06)',
       },
       fontSize: {
         '2xs': ['11px', '16px'],

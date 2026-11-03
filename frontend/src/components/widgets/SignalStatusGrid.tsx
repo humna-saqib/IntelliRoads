@@ -14,9 +14,9 @@ const LAMPS: { phase: SignalPhase; on: string }[] = [
 /** Three flat lamps in a row; only the active one is coloured. */
 function SignalLamps({ phase }: { phase: SignalPhase }) {
   return (
-    <div className="flex items-center gap-1 rounded-full bg-subtle px-1.5 py-1.5" aria-label={`Signal ${phase.toLowerCase()}`}>
+    <div className="flex items-center gap-1.5 rounded-full bg-subtle px-2 py-2" aria-label={`Signal ${phase.toLowerCase()}`}>
       {LAMPS.map((lamp) => (
-        <span key={lamp.phase} className={clsx('h-2.5 w-2.5 rounded-full', phase === lamp.phase ? lamp.on : 'bg-strong/60')} />
+        <span key={lamp.phase} className={clsx('h-3 w-3 rounded-full transition-colors', phase === lamp.phase ? `${lamp.on} shadow-[0_0_8px_currentColor]` : 'bg-strong/50')} />
       ))}
     </div>
   );
@@ -57,7 +57,7 @@ export default function SignalStatusGrid() {
             const sig = getSignal(intersection.id);
             const congested = intersection.congestion_status === 'CONGESTED';
             return (
-              <li key={intersection.id} className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2 px-4 py-3 sm:grid-cols-[auto_1fr_auto]">
+              <li key={intersection.id} className="grid grid-cols-[auto_1fr] items-center gap-x-4 gap-y-2 px-5 py-3.5 sm:grid-cols-[auto_1fr_auto]">
                 <SignalLamps phase={intersection.signal} />
 
                 <div className="min-w-0 flex-1">

@@ -7,10 +7,10 @@
    Light is the default; the .dark class on <html> switches the set.
    ------------------------------------------------------------------ */
 :root {
-  --page:        250 250 250;
+  --page:        246 247 249;
   --surface:     255 255 255;
-  --subtle:      244 244 245;
-  --line:        228 228 231;
+  --subtle:      241 242 245;
+  --line:        229 231 235;
   --line-strong: 212 212 216;
 
   --ink:         24 24 27;
@@ -19,6 +19,7 @@
 
   --accent:      24 24 27;
   --accent-fg:   255 255 255;
+  --brand:       79 70 229;
 
   /* status colours: dark enough for text on white */
   --ok:          21 128 61;
@@ -47,6 +48,7 @@
 
   --accent:      244 244 245;
   --accent-fg:   24 24 27;
+  --brand:       129 140 248;
 
   --ok:          74 222 128;
   --warn:        251 191 36;
@@ -87,7 +89,10 @@
     @apply inline-flex h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded-md border border-line bg-surface px-3 text-[13px] font-medium text-ink transition-colors hover:bg-subtle disabled:pointer-events-none disabled:opacity-50;
   }
   .btn-primary {
-    @apply border-transparent bg-accent text-accent-fg hover:bg-accent/90;
+    @apply border-transparent bg-accent text-accent-fg shadow-sm hover:bg-accent/90;
+  }
+  .btn-brand {
+    @apply h-10 rounded-lg border-transparent bg-brand px-5 text-sm font-medium text-white shadow-sm hover:bg-brand/90 focus-visible:outline-brand/50;
   }
   .btn-ghost {
     @apply border-transparent bg-transparent text-muted hover:bg-subtle hover:text-ink;
@@ -97,7 +102,7 @@
   }
 
   .input {
-    @apply h-8 w-full rounded-md border border-line bg-surface px-2.5 text-[13px] text-ink placeholder:text-faint focus:border-strong focus:outline-none focus:ring-2 focus:ring-ink/10;
+    @apply h-9 w-full rounded-lg border border-line bg-surface px-2.5 text-[13px] text-ink placeholder:text-faint focus:border-strong focus:outline-none focus:ring-2 focus:ring-ink/10;
   }
   .field-label {
     @apply mb-1.5 block text-xs font-medium text-muted;

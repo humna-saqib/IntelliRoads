@@ -42,17 +42,17 @@ export default function Header({ onMenuClick, onLogout }: HeaderProps) {
     'Offline';
 
   return (
-    <header className="flex h-14 flex-shrink-0 items-center justify-between gap-3 border-b border-line bg-page px-4 sm:px-6">
+    <header className="flex h-16 flex-shrink-0 items-center justify-between gap-3 border-b border-line bg-page px-4 sm:px-6">
       <div className="flex min-w-0 items-center gap-2">
         <button onClick={onMenuClick} className="btn btn-ghost btn-icon -ml-2 lg:hidden" aria-label="Open menu">
           <Menu size={18} />
         </button>
-        <h1 className="truncate text-[15px] font-medium">{title}</h1>
+        <h1 className="truncate text-base font-semibold tracking-tight">{title}</h1>
       </div>
 
       <div className="flex flex-shrink-0 items-center gap-1 sm:gap-2">
         {kpis && (
-          <span className="mr-1 hidden items-baseline gap-1.5 sm:flex" title="Simulation clock">
+          <span className="mr-1 hidden items-baseline gap-1.5 rounded-full border border-line bg-surface px-3 py-1 sm:flex" title="Simulation clock">
             <span className="text-xs text-faint">Sim time</span>
             <span className="font-mono text-[13px] tabular-nums text-ink">{formatSimTime(kpis.simulation_time)}</span>
           </span>

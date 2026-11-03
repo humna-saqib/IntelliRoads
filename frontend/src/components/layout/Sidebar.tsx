@@ -56,7 +56,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           </button>
         </div>
 
-        <nav className="flex-1 space-y-0.5 px-2 py-3" aria-label="Main">
+        <nav className="flex-1 space-y-1 px-3 py-4" aria-label="Main">
           {navItems.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
@@ -65,8 +65,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               onClick={onClose}
               className={({ isActive }) =>
                 clsx(
-                  'flex h-8 items-center gap-2.5 rounded-md px-2.5 text-[13px] transition-colors',
-                  isActive ? 'bg-subtle font-medium text-ink' : 'text-muted hover:bg-subtle/70 hover:text-ink',
+                  'flex h-9 items-center gap-2.5 rounded-lg px-3 text-[13px] transition-colors',
+                  isActive ? 'bg-brand/10 font-medium text-brand' : 'text-muted hover:bg-subtle hover:text-ink',
                 )
               }
             >

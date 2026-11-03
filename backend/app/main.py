@@ -311,6 +311,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     db_logger = DBLogger(database)
 
     # Share state store, ws manager, db logger, and dqn controller with FastAPI application state
+    app.state.session = session
     app.state.store = state_store
     app.state.ws_manager = ws_manager
     app.state.db_logger = db_logger
