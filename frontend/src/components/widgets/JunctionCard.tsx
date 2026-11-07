@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { IntersectionData, SignalTiming, SignalPhase } from '../../types/traffic';
-import { getJunctionName } from '../../constants/plainWords';
+import { getJunctionName, formatSignalReason } from '../../constants/plainWords';
 import Card from '../ui/Card';
 import Badge from '../ui/Badge';
 import clsx from 'clsx';
@@ -40,34 +40,6 @@ function getLightColorLabel(phase: SignalPhase): string {
   }
 }
 
-/** Format "What the AI just did" in non-technical terms from real backend signal data */
-function formatAiAction(reason: string | undefined, controllerMode: string | null | undefined): string {
-  if (!reason) {
-    if (controllerMode === 'DQN') {
-      return 'Smart AI is actively observing lane queues to select optimal phase.';
-    }
-    return 'Standard timing: running fixed threshold cycle.';
-  }
-
-  // Parse RL action reasons
-  if (/obs-v2 DQN action:/i.test(reason)) {
-    const actionPart = reason.replace(/obs-v2 DQN action:\s*/i, '').replace(/\(Q:.*?\)/i, '').trim();
-    return `Smart AI chose: ${actionPart}`;
-  }
-  if (/DQN Action:/i.test(reason)) {
-    const actionMatch = reason.match(/DQN Action:\s*([A-Za-z0-9_]+)/i);
-    const actionName = actionMatch ? actionMatch[1].replace(/_/g, ' ').toLowerCase() : 'adjust phase';
-    return `Smart AI switched phase to ${actionName} based on vehicle queues.`;
-  }
-  if (/priority/i.test(reason)) {
-    return 'Held green light for approaching emergency vehicle corridor.';
-  }
-  if (/density on .* approach/i.test(reason)) {
-    return `Standard timing adjusted green light duration based on approach queue.`;
-  }
-
-  return reason;
-}
 
 export default function JunctionCard({ intersection, signal, controllerMode }: JunctionCardProps) {
   const [secondsRemaining, setSecondsRemaining] = useState<number>(signal?.duration_seconds ?? 0);
@@ -87,7 +59,7 @@ export default function JunctionCard({ intersection, signal, controllerMode }: J
   const displayName = getJunctionName(intersection.id);
   const trafficLevel = getTrafficLevelInWords(intersection.congestion_status, intersection.density);
   const lightColor = getLightColorLabel(intersection.signal);
-  const aiExplanation = formatAiAction(signal?.reason, controllerMode);
+  const aiExplanation = formatSignalReason(signal?.reason, controllerMode);
 
   const phaseColorClasses =
     intersection.signal === 'GREEN'
@@ -165,3 +137,4 @@ export default function JunctionCard({ intersection, signal, controllerMode }: J
     </Card>
   );
 }
+

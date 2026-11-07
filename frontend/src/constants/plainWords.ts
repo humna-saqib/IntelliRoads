@@ -165,3 +165,88 @@ export function formatRoadFullness(occupancyPercent: number): string {
   if (typeof occupancyPercent !== 'number' || isNaN(occupancyPercent)) return '0%';
   return `${occupancyPercent.toFixed(0)}% full`;
 }
+
+/**
+ * Map an action name string from the DQN controller (e.g. "EXTEND_GREEN",
+ * "SWITCH_PHASE") to a plain-language description shown to the user.
+ */
+function mapDqnActionName(raw: string): string {
+  const action = raw.toUpperCase().replace(/\s+/g, '_');
+  if (action.includes('EXTEND_GREEN')) return 'kept the green light longer to clear the queue';
+  if (action.includes('SWITCH') || action.includes('CHANGE')) return 'switched to the next phase to serve waiting traffic';
+  if (action.includes('SKIP')) return 'skipped a short phase to prioritise heavy demand';
+  if (action.includes('SHORTEN') || action.includes('REDUCE')) return 'shortened green time because traffic was light';
+  if (action.includes('HOLD')) return 'held the current phase a moment longer';
+  return 'made a timing adjustment based on live queue lengths';
+}
+
+/**
+ * Convert a raw backend `sig.reason` string into a plain-language sentence
+ * suitable for non-technical users.  Never shows raw codes.
+ *
+ * Covers all known backend reason formats:
+ *  - Rule-based:   "{HIGH|MEDIUM|LOW} density on {direction} approach -> {N}s green phase"
+ *  - Legacy DQN:   "DQN Action: EXTEND_GREEN (Reward: 0.85, Q-State: [...])"
+ *  - FYP DQN (starting): "obs-v2 DQN: waiting for the first decision"
+ *  - FYP DQN (action):   "obs-v2 DQN action: EXTEND_GREEN at t=150s (Q: 0.92)"
+ *  - Emergency priority: "Emergency priority override for {type} '{id}'"
+ */
+export function formatSignalReason(
+  reason: string | null | undefined,
+  controllerMode?: string | null,
+): string {
+  if (!reason || !reason.trim()) {
+    // No reason provided — give a safe generic based on mode
+    if (controllerMode && controllerMode.toUpperCase().includes('DQN')) {
+      return 'Smart AI is monitoring traffic and choosing the best signal timing.';
+    }
+    return 'Standard timing is running its fixed schedule.';
+  }
+
+  const r = reason.trim();
+
+  // ── Emergency vehicle priority ──────────────────────────────────────────────
+  if (/emergency priority override/i.test(r)) {
+    // "Emergency priority override for ambulance 'ev_001'"
+    const typeMatch = r.match(/override for ([^\s']+)/i);
+    const vehicleType = typeMatch ? typeMatch[1].toLowerCase() : 'emergency vehicle';
+    return `Held green for an approaching ${vehicleType}.`;
+  }
+
+  // ── Rule-based density controller ───────────────────────────────────────────
+  // "HIGH density on West approach -> 40s green phase"
+  const densityMatch = r.match(/^(HIGH|MEDIUM|LOW)\s+density\s+on\s+(\S+)\s+approach/i);
+  if (densityMatch) {
+    const level = densityMatch[1].toUpperCase();
+    const direction = densityMatch[2].toLowerCase();
+    if (level === 'HIGH') {
+      return `Kept green longer — cars are still queuing on the ${direction} side.`;
+    }
+    if (level === 'MEDIUM') {
+      return `Extended green to handle moderate traffic from the ${direction}.`;
+    }
+    return `Short green phase — traffic is light on the ${direction} side.`;
+  }
+
+  // ── FYP DQN: starting up ────────────────────────────────────────────────────
+  if (/obs-v2\s+DQN:\s*waiting/i.test(r)) {
+    return 'Smart AI is starting up and observing traffic patterns.';
+  }
+
+  // ── FYP DQN: action ─────────────────────────────────────────────────────────
+  // "obs-v2 DQN action: EXTEND_GREEN at t=150s (Q: 0.92)"
+  const fypMatch = r.match(/obs-v2\s+DQN\s+action:\s*([A-Za-z0-9_]+)/i);
+  if (fypMatch) {
+    return `Smart AI ${mapDqnActionName(fypMatch[1])}.`;
+  }
+
+  // ── Legacy DQN: action ───────────────────────────────────────────────────────
+  // "DQN Action: EXTEND_GREEN (Reward: 0.85, Q-State: [...])"
+  const legacyMatch = r.match(/DQN\s+Action:\s*([A-Za-z0-9_]+)/i);
+  if (legacyMatch) {
+    return `Smart AI ${mapDqnActionName(legacyMatch[1])}.`;
+  }
+
+  // ── Fallback ─────────────────────────────────────────────────────────────────
+  return 'Signal timing is running normally.';
+}
