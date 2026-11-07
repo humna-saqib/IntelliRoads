@@ -2,7 +2,7 @@ import { useLocation } from 'react-router-dom';
 import { Menu, LogOut } from 'lucide-react';
 import { useTraffic } from '../../context/TrafficContext';
 import ThemeToggle from '../ui/ThemeToggle';
-import StatusIndicator from '../ui/StatusIndicator';
+import LiveStatusBadge from '../ui/LiveStatusBadge';
 
 const PAGE_TITLES: Record<string, string> = {
   '/': 'Overview',
@@ -29,17 +29,8 @@ interface HeaderProps {
 
 export default function Header({ onMenuClick, onLogout }: HeaderProps) {
   const location = useLocation();
-  const { kpis, connectionStatus } = useTraffic();
+  const { kpis } = useTraffic();
   const title = PAGE_TITLES[location.pathname] ?? 'IntelliRoads';
-
-  const indicator =
-    connectionStatus === 'connected' ? 'online' :
-    connectionStatus === 'connecting' ? 'connecting' :
-    'offline';
-  const statusLabel =
-    connectionStatus === 'connected' ? 'Live' :
-    connectionStatus === 'connecting' ? 'Connecting' :
-    'Offline';
 
   return (
     <header className="flex h-16 flex-shrink-0 items-center justify-between gap-3 border-b border-line bg-page px-4 sm:px-6">
@@ -58,7 +49,7 @@ export default function Header({ onMenuClick, onLogout }: HeaderProps) {
           </span>
         )}
         <span className="mr-1 hidden sm:inline-flex">
-          <StatusIndicator status={indicator} label={statusLabel} />
+          <LiveStatusBadge />
         </span>
         <ThemeToggle />
         {onLogout && (
