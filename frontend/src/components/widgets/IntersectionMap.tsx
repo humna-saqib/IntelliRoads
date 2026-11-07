@@ -3,7 +3,9 @@ import { useTraffic } from '../../context/TrafficContext';
 import { useChartTheme } from '../../theme/chartTheme';
 import Card from '../ui/Card';
 import type { IntersectionData, VehicleData } from '../../types/traffic';
-import { getJunctionName } from '../../constants/plainWords';
+import { getJunctionName, formatSignalReason } from '../../constants/plainWords';
+import { X, Clock, Sparkles, Car } from 'lucide-react';
+import clsx from 'clsx';
 
 const JUNCTION_SHORT_NAMES: Record<string, string> = {
   junctionA: 'Northwest Square',
@@ -34,13 +36,26 @@ const densityState = (density: number) =>
 
 const VEHICLE_TYPES = ['car', 'motorcycle', 'bus', 'emergency'] as const;
 
-export default function IntersectionMap() {
+interface IntersectionMapProps {
+  selectedJunctionId?: string | null;
+  onSelectJunction?: (id: string | null) => void;
+}
+
+export default function IntersectionMap({ selectedJunctionId, onSelectJunction }: IntersectionMapProps = {}) {
   const { intersections, vehicles, signals } = useTraffic();
   const c = useChartTheme();
   const [hovered, setHovered] = useState<IntersectionData | null>(null);
+  const [selectedJunction, setSelectedJunction] = useState<IntersectionData | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const [signalCountdowns, setSignalCountdowns] = useState<Record<string, number>>({});
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (selectedJunctionId !== undefined) {
+      const match = intersections.find((j) => j.id === selectedJunctionId) ?? null;
+      setSelectedJunction(match);
+    }
+  }, [selectedJunctionId, intersections]);
 
   // Synchronize and countdown signal duration per junction
   useEffect(() => {
@@ -120,7 +135,11 @@ export default function IntersectionMap() {
                 onMouseEnter={(e) => handleHover(e, junction)}
                 onMouseMove={(e) => handleHover(e, junction)}
                 onMouseLeave={() => setHovered(null)}
-                onClick={(e) => handleHover(e, junction)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedJunction(junction);
+                  onSelectJunction?.(junction.id);
+                }}
               >
                 <circle cx={coords.x} cy={coords.y} r="30" fill="transparent" />
                 <circle cx={coords.x} cy={coords.y} r="15" className={`fill-surface ${state.stroke}`} strokeWidth={junction.density >= 40 ? 3 : 2} />
@@ -174,6 +193,109 @@ export default function IntersectionMap() {
                   <dd className="font-medium text-ink">{Number(hovered.density || 0).toFixed(1)} cars/km</dd>
                 </div>
               </dl>
+            </div>
+          );
+        })()}
+
+        {/* Click-to-inspect Side Panel */}
+        {selectedJunction && (() => {
+          const name = getJunctionName(selectedJunction.id);
+          const sig = signals?.signals?.find((s) => s.junction_id === selectedJunction.id);
+          const secondsLeft = signalCountdowns[selectedJunction.id] ?? sig?.duration_seconds ?? 0;
+          const lightColorLabel =
+            selectedJunction.signal === 'GREEN'
+              ? 'Green light (traffic is moving)'
+              : selectedJunction.signal === 'YELLOW'
+              ? 'Yellow light (prepare to stop)'
+              : 'Red light (stopped at intersection)';
+          const trafficLevel =
+            selectedJunction.congestion_status === 'CONGESTED' || selectedJunction.density >= 40
+              ? { text: 'Heavy traffic', tone: 'text-bad bg-bad/10 border-bad/20' }
+              : selectedJunction.density >= 20
+              ? { text: 'Moderate traffic', tone: 'text-warn bg-warn/10 border-warn/20' }
+              : { text: 'Light traffic', tone: 'text-ok bg-ok/10 border-ok/20' };
+
+          const actionReason = formatSignalReason(sig?.reason);
+
+          return (
+            <div
+              className="absolute inset-y-0 right-0 z-30 w-full sm:w-72 border-l border-line bg-surface/98 p-4 shadow-xl backdrop-blur-md flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div>
+                <div className="flex items-center justify-between border-b border-line pb-3">
+                  <div>
+                    <span className="text-2xs font-semibold uppercase tracking-wider text-faint">Junction details</span>
+                    <h4 className="text-sm font-semibold text-ink">{name}</h4>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedJunction(null);
+                      onSelectJunction?.(null);
+                    }}
+                    className="btn btn-ghost btn-icon h-7 w-7 text-muted hover:text-ink"
+                    aria-label="Close side panel"
+                  >
+                    <X size={15} />
+                  </button>
+                </div>
+
+                <div className="mt-3 space-y-3">
+                  {/* Traffic level in words */}
+                  <div>
+                    <span className="text-2xs text-faint uppercase font-medium">Traffic level</span>
+                    <div className="mt-1">
+                      <span className={clsx('inline-flex items-center rounded-md border px-2.5 py-1 text-xs font-semibold', trafficLevel.tone)}>
+                        {trafficLevel.text}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Light colour in words & countdown */}
+                  <div className="rounded-lg border border-line bg-subtle/50 p-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xs text-faint uppercase font-medium">Signal status</span>
+                      <span className="flex items-center gap-1 text-xs font-semibold tabular-nums text-ink">
+                        <Clock size={12} className="text-brand" />
+                        {Math.round(secondsLeft)}s remaining
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs font-medium text-ink flex items-center gap-2">
+                      <span className={clsx('h-2.5 w-2.5 rounded-full', SIGNAL_FILL[selectedJunction.signal?.toUpperCase()] ?? 'fill-faint')} />
+                      {lightColorLabel}
+                    </p>
+                    <p className="mt-0.5 text-2xs text-muted">
+                      Countdown: {Math.round(secondsLeft)} more seconds
+                    </p>
+                  </div>
+
+                  {/* Number of vehicles */}
+                  <div className="flex items-center justify-between rounded-lg border border-line bg-subtle/30 px-3 py-2 text-xs">
+                    <span className="text-muted flex items-center gap-1.5">
+                      <Car size={13} className="text-faint" />
+                      Number of vehicles
+                    </span>
+                    <span className="font-semibold text-ink">{selectedJunction.vehicle_count} active</span>
+                  </div>
+
+                  {/* What the system just did */}
+                  <div className="rounded-lg border border-line bg-subtle/40 p-3">
+                    <div className="flex items-center gap-1.5 text-2xs font-semibold uppercase tracking-wider text-brand">
+                      <Sparkles size={12} />
+                      <span>What the system just did</span>
+                    </div>
+                    <p className="mt-1.5 text-xs leading-relaxed text-ink font-medium">
+                      {actionReason}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-line pt-2.5 mt-3 text-2xs text-faint flex justify-between">
+                <span>Density: {selectedJunction.density.toFixed(1)} cars/km</span>
+                <span className="capitalize">{selectedJunction.congestion_status.toLowerCase()}</span>
+              </div>
             </div>
           );
         })()}
