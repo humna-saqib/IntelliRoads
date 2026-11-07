@@ -1,13 +1,23 @@
+import { useEffect, useState } from 'react';
 import { useTraffic } from '../context/TrafficContext';
 import { getJunctionName } from '../constants/plainWords';
+import { fetchControllerMode } from '../services/api';
 import ErrorState from '../components/ui/ErrorState';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import EmergencyPriorityBanner from '../components/widgets/EmergencyPriorityBanner';
+import JunctionCard from '../components/widgets/JunctionCard';
 import { CheckCircle2, AlertTriangle, AlertOctagon } from 'lucide-react';
 import clsx from 'clsx';
 
 export default function HomePage() {
-  const { isBackendOffline, isLoading, kpis, intersections, retryConnection } = useTraffic();
+  const { isBackendOffline, isLoading, kpis, intersections, signals, retryConnection } = useTraffic();
+  const [controllerMode, setControllerMode] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchControllerMode()
+      .then((res) => setControllerMode(res.mode))
+      .catch(() => {});
+  }, []);
 
   if (isBackendOffline && !kpis) {
     return (
@@ -86,6 +96,30 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+      {/* Item 2: One card per junction */}
+      <section aria-labelledby="junctions-heading" className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 id="junctions-heading" className="text-sm font-semibold tracking-tight text-ink sm:text-base">
+            Monitored Junctions
+          </h2>
+          <span className="text-xs text-muted">Real-time light status & queue levels</span>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {intersections.map((intersection) => {
+            const sig = signals?.signals.find((s) => s.junction_id === intersection.id);
+            return (
+              <JunctionCard
+                key={intersection.id}
+                intersection={intersection}
+                signal={sig}
+                controllerMode={controllerMode}
+              />
+            );
+          })}
+        </div>
+      </section>
     </div>
   );
 }
