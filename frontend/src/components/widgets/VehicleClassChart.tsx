@@ -18,7 +18,7 @@ export default function VehicleClassChart() {
   const total = counts.reduce((sum, row) => sum + row.count, 0);
 
   return (
-    <Card title="Vehicle mix" subtitle="Share of vehicles by type">
+    <Card title="What types of vehicles are on the road?" subtitle="Share of vehicles by type">
       <p className="text-3xl font-medium tabular-nums tracking-tight">
         {total.toLocaleString()}
         <span className="ml-2 text-xs font-normal text-faint">vehicles</span>

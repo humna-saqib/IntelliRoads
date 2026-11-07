@@ -36,7 +36,7 @@ export default function DensityChart() {
   const barColor = (value: number) => (value > 40 ? c.bad : value > 20 ? c.warn : c.ok);
 
   return (
-    <Card title="Lane density" subtitle="Vehicles per kilometre, by lane">
+    <Card title="Which roads are most crowded?" subtitle="Cars per kilometre on each monitored approach">
       <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>

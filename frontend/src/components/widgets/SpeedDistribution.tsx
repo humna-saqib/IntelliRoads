@@ -31,7 +31,7 @@ export default function SpeedDistribution() {
   }, [kpis]);
 
   return (
-    <Card title="Average speed" subtitle="Rolling mean speed of vehicles in the network">
+    <Card title="How fast are vehicles moving?" subtitle="Rolling mean speed of vehicles across the network">
       <div className="h-[240px] w-full">
         {history.length === 0 ? (
           <div className="flex h-full items-center justify-center text-[13px] text-faint">Waiting for simulation data…</div>

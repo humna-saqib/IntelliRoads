@@ -74,7 +74,7 @@ export default function OccupancyChart() {
 
   return (
     <Card
-      title="Lane occupancy"
+      title="How full are the roads?"
       subtitle={selectedJunction === 'all' ? 'Share of road space in use, by junction' : `Approaches at ${JUNCTION_NAMES[selectedJunction]}`}
       action={
         <select
