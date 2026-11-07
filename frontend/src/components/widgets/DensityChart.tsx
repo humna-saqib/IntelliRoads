@@ -1,7 +1,9 @@
+import { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Cell } from 'recharts';
 import { useTraffic } from '../../context/TrafficContext';
 import { useChartTheme } from '../../theme/chartTheme';
 import type { LaneDensity } from '../../types/traffic';
+import { fetchAllThresholds, type JunctionThresholds } from '../../services/api';
 import Card from '../ui/Card';
 import { Info } from 'lucide-react';
 
@@ -15,7 +17,7 @@ function DensityTooltip({ active, payload }: { active?: boolean; payload?: { pay
       <dl className="space-y-1">
         <div className="flex justify-between gap-4">
           <dt className="text-muted">Density</dt>
-          <dd className="font-mono tabular-nums text-ink">{d.density?.toFixed(2)} veh/km</dd>
+          <dd className="font-mono tabular-nums text-ink">{d.density?.toFixed(1)} cars/km</dd>
         </div>
         <div className="flex justify-between gap-4">
           <dt className="text-muted">Vehicles</dt>
@@ -33,13 +35,40 @@ function DensityTooltip({ active, payload }: { active?: boolean; payload?: { pay
 export default function DensityChart() {
   const { density } = useTraffic();
   const c = useChartTheme();
+  const [thresholds, setThresholds] = useState<Record<string, JunctionThresholds> | null>(null);
+  const [thresholdFetchFailed, setThresholdFetchFailed] = useState<boolean>(false);
+
+  useEffect(() => {
+    fetchAllThresholds()
+      .then((res) => {
+        setThresholds(res);
+        setThresholdFetchFailed(false);
+      })
+      .catch((err) => {
+        console.warn('Failed to fetch thresholds from /api/settings/thresholds, using safe fallbacks:', err);
+        setThresholdFetchFailed(true);
+      });
+  }, []);
+
+  const fallbackLow = 20;
+  const fallbackHigh = 40;
+  const thresholdList = thresholds ? Object.values(thresholds) : [];
+  const lowThreshold =
+    thresholdList.length > 0
+      ? Math.round(thresholdList.reduce((acc, t) => acc + (t.low_threshold ?? 20), 0) / thresholdList.length)
+      : fallbackLow;
+  const highThreshold =
+    thresholdList.length > 0
+      ? Math.round(thresholdList.reduce((acc, t) => acc + (t.congestion_threshold ?? 40), 0) / thresholdList.length)
+      : fallbackHigh;
+
   const data = density?.lanes ?? [];
-  const barColor = (value: number) => (value > 40 ? c.bad : value > 20 ? c.warn : c.ok);
+  const barColor = (value: number) => (value >= highThreshold ? c.bad : value >= lowThreshold ? c.warn : c.ok);
 
   let densityTakeaway = 'All monitored roads are flowing smoothly with light traffic.';
   if (data.length > 0) {
     const maxLane = data.reduce((max, l) => (l.density > max.density ? l : max), data[0]);
-    const levelText = maxLane.density >= 40 ? 'heavy traffic' : maxLane.density >= 20 ? 'moderate traffic' : 'light traffic';
+    const levelText = maxLane.density >= highThreshold ? 'heavy traffic' : maxLane.density >= lowThreshold ? 'moderate traffic' : 'light traffic';
     const laneName = maxLane.lane_id.replace(/^lane_/, '').replace(/_/g, ' ');
     densityTakeaway = `The most crowded road is ${laneName} with ${maxLane.density.toFixed(1)} cars per km (${levelText}).`;
   }
@@ -53,8 +82,20 @@ export default function DensityChart() {
             <XAxis dataKey="lane_id" tick={{ fill: c.axis, fontSize: 11 }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fill: c.axis, fontSize: 11 }} axisLine={false} tickLine={false} />
             <Tooltip content={<DensityTooltip />} cursor={{ fill: c.cursor }} />
-            <ReferenceLine y={20} stroke={c.warn} strokeDasharray="3 4" strokeOpacity={0.7} />
-            <ReferenceLine y={40} stroke={c.bad} strokeDasharray="3 4" strokeOpacity={0.7} />
+            <ReferenceLine
+              y={lowThreshold}
+              stroke={c.warn}
+              strokeDasharray="3 4"
+              strokeOpacity={0.7}
+              label={{ value: `Moderate (${lowThreshold})`, fill: c.axis, fontSize: 10, position: 'insideTopLeft' }}
+            />
+            <ReferenceLine
+              y={highThreshold}
+              stroke={c.bad}
+              strokeDasharray="3 4"
+              strokeOpacity={0.7}
+              label={{ value: `Congestion (${highThreshold})`, fill: c.axis, fontSize: 10, position: 'insideTopLeft' }}
+            />
             <Bar dataKey="density" radius={[2, 2, 0, 0]} maxBarSize={36} isAnimationActive={false}>
               {data.map((entry, idx) => (
                 <Cell key={`cell-${idx}`} fill={barColor(entry.density)} />
@@ -65,9 +106,12 @@ export default function DensityChart() {
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-faint">
-        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-ok" />Low, under 20</span>
-        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-warn" />Medium, 20 to 40</span>
-        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-bad" />High, over 40</span>
+        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-ok" />Light traffic, under {lowThreshold} cars/km</span>
+        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-warn" />Moderate traffic, {lowThreshold} to {highThreshold} cars/km</span>
+        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-bad" />Heavy traffic, over {highThreshold} cars/km</span>
+        {thresholdFetchFailed && (
+          <span className="text-2xs text-warn ml-auto">Using fallback thresholds</span>
+        )}
       </div>
 
       <div className="mt-3 flex items-center gap-1.5 rounded-lg border border-line bg-subtle/50 px-3 py-2 text-xs text-muted">

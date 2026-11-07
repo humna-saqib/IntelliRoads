@@ -52,7 +52,7 @@ export default function SpeedDistribution({ timeRangeMinutes = 5 }: SpeedDistrib
       const point: SpeedHistoryPoint = {
         simTime: kpis.simulation_time,
         timeLabel: `${Math.floor(kpis.simulation_time)} s`,
-        speed: kpis.average_speed,
+        speed: Math.round(kpis.average_speed * 3.6 * 10) / 10,
       };
       const updated = [...prev, point];
       return updated.length > maxPoints ? updated.slice(updated.length - maxPoints) : updated;
@@ -77,13 +77,13 @@ export default function SpeedDistribution({ timeRangeMinutes = 5 }: SpeedDistrib
               <CartesianGrid stroke={c.grid} vertical={false} />
               <XAxis dataKey="timeLabel" tick={{ fill: c.axis, fontSize: 11 }} tickLine={false} axisLine={false} minTickGap={24} />
               <YAxis tick={{ fill: c.axis, fontSize: 11 }} tickLine={false} axisLine={false} domain={[0, 'auto']} />
-              <Tooltip content={<ChartTooltip unit="m/s" />} cursor={{ stroke: c.grid }} />
+              <Tooltip content={<ChartTooltip unit="km/h" />} cursor={{ stroke: c.grid }} />
               <ReferenceLine
-                y={2}
+                y={7.2}
                 stroke={c.bad}
                 strokeDasharray="3 4"
                 strokeOpacity={0.7}
-                label={{ value: 'Congestion threshold 2 m/s', fill: c.axis, fontSize: 11, position: 'insideTopRight' }}
+                label={{ value: 'Traffic is crawling below this speed (7.2 km/h)', fill: c.axis, fontSize: 11, position: 'insideTopRight' }}
               />
               <Line type="monotone" dataKey="speed" name="Average speed" stroke={c.series[0]} strokeWidth={1.75} dot={false} activeDot={{ r: 3 }} isAnimationActive={false} />
             </LineChart>
