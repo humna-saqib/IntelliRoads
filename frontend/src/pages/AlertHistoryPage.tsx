@@ -1,13 +1,16 @@
 import { useEffect, useState, useMemo } from 'react';
 import { fetchCongestionHistory } from '../services/api';
+import { useTraffic } from '../context/TrafficContext';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import ErrorState from '../components/ui/ErrorState';
 import PageIntro from '../components/ui/PageIntro';
 import { RotateCcw } from 'lucide-react';
 import type { CongestionEvent } from '../types/traffic';
 
 export default function AlertHistoryPage() {
+  const { isBackendOffline } = useTraffic();
   const [loading, setLoading] = useState<boolean>(true);
   const [history, setHistory] = useState<CongestionEvent[]>([]);
 
@@ -127,6 +130,14 @@ export default function AlertHistoryPage() {
         <Card title={`Alert records (${filteredHistory.length})`} subtitle="Newest first" padded={false}>
           {loading ? (
             <div className="flex justify-center py-16"><LoadingSpinner size="lg" /></div>
+          ) : isBackendOffline && history.length === 0 ? (
+            <div className="p-6">
+              <ErrorState
+                title="Alert records unavailable"
+                message="We can't connect to the server right now to fetch alert history."
+                onRetry={loadHistory}
+              />
+            </div>
           ) : filteredHistory.length === 0 ? (
             <div className="py-16 text-center">
               <p className="text-[13px] font-medium">No alert records match these filters</p>

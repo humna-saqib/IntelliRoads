@@ -65,7 +65,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               onClick={onClose}
               className={({ isActive }) =>
                 clsx(
-                  'flex h-9 items-center gap-2.5 rounded-lg px-3 text-[13px] transition-colors',
+                  'flex min-h-[44px] items-center gap-2.5 rounded-lg px-3 text-[13px] transition-colors',
                   isActive ? 'bg-brand/10 font-medium text-brand' : 'text-muted hover:bg-subtle hover:text-ink',
                 )
               }

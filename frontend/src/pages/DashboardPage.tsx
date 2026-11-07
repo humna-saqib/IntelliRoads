@@ -1,3 +1,4 @@
+import { useTraffic } from '../context/TrafficContext';
 import KPICards from '../components/widgets/KPICards';
 import SignalStatusGrid from '../components/widgets/SignalStatusGrid';
 import CongestionAlerts from '../components/widgets/CongestionAlerts';
@@ -8,8 +9,32 @@ import VehicleTable from '../components/widgets/VehicleTable';
 import EmergencyPriorityBanner from '../components/widgets/EmergencyPriorityBanner';
 import ControlModePanel from '../components/widgets/ControlModePanel';
 import VehicleInjectionPanel from '../components/widgets/VehicleInjectionPanel';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
+import ErrorState from '../components/ui/ErrorState';
 
 export default function DashboardPage() {
+  const { isLoading, isBackendOffline, kpis, retryConnection } = useTraffic();
+
+  if (isBackendOffline && !kpis) {
+    return (
+      <div className="py-12">
+        <ErrorState
+          title="Live traffic system is offline"
+          message="We can't reach the traffic system right now. The simulation server may be offline or starting up."
+          onRetry={retryConnection}
+        />
+      </div>
+    );
+  }
+
+  if (isLoading && !kpis) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <LoadingSpinner size="lg" label="Connecting to traffic system…" />
+      </div>
+    );
+  }
+
   return (
     <div>
       <EmergencyPriorityBanner />

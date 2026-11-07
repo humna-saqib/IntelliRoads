@@ -7,6 +7,7 @@ import { useChartTheme } from '../theme/chartTheme';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import ErrorState from '../components/ui/ErrorState';
 import ChartTooltip from '../components/ui/ChartTooltip';
 import PageIntro from '../components/ui/PageIntro';
 import { Download, ChevronDown, ChevronRight } from 'lucide-react';
@@ -202,7 +203,19 @@ export default function ReportsPage() {
   if (loading && !perfData) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <LoadingSpinner size="lg" />
+        <LoadingSpinner size="lg" label="Loading performance reports…" />
+      </div>
+    );
+  }
+
+  if (!perfData) {
+    return (
+      <div className="py-12">
+        <ErrorState
+          title="Performance data unavailable"
+          message="We can't connect to the server right now to load performance records. The simulation may be starting up."
+          onRetry={loadData}
+        />
       </div>
     );
   }
