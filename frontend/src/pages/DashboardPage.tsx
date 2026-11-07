@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTraffic } from '../context/TrafficContext';
 import KPICards from '../components/widgets/KPICards';
@@ -16,6 +17,10 @@ import { ArrowLeft } from 'lucide-react';
 
 export default function DashboardPage() {
   const { isLoading, isBackendOffline, kpis, retryConnection } = useTraffic();
+
+  useEffect(() => {
+    document.title = 'Detailed Data · IntelliRoads';
+  }, []);
 
   if (isBackendOffline && !kpis) {
     return (

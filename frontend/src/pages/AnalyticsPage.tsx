@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useTraffic } from '../context/TrafficContext';
 import SpeedDistribution from '../components/widgets/SpeedDistribution';
 import DensityChart from '../components/widgets/DensityChart';
@@ -9,6 +10,10 @@ import ErrorState from '../components/ui/ErrorState';
 
 export default function AnalyticsPage() {
   const { isLoading, isBackendOffline, kpis, retryConnection } = useTraffic();
+
+  useEffect(() => {
+    document.title = 'Analytics · IntelliRoads';
+  }, []);
 
   if (isBackendOffline && !kpis) {
     return (

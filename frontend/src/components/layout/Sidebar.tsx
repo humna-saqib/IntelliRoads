@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Map, BarChart3, FileText, ShieldAlert, Settings2, X } from 'lucide-react';
+import { LayoutDashboard, Layers, Map, BarChart3, FileText, ShieldAlert, Settings2, X } from 'lucide-react';
 import { useTraffic } from '../../context/TrafficContext';
 import StatusIndicator from '../ui/StatusIndicator';
 import Logo from '../ui/Logo';
@@ -7,6 +7,7 @@ import clsx from 'clsx';
 
 const navItems = [
   { to: '/', label: 'Overview', icon: LayoutDashboard },
+  { to: '/details', label: 'Detailed data', icon: Layers },
   { to: '/map', label: 'Traffic map', icon: Map },
   { to: '/analytics', label: 'Analytics', icon: BarChart3 },
   { to: '/alerts', label: 'Alert history', icon: ShieldAlert },

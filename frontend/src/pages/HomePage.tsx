@@ -10,6 +10,8 @@ import Badge from '../components/ui/Badge';
 import EmergencyPriorityBanner from '../components/widgets/EmergencyPriorityBanner';
 import JunctionCard from '../components/widgets/JunctionCard';
 import TimingModeSwitch from '../components/widgets/TimingModeSwitch';
+import GlossaryModal from '../components/ui/GlossaryModal';
+import FirstVisitTour from '../components/ui/FirstVisitTour';
 import KPICards from '../components/widgets/KPICards';
 import SignalStatusGrid from '../components/widgets/SignalStatusGrid';
 import CongestionAlerts from '../components/widgets/CongestionAlerts';
@@ -33,6 +35,8 @@ import {
   ChevronDown,
   ChevronUp,
   ExternalLink,
+  BookOpen,
+  HelpCircle,
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -50,6 +54,12 @@ export default function HomePage() {
   const [controllerMode, setControllerMode] = useState<string | null>(null);
   const [perfSummaries, setPerfSummaries] = useState<PerformanceSummary[]>([]);
   const [showDetailed, setShowDetailed] = useState(false);
+  const [tourOpen, setTourOpen] = useState(false);
+  const [glossaryOpen, setGlossaryOpen] = useState(false);
+
+  useEffect(() => {
+    document.title = 'Overview · IntelliRoads';
+  }, []);
 
   useEffect(() => {
     fetchControllerMode()
@@ -194,6 +204,40 @@ export default function HomePage() {
 
   return (
     <div className="space-y-6">
+      {/* Overview Header with Glossary & Guided Tour shortcuts */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight text-ink sm:text-2xl">
+            Traffic Overview
+          </h1>
+          <p className="mt-0.5 text-xs text-muted sm:text-sm">
+            Live corridor operations, intersection flow, and automated signal coordination.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setGlossaryOpen(true)}
+            className="btn btn-secondary min-h-[36px] flex items-center gap-1.5 text-xs font-medium"
+            aria-label="Open plain-language glossary"
+          >
+            <BookOpen size={14} />
+            <span>Glossary</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setTourOpen(true)}
+            className="btn btn-secondary min-h-[36px] flex items-center gap-1.5 text-xs font-medium"
+            aria-label="Take the first-visit guided tour"
+          >
+            <HelpCircle size={14} />
+            <span>Tour</span>
+          </button>
+        </div>
+      </div>
+
       <EmergencyPriorityBanner />
 
       {/* Item 1 & Item 3: Status sentence at the top with colored edge, what-to-do, and 5-min trend note */}
@@ -382,6 +426,10 @@ export default function HomePage() {
           </div>
         )}
       </section>
+
+      {/* Item 7: Tour & Glossary Dialogs */}
+      <FirstVisitTour forceOpen={tourOpen} onClose={() => setTourOpen(false)} />
+      <GlossaryModal isOpen={glossaryOpen} onClose={() => setGlossaryOpen(false)} />
     </div>
   );
 }

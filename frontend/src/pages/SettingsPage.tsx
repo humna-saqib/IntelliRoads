@@ -18,6 +18,10 @@ type SaveState = Record<string, 'idle' | 'saving' | 'saved' | 'error'>;
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    document.title = 'Settings · IntelliRoads';
+  }, []);
   const [original, setOriginal] = useState<FormState>({});
   const [form, setForm] = useState<FormState>({});
   const [saveState, setSaveState] = useState<SaveState>({});

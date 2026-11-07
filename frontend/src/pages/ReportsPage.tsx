@@ -29,6 +29,10 @@ const EMPTY_MESSAGE = 'No performance history has been recorded yet.';
 
 export default function ReportsPage() {
   const c = useChartTheme();
+
+  useEffect(() => {
+    document.title = 'Reports · IntelliRoads';
+  }, []);
   const [timeWindow, setTimeWindow] = useState<number>(30);
   const [loading, setLoading] = useState<boolean>(true);
   const [perfData, setPerfData] = useState<PerformanceResponse | null>(null);

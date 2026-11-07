@@ -33,6 +33,10 @@ export default function AlertHistoryPage() {
   };
 
   useEffect(() => {
+    document.title = 'Alert History · IntelliRoads';
+  }, []);
+
+  useEffect(() => {
     loadHistory();
   }, [selectedIntersection, selectedStatus]);
 

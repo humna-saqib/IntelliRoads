@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useTraffic } from '../context/TrafficContext';
 import IntersectionMap from '../components/widgets/IntersectionMap';
 import Card from '../components/ui/Card';
@@ -14,6 +15,10 @@ const signalTone: Record<string, string> = {
 
 export default function MapPage() {
   const { intersections, isLoading, isBackendOffline, retryConnection } = useTraffic();
+
+  useEffect(() => {
+    document.title = 'Traffic Map · IntelliRoads';
+  }, []);
 
   if (isBackendOffline && intersections.length === 0) {
     return (
