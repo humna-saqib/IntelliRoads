@@ -1,23 +1,113 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTraffic } from '../context/TrafficContext';
-import { getJunctionName } from '../constants/plainWords';
-import { fetchControllerMode } from '../services/api';
+import { getJunctionName, formatMinutesOnly } from '../constants/plainWords';
+import { fetchControllerMode, fetchPerformance } from '../services/api';
+import type { PerformanceSummary } from '../types/traffic';
 import ErrorState from '../components/ui/ErrorState';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import EmergencyPriorityBanner from '../components/widgets/EmergencyPriorityBanner';
 import JunctionCard from '../components/widgets/JunctionCard';
-import { CheckCircle2, AlertTriangle, AlertOctagon } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, AlertOctagon, TrendingUp, TrendingDown, Minus, Clock } from 'lucide-react';
 import clsx from 'clsx';
 
 export default function HomePage() {
-  const { isBackendOffline, isLoading, kpis, intersections, signals, retryConnection } = useTraffic();
+  const { isBackendOffline, isLoading, kpis, kpiHistory, intersections, signals, retryConnection } = useTraffic();
   const [controllerMode, setControllerMode] = useState<string | null>(null);
+  const [perfSummaries, setPerfSummaries] = useState<PerformanceSummary[]>([]);
 
   useEffect(() => {
     fetchControllerMode()
       .then((res) => setControllerMode(res.mode))
       .catch(() => {});
+
+    // Fetch minute-by-minute performance summary for trend fallback
+    fetchPerformance(10)
+      .then((res) => {
+        if (res?.per_minute) setPerfSummaries(res.per_minute);
+      })
+      .catch(() => {});
   }, []);
+
+  // Item 3: Calculate 5-minute trend note from real rolling buffer or per_minute API data
+  const trend = useMemo(() => {
+    const now = Date.now();
+    const fiveMinutesAgo = now - 5 * 60 * 1000;
+
+    // Check rolling buffer first
+    if (kpiHistory.length > 0 && kpis) {
+      // Find oldest point or point closest to 5 minutes ago
+      let closestPoint = kpiHistory[0];
+      let minDiff = Math.abs(closestPoint.timestamp - fiveMinutesAgo);
+
+      for (const p of kpiHistory) {
+        const diff = Math.abs(p.timestamp - fiveMinutesAgo);
+        if (diff < minDiff) {
+          minDiff = diff;
+          closestPoint = p;
+        }
+      }
+
+      const elapsedSec = (now - closestPoint.timestamp) / 1000;
+      if (elapsedSec >= 45) {
+        const speedDiffKmh = (kpis.average_speed - closestPoint.averageSpeed) * 3.6;
+        const waitDiffSec = kpis.average_wait_time - closestPoint.averageWaitTime;
+
+        if (speedDiffKmh >= 1.5 || waitDiffSec <= -8) {
+          return {
+            title: 'Better than 5 minutes ago',
+            description: `Traffic is clearing up — average speeds improved by ${Math.abs(Math.round(speedDiffKmh))} km/h.`,
+            tone: 'better' as const,
+          };
+        }
+        if (speedDiffKmh <= -1.5 || waitDiffSec >= 8) {
+          return {
+            title: 'Worse than 5 minutes ago',
+            description: `Delays increased slightly — wait times are up by ${formatMinutesOnly(Math.abs(waitDiffSec))}.`,
+            tone: 'worse' as const,
+          };
+        }
+        return {
+          title: 'Stable compared to 5 minutes ago',
+          description: 'Flow rates and vehicle speeds have remained steady.',
+          tone: 'stable' as const,
+        };
+      }
+    }
+
+    // Fallback to /api/performance per_minute data
+    if (perfSummaries.length >= 2) {
+      const latest = perfSummaries[perfSummaries.length - 1];
+      const pastIndex = Math.max(0, perfSummaries.length - 5);
+      const past = perfSummaries[pastIndex];
+
+      const waitDiff = latest.avg_waiting_time - past.avg_waiting_time;
+      if (waitDiff <= -5) {
+        return {
+          title: 'Better than 5 minutes ago',
+          description: `Average queue delays decreased by ${formatMinutesOnly(Math.abs(waitDiff))}.`,
+          tone: 'better' as const,
+        };
+      }
+      if (waitDiff >= 5) {
+        return {
+          title: 'Worse than 5 minutes ago',
+          description: `Corridor queue delays increased by ${formatMinutesOnly(waitDiff)}.`,
+          tone: 'worse' as const,
+        };
+      }
+      return {
+        title: 'Stable compared to 5 minutes ago',
+        description: 'Waiting times have held steady across intersections.',
+        tone: 'stable' as const,
+      };
+    }
+
+    return {
+      title: 'Tracking 5-minute trend',
+      description: 'Accumulating initial traffic history from active simulation feed.',
+      tone: 'collecting' as const,
+    };
+  }, [kpiHistory, kpis, perfSummaries]);
 
   if (isBackendOffline && !kpis) {
     return (
@@ -67,7 +157,7 @@ export default function HomePage() {
     <div className="space-y-6">
       <EmergencyPriorityBanner />
 
-      {/* Item 1: Status sentence at the top with colored edge + what to do */}
+      {/* Item 1 & Item 3: Status sentence at the top with colored edge, what-to-do, and 5-min trend note */}
       <div
         role="status"
         aria-live="polite"
@@ -79,19 +169,35 @@ export default function HomePage() {
           tone === 'good' && 'border-l-ok bg-ok/[0.03]',
         )}
       >
-        <div className="flex items-start gap-3.5">
-          <div className="mt-0.5 flex-shrink-0">
-            {tone === 'bad' && <AlertOctagon size={20} className="text-bad" />}
-            {tone === 'warn' && <AlertTriangle size={20} className="text-warn" />}
-            {tone === 'good' && <CheckCircle2 size={20} className="text-ok" />}
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div className="flex items-start gap-3.5">
+            <div className="mt-0.5 flex-shrink-0">
+              {tone === 'bad' && <AlertOctagon size={20} className="text-bad" />}
+              {tone === 'warn' && <AlertTriangle size={20} className="text-warn" />}
+              {tone === 'good' && <CheckCircle2 size={20} className="text-ok" />}
+            </div>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-base font-semibold tracking-tight text-ink sm:text-lg">
+                {statusTitle}
+              </h1>
+              <p className="mt-1 text-sm text-muted">
+                <span className="font-medium text-ink">What to do: </span>
+                {whatToDo}
+              </p>
+            </div>
           </div>
-          <div className="min-w-0 flex-1">
-            <h1 className="text-base font-semibold tracking-tight text-ink sm:text-lg">
-              {statusTitle}
-            </h1>
-            <p className="mt-1 text-sm text-muted">
-              <span className="font-medium text-ink">What to do: </span>
-              {whatToDo}
+
+          {/* Item 3: Trend note */}
+          <div className="flex-shrink-0 rounded-lg border border-line bg-subtle/80 px-3.5 py-2.5 md:max-w-[280px]">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-ink">
+              {trend.tone === 'better' && <TrendingUp size={14} className="text-ok" />}
+              {trend.tone === 'worse' && <TrendingDown size={14} className="text-bad" />}
+              {trend.tone === 'stable' && <Minus size={14} className="text-muted" />}
+              {trend.tone === 'collecting' && <Clock size={14} className="text-faint" />}
+              <span>{trend.title}</span>
+            </div>
+            <p className="mt-0.5 text-2xs leading-relaxed text-muted">
+              {trend.description}
             </p>
           </div>
         </div>
