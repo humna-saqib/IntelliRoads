@@ -34,7 +34,54 @@ const densityState = (density: number) =>
   density < 40 ? { stroke: 'stroke-warn', label: 'Congested', tone: 'text-warn' } :
   { stroke: 'stroke-bad', label: 'Severe', tone: 'text-bad' };
 
-const VEHICLE_TYPES = ['car', 'motorcycle', 'bus', 'emergency'] as const;
+const VEHICLE_TYPES = ['car', 'bus', 'truck', 'emergency', 'motorcycle'] as const;
+
+function VehicleIconSvg({ type, color }: { type: string; color: string }) {
+  const norm = (type || 'car').toLowerCase();
+  if (norm.includes('bus')) {
+    return (
+      <g>
+        <rect x="-6" y="-3.5" width="12" height="7" rx="1.5" fill={color} />
+        <rect x="-4" y="-2" width="6" height="4" rx="0.5" fill="#fff" fillOpacity="0.75" />
+        <line x1="3.5" y1="-2.5" x2="3.5" y2="2.5" stroke="#fff" strokeWidth="1" />
+      </g>
+    );
+  }
+  if (norm.includes('truck')) {
+    return (
+      <g>
+        <rect x="-7" y="-3.5" width="8" height="7" rx="1" fill={color} fillOpacity="0.9" />
+        <rect x="2" y="-3" width="4.5" height="6" rx="1" fill={color} />
+        <line x1="1" y1="-2" x2="1" y2="2" stroke="#fff" strokeWidth="0.8" />
+      </g>
+    );
+  }
+  if (norm.includes('emergency')) {
+    return (
+      <g>
+        <rect x="-5.5" y="-3.5" width="11" height="7" rx="1.5" fill={color} stroke="#ef4444" strokeWidth="1" />
+        <rect x="-2" y="-1.5" width="4" height="3" rx="0.5" fill="#fff" fillOpacity="0.8" />
+        <circle cx="0" cy="0" r="1.5" fill="#ef4444" className="animate-pulse" />
+      </g>
+    );
+  }
+  if (norm.includes('motorcycle') || norm.includes('bike')) {
+    return (
+      <g>
+        <circle cx="-3" cy="0" r="1.5" fill={color} />
+        <circle cx="3" cy="0" r="1.5" fill={color} />
+        <line x1="-3" y1="0" x2="3" y2="0" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
+      </g>
+    );
+  }
+  // Default: car
+  return (
+    <g>
+      <rect x="-4.5" y="-2.5" width="9" height="5" rx="1.5" fill={color} />
+      <rect x="-2" y="-1.5" width="4" height="3" rx="1" fill="#fff" fillOpacity="0.75" />
+    </g>
+  );
+}
 
 interface IntersectionMapProps {
   selectedJunctionId?: string | null;
@@ -226,10 +273,18 @@ export default function IntersectionMap({ selectedJunctionId, onSelectJunction }
           {/* vehicles */}
           {vehicles.map((v) => {
             const p = vehicleCoords(v);
+            const color = vehicleColor(v.vehicle_type);
+            const speedKmh = Math.round(v.speed * 3.6);
             return (
-              <circle key={v.vehicle_id} cx={p.x} cy={p.y} r="3" fill={vehicleColor(v.vehicle_type)} className="pointer-events-none" style={{ transition: 'cx 0.9s linear, cy 0.9s linear' }}>
-                <title>{`${v.vehicle_id} (${v.vehicle_type}): ${v.speed} m/s`}</title>
-              </circle>
+              <g
+                key={v.vehicle_id}
+                transform={`translate(${p.x}, ${p.y})`}
+                className="pointer-events-none"
+                style={{ transition: 'transform 0.9s linear' }}
+              >
+                <title>{`${v.vehicle_id} (${v.vehicle_type}): ${speedKmh} km/h`}</title>
+                <VehicleIconSvg type={v.vehicle_type} color={color} />
+              </g>
             );
           })}
         </svg>
@@ -415,7 +470,9 @@ export default function IntersectionMap({ selectedJunctionId, onSelectJunction }
           <div className="mt-1.5 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-muted">
             {VEHICLE_TYPES.map((t, i) => (
               <span key={t} className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full" style={{ background: c.series[i] }} />
+                <svg width="15" height="11" viewBox="-7 -4 14 8" className="inline-block flex-shrink-0">
+                  <VehicleIconSvg type={t} color={c.series[i % c.series.length]} />
+                </svg>
                 <span>{t === 'emergency' ? 'Emergency vehicle' : t.charAt(0).toUpperCase() + t.slice(1)}</span>
               </span>
             ))}
