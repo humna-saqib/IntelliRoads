@@ -10,6 +10,15 @@ import Badge from '../components/ui/Badge';
 import EmergencyPriorityBanner from '../components/widgets/EmergencyPriorityBanner';
 import JunctionCard from '../components/widgets/JunctionCard';
 import TimingModeSwitch from '../components/widgets/TimingModeSwitch';
+import KPICards from '../components/widgets/KPICards';
+import SignalStatusGrid from '../components/widgets/SignalStatusGrid';
+import CongestionAlerts from '../components/widgets/CongestionAlerts';
+import DensityChart from '../components/widgets/DensityChart';
+import OccupancyChart from '../components/widgets/OccupancyChart';
+import VehicleClassChart from '../components/widgets/VehicleClassChart';
+import VehicleTable from '../components/widgets/VehicleTable';
+import ControlModePanel from '../components/widgets/ControlModePanel';
+import VehicleInjectionPanel from '../components/widgets/VehicleInjectionPanel';
 import {
   CheckCircle2,
   AlertTriangle,
@@ -20,6 +29,10 @@ import {
   Clock,
   ShieldAlert,
   ArrowRight,
+  Layers,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -36,6 +49,7 @@ export default function HomePage() {
   } = useTraffic();
   const [controllerMode, setControllerMode] = useState<string | null>(null);
   const [perfSummaries, setPerfSummaries] = useState<PerformanceSummary[]>([]);
+  const [showDetailed, setShowDetailed] = useState(false);
 
   useEffect(() => {
     fetchControllerMode()
@@ -296,6 +310,77 @@ export default function HomePage() {
             );
           })}
         </div>
+      </section>
+
+      {/* Item 6: Collapsible "Detailed data" section */}
+      <section aria-labelledby="detailed-data-heading" className="rounded-xl border border-line bg-surface p-4 shadow-xs">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <button
+            type="button"
+            onClick={() => setShowDetailed((prev) => !prev)}
+            aria-expanded={showDetailed}
+            className="flex items-center gap-3 text-left transition-colors hover:text-brand"
+          >
+            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border border-line bg-subtle text-muted">
+              <Layers size={18} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 id="detailed-data-heading" className="text-sm font-semibold tracking-tight text-ink sm:text-[15px]">
+                  Detailed data
+                </h2>
+                <Badge label={showDetailed ? 'Expanded' : 'Folded'} variant="neutral" size="sm" />
+              </div>
+              <p className="text-xs text-muted">
+                Inspect raw signal matrices, density curves, vehicle tables, and simulation controls.
+              </p>
+            </div>
+          </button>
+
+          <div className="flex items-center gap-2">
+            <Link
+              to="/details"
+              className="btn btn-secondary min-h-[36px] flex items-center gap-1.5 text-xs font-medium"
+            >
+              <span>Open full page</span>
+              <ExternalLink size={13} />
+            </Link>
+            <button
+              type="button"
+              onClick={() => setShowDetailed((prev) => !prev)}
+              className="btn btn-ghost btn-icon"
+              aria-label={showDetailed ? 'Fold detailed data' : 'Unfold detailed data'}
+            >
+              {showDetailed ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </button>
+          </div>
+        </div>
+
+        {showDetailed && (
+          <div className="mt-5 space-y-5 border-t border-line pt-5">
+            <KPICards />
+            <div className="grid grid-cols-1 gap-5 xl:grid-cols-5">
+              <div className="xl:col-span-2">
+                <ControlModePanel />
+              </div>
+              <div className="xl:col-span-3">
+                <VehicleInjectionPanel />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
+              <div className="space-y-5 xl:col-span-2">
+                <SignalStatusGrid />
+                <CongestionAlerts />
+              </div>
+              <VehicleClassChart />
+            </div>
+            <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+              <DensityChart />
+              <OccupancyChart />
+            </div>
+            <VehicleTable />
+          </div>
+        )}
       </section>
     </div>
   );

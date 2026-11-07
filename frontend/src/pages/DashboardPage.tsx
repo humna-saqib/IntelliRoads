@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useTraffic } from '../context/TrafficContext';
 import KPICards from '../components/widgets/KPICards';
 import SignalStatusGrid from '../components/widgets/SignalStatusGrid';
@@ -11,6 +12,7 @@ import ControlModePanel from '../components/widgets/ControlModePanel';
 import VehicleInjectionPanel from '../components/widgets/VehicleInjectionPanel';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import ErrorState from '../components/ui/ErrorState';
+import { ArrowLeft } from 'lucide-react';
 
 export default function DashboardPage() {
   const { isLoading, isBackendOffline, kpis, retryConnection } = useTraffic();
@@ -37,6 +39,17 @@ export default function DashboardPage() {
 
   return (
     <div>
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-semibold tracking-tight text-ink sm:text-xl">Detailed data</h1>
+          <p className="text-xs text-muted">Diagnostic traffic metrics, signal controllers, and vehicle inspection</p>
+        </div>
+        <Link to="/" className="btn btn-secondary min-h-[36px] flex items-center gap-1.5 text-xs font-medium">
+          <ArrowLeft size={14} />
+          <span>Back to Overview</span>
+        </Link>
+      </div>
+
       <EmergencyPriorityBanner />
 
       <div className="space-y-5">
