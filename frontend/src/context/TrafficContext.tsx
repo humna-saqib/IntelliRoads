@@ -20,6 +20,7 @@ import type {
 } from '../types/traffic';
 import { fetchAllData } from '../services/api';
 import { TrafficWebSocket } from '../services/websocket';
+import { registerIntersectionNames } from '../constants/plainWords';
 
 function getWebSocketUrl(path: string): string {
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -101,7 +102,10 @@ export function TrafficProvider({ children }: { children: React.ReactNode }) {
     if (snap.kpis)           setKPIs(snap.kpis);
     if (snap.occupancy)      setOccupancy(snap.occupancy);
     if (snap.emergency)      setEmergency(snap.emergency);
-    if (snap.intersections)  setIntersections(snap.intersections);
+    if (snap.intersections) {
+      setIntersections(snap.intersections);
+      registerIntersectionNames(snap.intersections);
+    }
     setLastUpdate(Date.now());
     setIsLoading(false);
   }, []);
@@ -118,6 +122,7 @@ export function TrafficProvider({ children }: { children: React.ReactNode }) {
       setOccupancy(data.occupancy ?? null);
       setEmergency(data.emergency ?? null);
       setIntersections(data.intersections ?? []);
+      if (data.intersections) registerIntersectionNames(data.intersections);
       setLastUpdate(Date.now());
       setIsLoading(false);
     } catch (err) {
