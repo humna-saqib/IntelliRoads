@@ -24,7 +24,7 @@ const TOUR_STEPS = [
     subtitle: 'Step 3 of 4: Standard Timing vs Smart AI',
     icon: Sliders,
     content:
-      'Easily toggle between Standard Timing (fixed threshold schedules) and Smart AI (reinforcement learning that dynamically clears bottlenecks) with a single click.',
+      'Easily switch between Standard timing (lights follow a fixed schedule) and Smart AI (lights adjust automatically based on live traffic) with a single click.',
   },
   {
     title: 'Detailed Data & Warnings',
@@ -165,3 +165,4 @@ export default function FirstVisitTour({ forceOpen = false, onClose }: FirstVisi
     </div>
   );
 }
+

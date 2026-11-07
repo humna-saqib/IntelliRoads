@@ -12,7 +12,7 @@ const GLOSSARY_ENTRIES = [
     category: 'Signal Control',
     icon: Sparkles,
     meaning:
-      'A reinforcement learning model (Double DQN) that continuously monitors traffic queues across approaches and dynamically changes traffic lights to reduce overall wait times.',
+      'An intelligent system that continuously monitors traffic queues at each approach and automatically adjusts traffic lights to reduce overall wait times.',
   },
   {
     term: PLAIN_TERMS.ruleBased,
@@ -122,3 +122,4 @@ export default function GlossaryModal({ isOpen, onClose }: GlossaryModalProps) {
     </div>
   );
 }
+
