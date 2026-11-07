@@ -33,7 +33,7 @@ export default function AlertHistoryPage() {
   };
 
   useEffect(() => {
-    document.title = 'Alert History · IntelliRoads';
+    document.title = 'Past Warnings · IntelliRoads';
   }, []);
 
   useEffect(() => {
@@ -88,7 +88,7 @@ export default function AlertHistoryPage() {
   return (
     <div>
       <PageIntro
-        description="Record of congestion events: when a junction approach went over its density threshold and when it cleared."
+        description="A record of congestion events — when a junction approach became overcrowded and when it cleared."
         actions={
           <button onClick={loadHistory} className="btn">
             <RotateCcw size={14} strokeWidth={1.75} />
@@ -131,20 +131,20 @@ export default function AlertHistoryPage() {
           </div>
         </div>
 
-        <Card title={`Alert records (${filteredHistory.length})`} subtitle="Newest first" padded={false}>
+        <Card title={`Past warnings (${filteredHistory.length})`} subtitle="Newest first" padded={false}>
           {loading ? (
             <div className="flex justify-center py-16"><LoadingSpinner size="lg" /></div>
           ) : isBackendOffline && history.length === 0 ? (
             <div className="p-6">
               <ErrorState
-                title="Alert records unavailable"
-                message="We can't connect to the server right now to fetch alert history."
+                title="Past warnings unavailable"
+                message="We can't connect to the server right now to fetch past warnings."
                 onRetry={loadHistory}
               />
             </div>
           ) : filteredHistory.length === 0 ? (
             <div className="py-16 text-center">
-              <p className="text-[13px] font-medium">No alert records match these filters</p>
+              <p className="text-[13px] font-medium">No past warnings match these filters</p>
               <p className="mt-1 text-xs text-faint">Try resetting the filters or widening the time range.</p>
             </div>
           ) : (
@@ -173,7 +173,7 @@ export default function AlertHistoryPage() {
                         <td className="text-muted">{event.direction ? `${event.direction}bound` : '–'}</td>
                         <td className="whitespace-nowrap">
                           <span className={active ? 'font-mono tabular-nums text-bad' : 'font-mono tabular-nums'}>{event.density_value.toFixed(1)}</span>
-                          <span className="ml-1 text-xs text-faint">veh/km · limit {event.threshold}</span>
+                          <span className="ml-1 text-xs text-faint">cars/km · limit {event.threshold}</span>
                         </td>
                         <td><Badge label={active ? 'Congested' : 'Resolved'} variant={active ? 'danger' : 'success'} size="sm" /></td>
                         <td className="whitespace-nowrap font-mono text-xs text-muted">{formatDateTime(event.timestamp)}</td>

@@ -10,7 +10,7 @@ const navItems = [
   { to: '/details', label: 'Detailed data', icon: Layers },
   { to: '/map', label: 'Traffic map', icon: Map },
   { to: '/analytics', label: 'Analytics', icon: BarChart3 },
-  { to: '/alerts', label: 'Alert history', icon: ShieldAlert },
+  { to: '/alerts', label: 'Past warnings', icon: ShieldAlert },
   { to: '/reports', label: 'Reports', icon: FileText },
   { to: '/settings', label: 'Settings', icon: Settings2 },
 ];

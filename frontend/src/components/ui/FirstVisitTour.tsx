@@ -31,7 +31,7 @@ const TOUR_STEPS = [
     subtitle: 'Step 4 of 4: Full Diagnostics',
     icon: Layers,
     content:
-      'Click "Open warnings" to view congestion alert history, or expand the "Detailed data" section at the bottom for comprehensive diagnostic charts and vehicle tables.',
+      'Click "Open warnings" to view past traffic warnings, or expand the "Detailed data" section at the bottom for comprehensive diagnostic charts and vehicle tables.',
   },
 ];
 
