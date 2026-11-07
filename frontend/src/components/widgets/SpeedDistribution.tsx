@@ -12,10 +12,16 @@ interface SpeedHistoryPoint {
   speed: number;
 }
 
-export default function SpeedDistribution() {
+interface SpeedDistributionProps {
+  timeRangeMinutes?: number;
+}
+
+export default function SpeedDistribution({ timeRangeMinutes = 5 }: SpeedDistributionProps = {}) {
   const { kpis, kpiHistory } = useTraffic();
   const c = useChartTheme();
   const [history, setHistory] = useState<SpeedHistoryPoint[]>([]);
+
+  const maxPoints = timeRangeMinutes <= 5 ? 30 : timeRangeMinutes <= 15 ? 90 : 360;
 
   const currentSpeedKmh = Math.round(kpis?.average_speed ? kpis.average_speed * 3.6 : 0);
   let diffText = '';
@@ -49,18 +55,25 @@ export default function SpeedDistribution() {
         speed: kpis.average_speed,
       };
       const updated = [...prev, point];
-      return updated.length > 30 ? updated.slice(updated.length - 30) : updated; // last 30 readings
+      return updated.length > maxPoints ? updated.slice(updated.length - maxPoints) : updated;
     });
-  }, [kpis]);
+  }, [kpis, maxPoints]);
+
+  const maxWindowSec = timeRangeMinutes * 60;
+  const displayHistory = history.filter((pt) => {
+    if (history.length === 0) return true;
+    const latest = history[history.length - 1].simTime;
+    return latest - pt.simTime <= maxWindowSec;
+  });
 
   return (
     <Card title="How fast are vehicles moving?" subtitle="Rolling mean speed of vehicles across the network">
       <div className="h-[240px] w-full">
-        {history.length === 0 ? (
+        {displayHistory.length === 0 ? (
           <div className="flex h-full items-center justify-center text-[13px] text-faint">Waiting for simulation data…</div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={history} margin={{ top: 10, right: 12, left: -16, bottom: 0 }}>
+            <LineChart data={displayHistory} margin={{ top: 10, right: 12, left: -16, bottom: 0 }}>
               <CartesianGrid stroke={c.grid} vertical={false} />
               <XAxis dataKey="timeLabel" tick={{ fill: c.axis, fontSize: 11 }} tickLine={false} axisLine={false} minTickGap={24} />
               <YAxis tick={{ fill: c.axis, fontSize: 11 }} tickLine={false} axisLine={false} domain={[0, 'auto']} />

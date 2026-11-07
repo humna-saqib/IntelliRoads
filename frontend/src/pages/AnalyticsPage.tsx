@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTraffic } from '../context/TrafficContext';
 import SpeedDistribution from '../components/widgets/SpeedDistribution';
 import DensityChart from '../components/widgets/DensityChart';
@@ -7,9 +7,18 @@ import VehicleClassChart from '../components/widgets/VehicleClassChart';
 import VehicleTable from '../components/widgets/VehicleTable';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import ErrorState from '../components/ui/ErrorState';
+import { Clock } from 'lucide-react';
+import clsx from 'clsx';
+
+const TIME_RANGES = [
+  { value: 5, label: 'Last 5 minutes' },
+  { value: 15, label: 'Last 15 minutes' },
+  { value: 60, label: 'Last 60 minutes' },
+] as const;
 
 export default function AnalyticsPage() {
   const { isLoading, isBackendOffline, kpis, retryConnection } = useTraffic();
+  const [timeRangeMinutes, setTimeRangeMinutes] = useState<number>(5);
 
   useEffect(() => {
     document.title = 'Analytics · IntelliRoads';
@@ -37,7 +46,40 @@ export default function AnalyticsPage() {
 
   return (
     <div className="space-y-4">
-      <SpeedDistribution />
+      <div className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4 sm:flex-row sm:items-center sm:justify-between shadow-2xs">
+        <div>
+          <h2 className="text-sm font-semibold text-ink tracking-tight sm:text-[15px]">Traffic analytics & trends</h2>
+          <p className="text-xs text-muted">Review speed trends, crowded roads, and road fullness over time</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted flex items-center gap-1 font-medium">
+            <Clock size={13} className="text-faint" />
+            Time range:
+          </span>
+          <div role="radiogroup" aria-label="Time range selector" className="flex items-center rounded-lg border border-line bg-subtle p-0.5">
+            {TIME_RANGES.map((range) => {
+              const active = timeRangeMinutes === range.value;
+              return (
+                <button
+                  key={range.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  onClick={() => setTimeRangeMinutes(range.value)}
+                  className={clsx(
+                    'min-h-[36px] rounded-md px-3 text-xs font-medium transition-all',
+                    active ? 'bg-surface text-brand shadow-xs' : 'text-muted hover:text-ink',
+                  )}
+                >
+                  {range.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      <SpeedDistribution timeRangeMinutes={timeRangeMinutes} />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <DensityChart />
