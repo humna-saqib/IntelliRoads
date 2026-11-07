@@ -4,7 +4,7 @@ import { useChartTheme } from '../../theme/chartTheme';
 import Card from '../ui/Card';
 import type { IntersectionData, VehicleData } from '../../types/traffic';
 import { getJunctionName, formatSignalReason } from '../../constants/plainWords';
-import { X, Clock, Sparkles, Car } from 'lucide-react';
+import { X, Clock, Sparkles, Car, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import clsx from 'clsx';
 
 const JUNCTION_SHORT_NAMES: Record<string, string> = {
@@ -95,7 +95,17 @@ export default function IntersectionMap({ selectedJunctionId, onSelectJunction }
   const [selectedJunction, setSelectedJunction] = useState<IntersectionData | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const [signalCountdowns, setSignalCountdowns] = useState<Record<string, number>>({});
+  const [zoom, setZoom] = useState<number>(1);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleZoomIn = () => setZoom((z) => Math.min(2.5, Math.round((z + 0.25) * 100) / 100));
+  const handleZoomOut = () => setZoom((z) => Math.max(1, Math.round((z - 0.25) * 100) / 100));
+  const handleResetZoom = () => setZoom(1);
+
+  const viewWidth = 400 / zoom;
+  const viewHeight = 400 / zoom;
+  const minX = 200 - viewWidth / 2;
+  const minY = 200 - viewHeight / 2;
 
   useEffect(() => {
     if (selectedJunctionId !== undefined) {
@@ -159,7 +169,54 @@ export default function IntersectionMap({ selectedJunctionId, onSelectJunction }
   return (
     <Card title="Network map" subtitle="Live view of the four junctions and the vehicles between them">
       <div ref={containerRef} className="relative mx-auto aspect-square max-w-[440px] overflow-hidden rounded-md border border-line bg-page">
-        <svg viewBox="0 0 400 400" className="h-full w-full" role="img" aria-label="Road network with four signalised junctions">
+        {/* Accessible Zoom and Reset Controls */}
+        <div
+          role="toolbar"
+          aria-label="Map view zoom controls"
+          className="absolute top-2 left-2 z-20 flex items-center gap-1 rounded-lg border border-line bg-surface/90 p-1 shadow-xs backdrop-blur-xs"
+        >
+          <button
+            type="button"
+            onClick={handleZoomIn}
+            disabled={zoom >= 2.5}
+            aria-label="Zoom in"
+            title="Zoom in"
+            className="btn btn-ghost btn-icon h-7 w-7 text-ink disabled:opacity-40"
+          >
+            <ZoomIn size={14} />
+          </button>
+          <button
+            type="button"
+            onClick={handleZoomOut}
+            disabled={zoom <= 1}
+            aria-label="Zoom out"
+            title="Zoom out"
+            className="btn btn-ghost btn-icon h-7 w-7 text-ink disabled:opacity-40"
+          >
+            <ZoomOut size={14} />
+          </button>
+          <button
+            type="button"
+            onClick={handleResetZoom}
+            disabled={zoom === 1}
+            aria-label="Reset view"
+            title="Reset view to 100%"
+            className="btn btn-ghost h-7 px-2 text-2xs font-medium text-ink disabled:opacity-40 flex items-center gap-1"
+          >
+            <RotateCcw size={12} />
+            <span>Reset view</span>
+          </button>
+          <span className="px-1 font-mono text-2xs text-faint tabular-nums" aria-hidden="true">
+            {Math.round(zoom * 100)}%
+          </span>
+        </div>
+
+        <svg
+          viewBox={`${minX} ${minY} ${viewWidth} ${viewHeight}`}
+          className="h-full w-full transition-all duration-300 ease-out"
+          role="img"
+          aria-label="Road network with four signalised junctions"
+        >
           {/* roads */}
           {[120, 280].map((p) => (
             <g key={p}>
