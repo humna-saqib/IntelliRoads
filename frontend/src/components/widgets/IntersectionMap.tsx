@@ -1,8 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTraffic } from '../../context/TrafficContext';
 import { useChartTheme } from '../../theme/chartTheme';
 import Card from '../ui/Card';
 import type { IntersectionData, VehicleData } from '../../types/traffic';
+import { getJunctionName } from '../../constants/plainWords';
 
 const JUNCTION_SHORT_NAMES: Record<string, string> = {
   junctionA: 'Northwest Square',
@@ -34,11 +35,34 @@ const densityState = (density: number) =>
 const VEHICLE_TYPES = ['car', 'motorcycle', 'bus', 'emergency'] as const;
 
 export default function IntersectionMap() {
-  const { intersections, vehicles } = useTraffic();
+  const { intersections, vehicles, signals } = useTraffic();
   const c = useChartTheme();
   const [hovered, setHovered] = useState<IntersectionData | null>(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+  const [signalCountdowns, setSignalCountdowns] = useState<Record<string, number>>({});
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Synchronize and countdown signal duration per junction
+  useEffect(() => {
+    if (!signals?.signals) return;
+    const initial: Record<string, number> = {};
+    for (const s of signals.signals) {
+      initial[s.junction_id] = s.duration_seconds ?? 0;
+    }
+    setSignalCountdowns(initial);
+
+    const interval = setInterval(() => {
+      setSignalCountdowns((prev) => {
+        const next: Record<string, number> = {};
+        for (const [k, v] of Object.entries(prev)) {
+          next[k] = v > 0 ? v - 1 : 0;
+        }
+        return next;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [signals]);
 
   const vehicleColor = (type: string) => {
     const i = VEHICLE_TYPES.indexOf(type?.toLowerCase() as (typeof VEHICLE_TYPES)[number]);
@@ -102,7 +126,7 @@ export default function IntersectionMap() {
                 <circle cx={coords.x} cy={coords.y} r="15" className={`fill-surface ${state.stroke}`} strokeWidth={junction.density >= 40 ? 3 : 2} />
                 <circle cx={coords.x} cy={coords.y} r="5.5" className={SIGNAL_FILL[junction.signal?.toUpperCase()] ?? 'fill-faint'} />
                 <text x={coords.x} y={coords.y - 22} textAnchor="middle" fontSize="10" fontWeight="500" className="pointer-events-none select-none fill-muted">
-                  {JUNCTION_SHORT_NAMES[junction.id] || junction.id}
+                  {getJunctionName(junction.id)}
                 </text>
               </g>
             );
@@ -119,20 +143,40 @@ export default function IntersectionMap() {
           })}
         </svg>
 
-        {hovered && (
-          <div
-            className="pointer-events-none absolute z-10 min-w-[160px] rounded-md border border-line bg-surface px-3 py-2 text-xs shadow-sm"
-            style={{ left: tooltipPos.x, top: tooltipPos.y }}
-          >
-            <p className="mb-1.5 font-medium text-ink">{hovered.name || JUNCTION_SHORT_NAMES[hovered.id] || hovered.id}</p>
-            <dl className="space-y-1">
-              <div className="flex justify-between gap-4"><dt className="text-muted">Signal</dt><dd className="text-ink">{hovered.signal.charAt(0) + hovered.signal.slice(1).toLowerCase()}</dd></div>
-              <div className="flex justify-between gap-4"><dt className="text-muted">Density</dt><dd className="font-mono tabular-nums text-ink">{Number(hovered.density || 0).toFixed(1)} veh/km</dd></div>
-              <div className="flex justify-between gap-4"><dt className="text-muted">State</dt><dd className={densityState(hovered.density).tone}>{densityState(hovered.density).label}</dd></div>
-              <div className="flex justify-between gap-4"><dt className="text-muted">Vehicles</dt><dd className="font-mono tabular-nums text-ink">{hovered.vehicle_count}</dd></div>
-            </dl>
-          </div>
-        )}
+        {hovered && (() => {
+          const name = getJunctionName(hovered.id);
+          const sig = signals?.signals?.find((s) => s.junction_id === hovered.id);
+          const secondsLeft = signalCountdowns[hovered.id] ?? sig?.duration_seconds ?? 0;
+          const lightColor = hovered.signal.toLowerCase();
+          const lightText = secondsLeft > 0 ? `light is ${lightColor} for ${Math.round(secondsLeft)} more seconds` : `light is ${lightColor}`;
+          const trafficLevel =
+            hovered.congestion_status === 'CONGESTED' || hovered.density >= 40
+              ? 'heavy traffic'
+              : hovered.density >= 20
+              ? 'moderate traffic'
+              : 'light traffic';
+
+          return (
+            <div
+              className="pointer-events-none absolute z-20 max-w-[260px] rounded-lg border border-line bg-surface/95 p-3 text-xs shadow-md backdrop-blur-xs"
+              style={{ left: tooltipPos.x, top: tooltipPos.y }}
+            >
+              <p className="font-semibold text-ink leading-snug">
+                {name}: <span className="font-normal text-muted">{trafficLevel}, {lightText}</span>
+              </p>
+              <dl className="mt-2 space-y-1 border-t border-line/60 pt-2 text-2xs text-muted">
+                <div className="flex justify-between gap-3">
+                  <dt>Vehicles</dt>
+                  <dd className="font-medium text-ink">{hovered.vehicle_count} active</dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt>Crowdedness</dt>
+                  <dd className="font-medium text-ink">{Number(hovered.density || 0).toFixed(1)} cars/km</dd>
+                </div>
+              </dl>
+            </div>
+          );
+        })()}
       </div>
 
       <div className="mt-4 space-y-3 border-t border-line pt-3 text-xs">
