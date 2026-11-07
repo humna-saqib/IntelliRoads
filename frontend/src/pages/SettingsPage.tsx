@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { fetchAllThresholds, updateJunctionThresholds, type JunctionThresholds } from '../services/api';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import ErrorState from '../components/ui/ErrorState';
 import PageIntro from '../components/ui/PageIntro';
 import Card from '../components/ui/Card';
 import { Check } from 'lucide-react';
@@ -17,6 +18,10 @@ type SaveState = Record<string, 'idle' | 'saving' | 'saved' | 'error'>;
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    document.title = 'Settings · IntelliRoads';
+  }, []);
   const [original, setOriginal] = useState<FormState>({});
   const [form, setForm] = useState<FormState>({});
   const [saveState, setSaveState] = useState<SaveState>({});
@@ -76,6 +81,18 @@ export default function SettingsPage() {
 
   if (loading) {
     return <LoadingSpinner label="Loading settings…" center />;
+  }
+
+  if (Object.keys(form).length === 0) {
+    return (
+      <div className="py-12">
+        <ErrorState
+          title="Threshold settings unavailable"
+          message="We can't connect to the server right now to load the junction thresholds."
+          onRetry={load}
+        />
+      </div>
+    );
   }
 
   return (

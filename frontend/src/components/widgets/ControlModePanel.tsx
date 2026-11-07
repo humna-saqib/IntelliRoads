@@ -7,8 +7,8 @@ import { fetchActiveModel, fetchControllerMode, setControllerMode, type ActiveMo
 const POLL_INTERVAL_MS = 5000;
 
 const MODES: { value: ControllerMode; label: string; description: string }[] = [
-  { value: 'RULE_BASED', label: 'Rule-based', description: 'Green time follows fixed density thresholds.' },
-  { value: 'DQN', label: 'DQN', description: 'A trained Double DQN agent chooses the signal action every 5 seconds.' },
+  { value: 'RULE_BASED', label: 'Standard timing', description: 'Lights follow a fixed schedule based on preset queue thresholds.' },
+  { value: 'DQN', label: 'Smart AI', description: 'Adjusts the lights automatically based on live traffic every 5 seconds.' },
 ];
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
@@ -60,7 +60,7 @@ export default function ControlModePanel() {
       const res = await setControllerMode(target);
       setMode(res.mode);
     } catch {
-      setError(`Could not switch to ${target === 'DQN' ? 'DQN' : 'rule-based'} mode. Still running the previous mode.`);
+      setError(`Could not switch to ${target === 'DQN' ? 'Smart AI' : 'Standard timing'} mode. Still running the previous mode.`);
       setMode(previousMode);
     } finally {
       setSwitching(false);

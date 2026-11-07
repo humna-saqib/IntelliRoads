@@ -1,10 +1,40 @@
+import { useEffect } from 'react';
+import { useTraffic } from '../context/TrafficContext';
 import SpeedDistribution from '../components/widgets/SpeedDistribution';
 import DensityChart from '../components/widgets/DensityChart';
 import OccupancyChart from '../components/widgets/OccupancyChart';
 import VehicleClassChart from '../components/widgets/VehicleClassChart';
 import VehicleTable from '../components/widgets/VehicleTable';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
+import ErrorState from '../components/ui/ErrorState';
 
 export default function AnalyticsPage() {
+  const { isLoading, isBackendOffline, kpis, retryConnection } = useTraffic();
+
+  useEffect(() => {
+    document.title = 'Analytics · IntelliRoads';
+  }, []);
+
+  if (isBackendOffline && !kpis) {
+    return (
+      <div className="py-12">
+        <ErrorState
+          title="Traffic analytics unavailable"
+          message="We can't reach the traffic system right now to collect speed and volume statistics."
+          onRetry={retryConnection}
+        />
+      </div>
+    );
+  }
+
+  if (isLoading && !kpis) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <LoadingSpinner size="lg" label="Loading traffic data…" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <SpeedDistribution />

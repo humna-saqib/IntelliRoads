@@ -20,6 +20,19 @@ import type {
 
 const BASE_URL = '/api';
 
+let _isBackendOffline = false;
+let _lastSuccessfulFetch: number | null = null;
+
+/** Returns whether the backend API is currently unreachable. */
+export function isBackendOffline(): boolean {
+  return _isBackendOffline;
+}
+
+/** Formatted timestamp of the most recent successful API response. */
+export function lastUpdatedAt(): string | null {
+  return _lastSuccessfulFetch ? new Date(_lastSuccessfulFetch).toLocaleTimeString() : null;
+}
+
 function getAuthHeaders(): Record<string, string> {
   const token = localStorage.getItem('intelliroads_token');
   const headers: Record<string, string> = { 'Accept': 'application/json' };
@@ -38,40 +51,64 @@ function handleAuthError(response: Response) {
 
 
 async function apiFetch<T>(path: string): Promise<T> {
-  const response = await fetch(`${BASE_URL}${path}`, {
-    headers: getAuthHeaders(),
-  });
-  if (!response.ok) {
-    handleAuthError(response);
-    throw new Error(`API error ${response.status}: ${response.statusText} at ${path}`);
+  try {
+    const response = await fetch(`${BASE_URL}${path}`, {
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+      handleAuthError(response);
+      _isBackendOffline = response.status >= 500;
+      throw new Error(`API error ${response.status}: ${response.statusText} at ${path}`);
+    }
+    _isBackendOffline = false;
+    _lastSuccessfulFetch = Date.now();
+    return response.json() as Promise<T>;
+  } catch (err) {
+    _isBackendOffline = true;
+    throw err;
   }
-  return response.json() as Promise<T>;
 }
 
 async function apiPost<T>(path: string, body: unknown): Promise<T> {
-  const response = await fetch(`${BASE_URL}${path}`, {
-    method: 'POST',
-    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!response.ok) {
-    handleAuthError(response);
-    throw new Error(`API error ${response.status}: ${response.statusText} at ${path}`);
+  try {
+    const response = await fetch(`${BASE_URL}${path}`, {
+      method: 'POST',
+      headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      handleAuthError(response);
+      _isBackendOffline = response.status >= 500;
+      throw new Error(`API error ${response.status}: ${response.statusText} at ${path}`);
+    }
+    _isBackendOffline = false;
+    _lastSuccessfulFetch = Date.now();
+    return response.json() as Promise<T>;
+  } catch (err) {
+    _isBackendOffline = true;
+    throw err;
   }
-  return response.json() as Promise<T>;
 }
 
 async function apiPut<T>(path: string, body: unknown): Promise<T> {
-  const response = await fetch(`${BASE_URL}${path}`, {
-    method: 'PUT',
-    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!response.ok) {
-    handleAuthError(response);
-    throw new Error(`API error ${response.status}: ${response.statusText} at ${path}`);
+  try {
+    const response = await fetch(`${BASE_URL}${path}`, {
+      method: 'PUT',
+      headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      handleAuthError(response);
+      _isBackendOffline = response.status >= 500;
+      throw new Error(`API error ${response.status}: ${response.statusText} at ${path}`);
+    }
+    _isBackendOffline = false;
+    _lastSuccessfulFetch = Date.now();
+    return response.json() as Promise<T>;
+  } catch (err) {
+    _isBackendOffline = true;
+    throw err;
   }
-  return response.json() as Promise<T>;
 }
 
 

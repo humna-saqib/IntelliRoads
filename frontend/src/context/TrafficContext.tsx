@@ -20,6 +20,7 @@ import type {
 } from '../types/traffic';
 import { fetchAllData } from '../services/api';
 import { TrafficWebSocket } from '../services/websocket';
+import { registerIntersectionNames } from '../constants/plainWords';
 
 function getWebSocketUrl(path: string): string {
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -30,6 +31,14 @@ function getWebSocketUrl(path: string): string {
 
 export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
 
+export interface KpiHistoryPoint {
+  timestamp: number;
+  averageSpeed: number;
+  averageWaitTime: number;
+  congestionPercentage: number;
+  totalVehicles: number;
+}
+
 interface TrafficContextType {
   vehicles:         VehicleData[];
   classification:   ClassificationData | null;
@@ -37,13 +46,17 @@ interface TrafficContextType {
   congestion:       CongestionResponse | null;
   signals:          SignalResponse | null;
   kpis:             KPIData | null;
+  kpiHistory:       KpiHistoryPoint[];
   occupancy:        OccupancyResponse | null;
   emergency:        EmergencyResponse | null;
   intersections:    IntersectionData[];
   isConnected:      boolean;
   isLoading:        boolean;
   lastUpdate:       number | null;
+  lastUpdatedAt:    string | null;
+  isBackendOffline: boolean;
   connectionStatus: ConnectionStatus;
+  retryConnection:  () => Promise<void>;
 }
 
 const defaultClassification: ClassificationData = {
@@ -58,13 +71,17 @@ const TrafficContext = createContext<TrafficContextType>({
   congestion:       null,
   signals:          null,
   kpis:             null,
+  kpiHistory:       [],
   occupancy:        null,
   emergency:        null,
   intersections:    [],
   isConnected:      false,
   isLoading:        true,
   lastUpdate:       null,
+  lastUpdatedAt:    null,
+  isBackendOffline: false,
   connectionStatus: 'connecting',
+  retryConnection:  async () => {},
 });
 
 export function TrafficProvider({ children }: { children: React.ReactNode }) {
@@ -74,6 +91,7 @@ export function TrafficProvider({ children }: { children: React.ReactNode }) {
   const [congestion,       setCongestion]       = useState<CongestionResponse | null>(null);
   const [signals,          setSignals]          = useState<SignalResponse | null>(null);
   const [kpis,             setKPIs]             = useState<KPIData | null>(null);
+  const [kpiHistory,       setKpiHistory]       = useState<KpiHistoryPoint[]>([]);
   const [occupancy,        setOccupancy]        = useState<OccupancyResponse | null>(null);
   const [emergency,        setEmergency]        = useState<EmergencyResponse | null>(null);
   const [intersections,    setIntersections]    = useState<IntersectionData[]>([]);
@@ -86,16 +104,42 @@ export function TrafficProvider({ children }: { children: React.ReactNode }) {
   const pollRef   = useRef<ReturnType<typeof setInterval> | null>(null);
   const wsConnRef = useRef(false);
 
+  const recordKpiHistory = useCallback((kpi: KPIData) => {
+    setKpiHistory((prev) => {
+      const now = Date.now();
+      const newPoint: KpiHistoryPoint = {
+        timestamp: now,
+        averageSpeed: kpi.average_speed,
+        averageWaitTime: kpi.average_wait_time,
+        congestionPercentage: kpi.congestion_percentage,
+        totalVehicles: kpi.total_vehicles,
+      };
+      const cutoff = now - 15 * 60 * 1000;
+      const filtered = prev.filter((p) => p.timestamp >= cutoff);
+      if (filtered.length > 0 && now - filtered[filtered.length - 1].timestamp < 3000) {
+        filtered[filtered.length - 1] = newPoint;
+        return filtered;
+      }
+      return [...filtered, newPoint];
+    });
+  }, []);
+
   const applySnapshot = useCallback((snap: TrafficSnapshot) => {
     if (snap.vehicles)      setVehicles(snap.vehicles as unknown as VehicleData[]);
     if (snap.classification) setClassification(snap.classification ?? defaultClassification);
     if (snap.density)        setDensity(snap.density);
     if (snap.congestion)     setCongestion(snap.congestion);
     if (snap.signals)        setSignals(snap.signals);
-    if (snap.kpis)           setKPIs(snap.kpis);
+    if (snap.kpis) {
+      setKPIs(snap.kpis);
+      recordKpiHistory(snap.kpis);
+    }
     if (snap.occupancy)      setOccupancy(snap.occupancy);
     if (snap.emergency)      setEmergency(snap.emergency);
-    if (snap.intersections)  setIntersections(snap.intersections);
+    if (snap.intersections) {
+      setIntersections(snap.intersections);
+      registerIntersectionNames(snap.intersections);
+    }
     setLastUpdate(Date.now());
     setIsLoading(false);
   }, []);
@@ -109,9 +153,11 @@ export function TrafficProvider({ children }: { children: React.ReactNode }) {
       setCongestion(data.congestion);
       setSignals(data.signals);
       setKPIs(data.kpis);
+      if (data.kpis) recordKpiHistory(data.kpis);
       setOccupancy(data.occupancy ?? null);
       setEmergency(data.emergency ?? null);
       setIntersections(data.intersections ?? []);
+      if (data.intersections) registerIntersectionNames(data.intersections);
       setLastUpdate(Date.now());
       setIsLoading(false);
     } catch (err) {
@@ -174,6 +220,19 @@ export function TrafficProvider({ children }: { children: React.ReactNode }) {
     };
   }, [applySnapshot, loadRest, startPolling, stopPolling]);
 
+  const retryConnection = useCallback(async () => {
+    setIsLoading(true);
+    setConnectionStatus('connecting');
+    if (wsRef.current) {
+      wsRef.current.disconnect();
+      wsRef.current.connect();
+    }
+    await loadRest();
+  }, [loadRest]);
+
+  const isBackendOffline = !isConnected && (connectionStatus === 'disconnected' || connectionStatus === 'error');
+  const lastUpdatedAt = lastUpdate ? new Date(lastUpdate).toLocaleTimeString() : null;
+
   return (
     <TrafficContext.Provider
       value={{
@@ -183,13 +242,17 @@ export function TrafficProvider({ children }: { children: React.ReactNode }) {
         congestion,
         signals,
         kpis,
+        kpiHistory,
         occupancy,
         emergency,
         intersections,
         isConnected,
         isLoading,
         lastUpdate,
+        lastUpdatedAt,
+        isBackendOffline,
         connectionStatus,
+        retryConnection,
       }}
     >
       {children}

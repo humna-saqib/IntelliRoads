@@ -1,7 +1,10 @@
+import { useEffect } from 'react';
 import { useTraffic } from '../context/TrafficContext';
 import IntersectionMap from '../components/widgets/IntersectionMap';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
+import ErrorState from '../components/ui/ErrorState';
 import clsx from 'clsx';
 
 const signalTone: Record<string, string> = {
@@ -11,7 +14,31 @@ const signalTone: Record<string, string> = {
 };
 
 export default function MapPage() {
-  const { intersections } = useTraffic();
+  const { intersections, isLoading, isBackendOffline, retryConnection } = useTraffic();
+
+  useEffect(() => {
+    document.title = 'Traffic Map · IntelliRoads';
+  }, []);
+
+  if (isBackendOffline && intersections.length === 0) {
+    return (
+      <div className="py-12">
+        <ErrorState
+          title="Traffic map unavailable"
+          message="We can't connect to the traffic server right now to display the junction map."
+          onRetry={retryConnection}
+        />
+      </div>
+    );
+  }
+
+  if (isLoading && intersections.length === 0) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <LoadingSpinner size="lg" label="Loading traffic network…" />
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">

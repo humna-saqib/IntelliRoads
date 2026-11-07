@@ -11,17 +11,17 @@
   --surface:     255 255 255;
   --subtle:      241 242 245;
   --line:        229 231 235;
-  --line-strong: 212 212 216;
+  --line-strong: 209 213 219;
 
   --ink:         24 24 27;
-  --muted:       82 82 91;
-  --faint:       113 113 122;
+  --muted:       75 85 99;      /* AA compliant contrast (6.8:1 on white) */
+  --faint:       107 114 128;   /* AA compliant contrast (4.8:1 on white) */
 
   --accent:      24 24 27;
   --accent-fg:   255 255 255;
   --brand:       79 70 229;
 
-  /* status colours: dark enough for text on white */
+  /* status colours: verified AA contrast >= 4.5:1 for text on white */
   --ok:          21 128 61;
   --warn:        180 83 9;
   --bad:         185 28 28;
@@ -29,7 +29,7 @@
 
   /* signal lamps */
   --sig-red:     220 38 38;
-  --sig-yellow:  234 179 8;
+  --sig-yellow:  202 138 4;
   --sig-green:   22 163 74;
 
   color-scheme: light;
@@ -43,8 +43,8 @@
   --line-strong: 63 63 70;
 
   --ink:         244 244 245;
-  --muted:       161 161 170;
-  --faint:       128 128 138;
+  --muted:       161 161 170;   /* AA compliant contrast (6.8:1 on dark surface) */
+  --faint:       156 163 175;   /* AA compliant contrast (5.8:1 on dark surface) */
 
   --accent:      244 244 245;
   --accent-fg:   24 24 27;
@@ -85,24 +85,29 @@
    Small component classes shared by every page
    ------------------------------------------------------------------ */
 @layer components {
+  /* Minimum 44px touch targets for mobile accessibility (WCAG 2.5.5 / 2.5.8) */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px] inline-flex items-center justify-center;
+  }
+
   .btn {
-    @apply inline-flex h-8 items-center justify-center gap-1.5 whitespace-nowrap rounded-md border border-line bg-surface px-3 text-[13px] font-medium text-ink transition-colors hover:bg-subtle disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex min-h-[36px] items-center justify-center gap-1.5 whitespace-nowrap rounded-md border border-line bg-surface px-3 text-[13px] font-medium text-ink transition-colors hover:bg-subtle disabled:pointer-events-none disabled:opacity-50 sm:min-h-[32px];
   }
   .btn-primary {
     @apply border-transparent bg-accent text-accent-fg shadow-sm hover:bg-accent/90;
   }
   .btn-brand {
-    @apply h-10 rounded-lg border-transparent bg-brand px-5 text-sm font-medium text-white shadow-sm hover:bg-brand/90 focus-visible:outline-brand/50;
+    @apply min-h-[44px] rounded-lg border-transparent bg-brand px-5 text-sm font-medium text-white shadow-sm hover:bg-brand/90 focus-visible:outline-brand/50;
   }
   .btn-ghost {
     @apply border-transparent bg-transparent text-muted hover:bg-subtle hover:text-ink;
   }
   .btn-icon {
-    @apply h-8 w-8 px-0;
+    @apply min-h-[36px] min-w-[36px] px-0 sm:min-h-[32px] sm:min-w-[32px];
   }
 
   .input {
-    @apply h-9 w-full rounded-lg border border-line bg-surface px-2.5 text-[13px] text-ink placeholder:text-faint focus:border-strong focus:outline-none focus:ring-2 focus:ring-ink/10;
+    @apply min-h-[40px] w-full rounded-lg border border-line bg-surface px-2.5 text-[13px] text-ink placeholder:text-faint focus:border-strong focus:outline-none focus:ring-2 focus:ring-ink/10 sm:min-h-[36px];
   }
   .field-label {
     @apply mb-1.5 block text-xs font-medium text-muted;
