@@ -100,3 +100,4 @@ export default function TimingModeSwitch({ onModeChange }: TimingModeSwitchProps
     </div>
   );
 }
+
