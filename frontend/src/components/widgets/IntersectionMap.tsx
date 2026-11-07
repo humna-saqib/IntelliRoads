@@ -135,19 +135,53 @@ export default function IntersectionMap() {
         )}
       </div>
 
-      <div className="mt-4 space-y-2 border-t border-line pt-3 text-xs text-faint">
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
-          {VEHICLE_TYPES.map((t, i) => (
-            <span key={t} className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full" style={{ background: c.series[i] }} />
-              {t.charAt(0).toUpperCase() + t.slice(1)}
+      <div className="mt-4 space-y-3 border-t border-line pt-3 text-xs">
+        <div>
+          <span className="font-semibold text-ink text-2xs uppercase tracking-wider">Traffic Flow & Junction Markers</span>
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-muted">
+            <span className="flex items-center gap-1.5">
+              <span className="inline-block h-3 w-3 rounded-full border-2 border-ok bg-ok/20" />
+              <span>Circle: Light traffic (flowing freely, under 20 cars/km)</span>
             </span>
-          ))}
+            <span className="flex items-center gap-1.5">
+              <span className="inline-block h-0 w-0 border-x-[6px] border-b-[10px] border-x-transparent border-b-warn" />
+              <span>Triangle: Moderate traffic (slowing down, 20 to 40 cars/km)</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="inline-block h-3 w-3 rounded-xs border-2 border-bad bg-bad/20" />
+              <span>Square: Heavy traffic (crowded, over 40 cars/km)</span>
+            </span>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
-          <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full border-2 border-ok" />Free flow, under 20 veh/km</span>
-          <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full border-2 border-warn" />Congested, 20 to 40</span>
-          <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full border-2 border-bad" />Severe, over 40</span>
+
+        <div>
+          <span className="font-semibold text-ink text-2xs uppercase tracking-wider">Traffic Light Colours</span>
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-muted">
+            <span className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-sig-green shadow-[0_0_6px_rgba(34,197,94,0.6)]" />
+              <span>Green: Go (traffic is moving)</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-sig-yellow shadow-[0_0_6px_rgba(234,179,8,0.6)]" />
+              <span>Yellow: Prepare to stop</span>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-sig-red shadow-[0_0_6px_rgba(239,68,68,0.6)]" />
+              <span>Red: Stop (waiting for light)</span>
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <span className="font-semibold text-ink text-2xs uppercase tracking-wider">Vehicle Types</span>
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-muted">
+            {VEHICLE_TYPES.map((t, i) => (
+              <span key={t} className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: c.series[i] }} />
+                <span>{t === 'emergency' ? 'Emergency vehicle' : t.charAt(0).toUpperCase() + t.slice(1)}</span>
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </Card>
