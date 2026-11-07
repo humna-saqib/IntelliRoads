@@ -9,6 +9,7 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 import Badge from '../components/ui/Badge';
 import EmergencyPriorityBanner from '../components/widgets/EmergencyPriorityBanner';
 import JunctionCard from '../components/widgets/JunctionCard';
+import TimingModeSwitch from '../components/widgets/TimingModeSwitch';
 import {
   CheckCircle2,
   AlertTriangle,
@@ -227,13 +228,15 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Item 4: Shortcut button "Open warnings" -> /alerts */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      {/* Item 4 & Item 5: Timing Mode Switch and Open Warnings shortcut */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <TimingModeSwitch onModeChange={(newMode) => setControllerMode(newMode)} />
+
         <Link
           to="/alerts"
           aria-label={`Open warnings: ${activeWarningCount} active alerts`}
           className={clsx(
-            'group flex min-h-[44px] items-center justify-between gap-4 rounded-xl border px-4 py-3 transition-all',
+            'group flex min-h-[44px] items-center justify-between gap-4 rounded-xl border px-4 py-3 shadow-xs transition-all',
             activeWarningCount > 0
               ? 'border-bad/30 bg-bad/5 text-ink hover:border-bad/50 hover:bg-bad/10'
               : 'border-line bg-surface text-ink hover:bg-subtle',
