@@ -1,17 +1,38 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTraffic } from '../context/TrafficContext';
 import { getJunctionName, formatMinutesOnly } from '../constants/plainWords';
 import { fetchControllerMode, fetchPerformance } from '../services/api';
 import type { PerformanceSummary } from '../types/traffic';
 import ErrorState from '../components/ui/ErrorState';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import Badge from '../components/ui/Badge';
 import EmergencyPriorityBanner from '../components/widgets/EmergencyPriorityBanner';
 import JunctionCard from '../components/widgets/JunctionCard';
-import { CheckCircle2, AlertTriangle, AlertOctagon, TrendingUp, TrendingDown, Minus, Clock } from 'lucide-react';
+import {
+  CheckCircle2,
+  AlertTriangle,
+  AlertOctagon,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Clock,
+  ShieldAlert,
+  ArrowRight,
+} from 'lucide-react';
 import clsx from 'clsx';
 
 export default function HomePage() {
-  const { isBackendOffline, isLoading, kpis, kpiHistory, intersections, signals, retryConnection } = useTraffic();
+  const {
+    isBackendOffline,
+    isLoading,
+    kpis,
+    kpiHistory,
+    intersections,
+    signals,
+    congestion,
+    retryConnection,
+  } = useTraffic();
   const [controllerMode, setControllerMode] = useState<string | null>(null);
   const [perfSummaries, setPerfSummaries] = useState<PerformanceSummary[]>([]);
 
@@ -153,6 +174,9 @@ export default function HomePage() {
     whatToDo = 'Traffic is moving steadily. System timing is adjusting phase lengths to maintain flow.';
   }
 
+  // Item 4: Active warning count from real KPI / congestion data
+  const activeWarningCount = kpis?.active_alerts ?? (congestion?.total_congested ?? 0);
+
   return (
     <div className="space-y-6">
       <EmergencyPriorityBanner />
@@ -201,6 +225,50 @@ export default function HomePage() {
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Item 4: Shortcut button "Open warnings" -> /alerts */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <Link
+          to="/alerts"
+          aria-label={`Open warnings: ${activeWarningCount} active alerts`}
+          className={clsx(
+            'group flex min-h-[44px] items-center justify-between gap-4 rounded-xl border px-4 py-3 transition-all',
+            activeWarningCount > 0
+              ? 'border-bad/30 bg-bad/5 text-ink hover:border-bad/50 hover:bg-bad/10'
+              : 'border-line bg-surface text-ink hover:bg-subtle',
+          )}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className={clsx(
+                'flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border',
+                activeWarningCount > 0
+                  ? 'border-bad/20 bg-bad/10 text-bad'
+                  : 'border-line bg-subtle text-faint',
+              )}
+            >
+              <ShieldAlert size={18} />
+            </div>
+            <div className="text-left">
+              <span className="text-sm font-semibold tracking-tight text-ink">Open warnings</span>
+              <p className="text-xs text-muted">
+                {activeWarningCount === 0
+                  ? 'No active traffic bottlenecks'
+                  : `${activeWarningCount} active traffic warning${activeWarningCount === 1 ? '' : 's'} recorded`}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Badge
+              label={activeWarningCount > 0 ? `${activeWarningCount} active` : '0 active'}
+              variant={activeWarningCount > 0 ? 'danger' : 'neutral'}
+              size="sm"
+            />
+            <ArrowRight size={15} className="text-faint transition-transform group-hover:translate-x-0.5" />
+          </div>
+        </Link>
       </div>
 
       {/* Item 2: One card per junction */}
