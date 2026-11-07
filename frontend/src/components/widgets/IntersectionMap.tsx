@@ -127,11 +127,18 @@ export default function IntersectionMap({ selectedJunctionId, onSelectJunction }
           {intersections.map((junction) => {
             const coords = JUNCTION_COORDS[junction.id];
             if (!coords) return null;
-            const state = densityState(junction.density);
+            const isHeavy = junction.density >= 40 || junction.congestion_status === 'CONGESTED';
+            const isModerate = !isHeavy && junction.density >= 20;
+            const isSelected = selectedJunction?.id === junction.id;
+            const trafficLevelLabel = isHeavy ? 'Heavy traffic' : isModerate ? 'Moderate traffic' : 'Light traffic';
+
             return (
               <g
                 key={junction.id}
-                className="cursor-pointer"
+                role="button"
+                tabIndex={0}
+                aria-label={`${getJunctionName(junction.id)}: ${trafficLevelLabel}, light is ${junction.signal.toLowerCase()}`}
+                className="cursor-pointer focus:outline-hidden"
                 onMouseEnter={(e) => handleHover(e, junction)}
                 onMouseMove={(e) => handleHover(e, junction)}
                 onMouseLeave={() => setHovered(null)}
@@ -140,11 +147,76 @@ export default function IntersectionMap({ selectedJunctionId, onSelectJunction }
                   setSelectedJunction(junction);
                   onSelectJunction?.(junction.id);
                 }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setSelectedJunction(junction);
+                    onSelectJunction?.(junction.id);
+                  }
+                }}
               >
-                <circle cx={coords.x} cy={coords.y} r="30" fill="transparent" />
-                <circle cx={coords.x} cy={coords.y} r="15" className={`fill-surface ${state.stroke}`} strokeWidth={junction.density >= 40 ? 3 : 2} />
-                <circle cx={coords.x} cy={coords.y} r="5.5" className={SIGNAL_FILL[junction.signal?.toUpperCase()] ?? 'fill-faint'} />
-                <text x={coords.x} y={coords.y - 22} textAnchor="middle" fontSize="10" fontWeight="500" className="pointer-events-none select-none fill-muted">
+                {/* Hit target */}
+                <circle cx={coords.x} cy={coords.y} r="32" fill="transparent" />
+
+                {/* Selection ring */}
+                {isSelected && (
+                  <circle
+                    cx={coords.x}
+                    cy={coords.y}
+                    r="25"
+                    fill="none"
+                    className="stroke-brand animate-pulse"
+                    strokeWidth="2"
+                    strokeDasharray="4 2"
+                  />
+                )}
+
+                {/* Colour-blind-safe shapes: Square = Heavy, Triangle = Moderate, Circle = Light */}
+                {isHeavy ? (
+                  <rect
+                    x={coords.x - 15}
+                    y={coords.y - 15}
+                    width="30"
+                    height="30"
+                    rx="4"
+                    className="fill-surface stroke-bad"
+                    strokeWidth="3"
+                  />
+                ) : isModerate ? (
+                  <polygon
+                    points={`${coords.x},${coords.y - 18} ${coords.x - 17},${coords.y + 13} ${coords.x + 17},${coords.y + 13}`}
+                    className="fill-surface stroke-warn"
+                    strokeWidth="2.5"
+                    strokeLinejoin="round"
+                  />
+                ) : (
+                  <circle
+                    cx={coords.x}
+                    cy={coords.y}
+                    r="15"
+                    className="fill-surface stroke-ok"
+                    strokeWidth="2.5"
+                  />
+                )}
+
+                {/* Central Traffic Signal Light indicator */}
+                <circle
+                  cx={coords.x}
+                  cy={coords.y}
+                  r="5.5"
+                  className={SIGNAL_FILL[junction.signal?.toUpperCase()] ?? 'fill-faint'}
+                  stroke="currentColor"
+                  strokeWidth="1"
+                />
+
+                <text
+                  x={coords.x}
+                  y={coords.y - 23}
+                  textAnchor="middle"
+                  fontSize="10"
+                  fontWeight="600"
+                  className="pointer-events-none select-none fill-ink"
+                >
                   {getJunctionName(junction.id)}
                 </text>
               </g>
