@@ -4,6 +4,7 @@ import { TrafficProvider } from './context/TrafficContext';
 import { ToastProvider } from './context/ToastContext';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
+import HomePage from './pages/HomePage';
 import DashboardPage from './pages/DashboardPage';
 import MapPage from './pages/MapPage';
 import AnalyticsPage from './pages/AnalyticsPage';
@@ -44,7 +45,8 @@ export default function App() {
               <main className="flex-1 overflow-y-auto">
                 <div className="mx-auto w-full max-w-[1200px] px-4 py-5 sm:px-6 sm:py-6">
                   <Routes>
-                    <Route path="/" element={<DashboardPage />} />
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/details" element={<DashboardPage />} />
                     <Route path="/map" element={<MapPage />} />
                     <Route path="/analytics" element={<AnalyticsPage />} />
                     <Route path="/alerts" element={<AlertHistoryPage />} />
