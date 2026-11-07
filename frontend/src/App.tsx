@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { TrafficProvider } from './context/TrafficContext';
+import { ToastProvider } from './context/ToastContext';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import DashboardPage from './pages/DashboardPage';
@@ -32,28 +33,30 @@ export default function App() {
 
   return (
     <TrafficProvider>
-      <Router>
-        <div className="flex h-screen overflow-hidden bg-page text-ink">
-          <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <ToastProvider>
+        <Router>
+          <div className="flex h-screen overflow-hidden bg-page text-ink">
+            <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-          <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-            <Header onMenuClick={() => setSidebarOpen(true)} onLogout={handleLogout} />
+            <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+              <Header onMenuClick={() => setSidebarOpen(true)} onLogout={handleLogout} />
 
-            <main className="flex-1 overflow-y-auto">
-              <div className="mx-auto w-full max-w-[1200px] px-4 py-5 sm:px-6 sm:py-6">
-                <Routes>
-                  <Route path="/" element={<DashboardPage />} />
-                  <Route path="/map" element={<MapPage />} />
-                  <Route path="/analytics" element={<AnalyticsPage />} />
-                  <Route path="/alerts" element={<AlertHistoryPage />} />
-                  <Route path="/reports" element={<ReportsPage />} />
-                  <Route path="/settings" element={<SettingsPage />} />
-                </Routes>
-              </div>
-            </main>
+              <main className="flex-1 overflow-y-auto">
+                <div className="mx-auto w-full max-w-[1200px] px-4 py-5 sm:px-6 sm:py-6">
+                  <Routes>
+                    <Route path="/" element={<DashboardPage />} />
+                    <Route path="/map" element={<MapPage />} />
+                    <Route path="/analytics" element={<AnalyticsPage />} />
+                    <Route path="/alerts" element={<AlertHistoryPage />} />
+                    <Route path="/reports" element={<ReportsPage />} />
+                    <Route path="/settings" element={<SettingsPage />} />
+                  </Routes>
+                </div>
+              </main>
+            </div>
           </div>
-        </div>
-      </Router>
+        </Router>
+      </ToastProvider>
     </TrafficProvider>
   );
 }
