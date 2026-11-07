@@ -43,7 +43,10 @@ interface TrafficContextType {
   isConnected:      boolean;
   isLoading:        boolean;
   lastUpdate:       number | null;
+  lastUpdatedAt:    string | null;
+  isBackendOffline: boolean;
   connectionStatus: ConnectionStatus;
+  retryConnection:  () => Promise<void>;
 }
 
 const defaultClassification: ClassificationData = {
@@ -64,7 +67,10 @@ const TrafficContext = createContext<TrafficContextType>({
   isConnected:      false,
   isLoading:        true,
   lastUpdate:       null,
+  lastUpdatedAt:    null,
+  isBackendOffline: false,
   connectionStatus: 'connecting',
+  retryConnection:  async () => {},
 });
 
 export function TrafficProvider({ children }: { children: React.ReactNode }) {
@@ -174,6 +180,19 @@ export function TrafficProvider({ children }: { children: React.ReactNode }) {
     };
   }, [applySnapshot, loadRest, startPolling, stopPolling]);
 
+  const retryConnection = useCallback(async () => {
+    setIsLoading(true);
+    setConnectionStatus('connecting');
+    if (wsRef.current) {
+      wsRef.current.disconnect();
+      wsRef.current.connect();
+    }
+    await loadRest();
+  }, [loadRest]);
+
+  const isBackendOffline = !isConnected && (connectionStatus === 'disconnected' || connectionStatus === 'error');
+  const lastUpdatedAt = lastUpdate ? new Date(lastUpdate).toLocaleTimeString() : null;
+
   return (
     <TrafficContext.Provider
       value={{
@@ -189,7 +208,10 @@ export function TrafficProvider({ children }: { children: React.ReactNode }) {
         isConnected,
         isLoading,
         lastUpdate,
+        lastUpdatedAt,
+        isBackendOffline,
         connectionStatus,
+        retryConnection,
       }}
     >
       {children}
