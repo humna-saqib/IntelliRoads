@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTraffic } from '../../context/TrafficContext';
 import Card from '../ui/Card';
+import { Info } from 'lucide-react';
 import clsx from 'clsx';
 
 const JUNCTION_LANE_MAP: Record<string, string[]> = {
@@ -120,6 +121,17 @@ export default function OccupancyChart() {
         <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-ok" />Clear, under 30%</span>
         <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-warn" />Moderate, 30 to 50%</span>
         <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-bad" />Severe, 50% and over</span>
+      </div>
+
+      <div className="mt-3 flex items-center gap-1.5 rounded-lg border border-line bg-subtle/50 px-3 py-2 text-xs text-muted">
+        <Info size={13} className="text-brand shrink-0" />
+        <span>
+          {rows.length > 0
+            ? `Roads are ${average.toFixed(0)}% full on average, with ${
+                rows.reduce((max, r) => (r.percent > max.percent ? r : max), rows[0]).name
+              } seeing the highest fullness at ${rows.reduce((max, r) => (r.percent > max.percent ? r : max), rows[0]).percent.toFixed(0)}%.`
+            : `Roads are ${average.toFixed(0)}% full on average across the network.`}
+        </span>
       </div>
     </Card>
   );

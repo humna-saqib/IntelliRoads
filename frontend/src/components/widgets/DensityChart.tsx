@@ -3,6 +3,7 @@ import { useTraffic } from '../../context/TrafficContext';
 import { useChartTheme } from '../../theme/chartTheme';
 import type { LaneDensity } from '../../types/traffic';
 import Card from '../ui/Card';
+import { Info } from 'lucide-react';
 
 function DensityTooltip({ active, payload }: { active?: boolean; payload?: { payload?: LaneDensity }[] }) {
   const d = payload?.[0]?.payload;
@@ -35,6 +36,14 @@ export default function DensityChart() {
   const data = density?.lanes ?? [];
   const barColor = (value: number) => (value > 40 ? c.bad : value > 20 ? c.warn : c.ok);
 
+  let densityTakeaway = 'All monitored roads are flowing smoothly with light traffic.';
+  if (data.length > 0) {
+    const maxLane = data.reduce((max, l) => (l.density > max.density ? l : max), data[0]);
+    const levelText = maxLane.density >= 40 ? 'heavy traffic' : maxLane.density >= 20 ? 'moderate traffic' : 'light traffic';
+    const laneName = maxLane.lane_id.replace(/^lane_/, '').replace(/_/g, ' ');
+    densityTakeaway = `The most crowded road is ${laneName} with ${maxLane.density.toFixed(1)} cars per km (${levelText}).`;
+  }
+
   return (
     <Card title="Which roads are most crowded?" subtitle="Cars per kilometre on each monitored approach">
       <div className="h-56">
@@ -59,6 +68,11 @@ export default function DensityChart() {
         <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-ok" />Low, under 20</span>
         <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-warn" />Medium, 20 to 40</span>
         <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-bad" />High, over 40</span>
+      </div>
+
+      <div className="mt-3 flex items-center gap-1.5 rounded-lg border border-line bg-subtle/50 px-3 py-2 text-xs text-muted">
+        <Info size={13} className="text-brand shrink-0" />
+        <span>{densityTakeaway}</span>
       </div>
     </Card>
   );

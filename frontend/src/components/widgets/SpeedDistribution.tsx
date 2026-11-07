@@ -4,6 +4,7 @@ import { useChartTheme } from '../../theme/chartTheme';
 import Card from '../ui/Card';
 import ChartTooltip from '../ui/ChartTooltip';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer } from 'recharts';
+import { Info } from 'lucide-react';
 
 interface SpeedHistoryPoint {
   simTime: number;
@@ -12,9 +13,31 @@ interface SpeedHistoryPoint {
 }
 
 export default function SpeedDistribution() {
-  const { kpis } = useTraffic();
+  const { kpis, kpiHistory } = useTraffic();
   const c = useChartTheme();
   const [history, setHistory] = useState<SpeedHistoryPoint[]>([]);
+
+  const currentSpeedKmh = Math.round(kpis?.average_speed ? kpis.average_speed * 3.6 : 0);
+  let diffText = '';
+  if (kpiHistory && kpiHistory.length > 1) {
+    const nowTs = kpiHistory[kpiHistory.length - 1].timestamp;
+    let pastPoint = kpiHistory[0];
+    for (const pt of kpiHistory) {
+      if (nowTs - pt.timestamp >= 300) {
+        pastPoint = pt;
+      }
+    }
+    const pastSpeedKmh = Math.round(pastPoint.averageSpeed * 3.6);
+    const diff = currentSpeedKmh - pastSpeedKmh;
+    if (diff > 0) {
+      diffText = `, ${diff} km/h faster than 5 minutes ago`;
+    } else if (diff < 0) {
+      diffText = `, ${Math.abs(diff)} km/h slower than 5 minutes ago`;
+    } else {
+      diffText = ', steady over the last 5 minutes';
+    }
+  }
+  const speedTakeaway = `Average speed is ${currentSpeedKmh} km/h${diffText}.`;
 
   useEffect(() => {
     if (!kpis) return;
@@ -53,6 +76,11 @@ export default function SpeedDistribution() {
             </LineChart>
           </ResponsiveContainer>
         )}
+      </div>
+
+      <div className="mt-3 flex items-center gap-1.5 rounded-lg border border-line bg-subtle/50 px-3 py-2 text-xs text-muted">
+        <Info size={13} className="text-brand shrink-0" />
+        <span>{speedTakeaway}</span>
       </div>
     </Card>
   );

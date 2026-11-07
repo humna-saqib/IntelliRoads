@@ -1,6 +1,7 @@
 import { useTraffic } from '../../context/TrafficContext';
 import { useChartTheme } from '../../theme/chartTheme';
 import Card from '../ui/Card';
+import { Info } from 'lucide-react';
 
 const CLASSES = [
   { key: 'car', label: 'Car' },
@@ -16,6 +17,18 @@ export default function VehicleClassChart() {
 
   const counts = CLASSES.map((cls, i) => ({ ...cls, count: classification?.[cls.key] ?? 0, color: c.series[i] }));
   const total = counts.reduce((sum, row) => sum + row.count, 0);
+
+  const carCount = counts.find((cls) => cls.key === 'car')?.count ?? 0;
+  const busCount = counts.find((cls) => cls.key === 'bus')?.count ?? 0;
+  const emergencyCount = counts.find((cls) => cls.key === 'emergency')?.count ?? 0;
+  const carPercent = total > 0 ? Math.round((carCount / total) * 100) : 0;
+
+  const vehicleTakeaway =
+    total === 0
+      ? 'No active vehicles currently tracked in the simulation network.'
+      : emergencyCount > 0
+      ? `Cars make up ${carPercent}% of active traffic, alongside ${emergencyCount} emergency vehicle${emergencyCount > 1 ? 's' : ''} given priority.`
+      : `Cars make up ${carPercent}% of active traffic, with ${busCount} bus${busCount === 1 ? '' : 'es'} in transit.`;
 
   return (
     <Card title="What types of vehicles are on the road?" subtitle="Share of vehicles by type">
@@ -41,6 +54,11 @@ export default function VehicleClassChart() {
           </li>
         ))}
       </ul>
+
+      <div className="mt-4 flex items-center gap-1.5 rounded-lg border border-line bg-subtle/50 px-3 py-2 text-xs text-muted">
+        <Info size={13} className="text-brand shrink-0" />
+        <span>{vehicleTakeaway}</span>
+      </div>
     </Card>
   );
 }
