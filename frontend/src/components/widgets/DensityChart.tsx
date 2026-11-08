@@ -78,7 +78,16 @@ export default function DensityChart() {
     <Card
       title="Which roads are most crowded?"
       subtitle="Cars per kilometre on each monitored approach"
-      action={<Badge label="Live right now" variant="success" size="sm" />}
+      action={
+        <div className="flex items-center gap-2">
+          {thresholdFetchFailed && (
+            <span className="inline-flex items-center rounded border border-warn/30 bg-warn/10 px-2 py-0.5 text-2xs font-medium text-warn">
+              Using default limits
+            </span>
+          )}
+          <Badge label="Live right now" variant="success" size="sm" />
+        </div>
+      }
     >
       <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">
@@ -115,7 +124,7 @@ export default function DensityChart() {
         <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-warn" />Moderate traffic, {lowThreshold} to {highThreshold} cars/km</span>
         <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-bad" />Heavy traffic, over {highThreshold} cars/km</span>
         {thresholdFetchFailed && (
-          <span className="text-2xs text-warn ml-auto">Using fallback thresholds</span>
+          <span className="text-2xs text-warn ml-auto font-medium">Using default limits</span>
         )}
       </div>
 
