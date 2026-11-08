@@ -49,7 +49,7 @@ export default function AnalyticsPage() {
       <div className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-4 sm:flex-row sm:items-center sm:justify-between shadow-2xs">
         <div>
           <h2 className="text-sm font-semibold text-ink tracking-tight sm:text-[15px]">Traffic analytics & trends</h2>
-          <p className="text-xs text-muted">Review speed trends, crowded roads, and road fullness over time</p>
+          <p className="text-xs text-muted">Review speed trends across time windows; road crowdedness, fullness, and vehicle mix show live conditions</p>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted flex items-center gap-1 font-medium">

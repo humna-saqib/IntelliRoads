@@ -1,6 +1,7 @@
 import { useTraffic } from '../../context/TrafficContext';
 import { useChartTheme } from '../../theme/chartTheme';
 import Card from '../ui/Card';
+import Badge from '../ui/Badge';
 import { Info } from 'lucide-react';
 
 const CLASSES = [
@@ -31,7 +32,11 @@ export default function VehicleClassChart() {
       : `Cars make up ${carPercent}% of active traffic, with ${busCount} bus${busCount === 1 ? '' : 'es'} in transit.`;
 
   return (
-    <Card title="What types of vehicles are on the road?" subtitle="Share of vehicles by type">
+    <Card
+      title="What types of vehicles are on the road?"
+      subtitle="Share of vehicles by type"
+      action={<Badge label="Live right now" variant="success" size="sm" />}
+    >
       <p className="text-3xl font-medium tabular-nums tracking-tight">
         {total.toLocaleString()}
         <span className="ml-2 text-xs font-normal text-faint">vehicles</span>

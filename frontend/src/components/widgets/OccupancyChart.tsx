@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTraffic } from '../../context/TrafficContext';
 import { getJunctionName } from '../../constants/plainWords';
 import Card from '../ui/Card';
+import Badge from '../ui/Badge';
 import { Info } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -72,17 +73,20 @@ export default function OccupancyChart() {
       title="How full are the roads?"
       subtitle={selectedJunction === 'all' ? 'Share of road space in use, by junction' : `Approaches at ${getJunctionName(selectedJunction)}`}
       action={
-        <select
-          value={selectedJunction}
-          onChange={(e) => setSelectedJunction(e.target.value)}
-          className="input h-7 w-auto pr-6 text-xs"
-          aria-label="Junction"
-        >
-          <option value="all">All junctions</option>
-          {Object.keys(JUNCTION_LANE_MAP).map((id) => (
-            <option key={id} value={id}>{getJunctionName(id)}</option>
-          ))}
-        </select>
+        <div className="flex items-center gap-2">
+          <Badge label="Live right now" variant="success" size="sm" />
+          <select
+            value={selectedJunction}
+            onChange={(e) => setSelectedJunction(e.target.value)}
+            className="input h-7 w-auto pr-6 text-xs"
+            aria-label="Junction"
+          >
+            <option value="all">All junctions</option>
+            {Object.keys(JUNCTION_LANE_MAP).map((id) => (
+              <option key={id} value={id}>{getJunctionName(id)}</option>
+            ))}
+          </select>
+        </div>
       }
     >
       <div className="mb-4 flex items-baseline gap-2">

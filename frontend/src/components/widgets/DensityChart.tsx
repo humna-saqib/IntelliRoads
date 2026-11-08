@@ -5,6 +5,7 @@ import { useChartTheme } from '../../theme/chartTheme';
 import type { LaneDensity } from '../../types/traffic';
 import { fetchAllThresholds, type JunctionThresholds } from '../../services/api';
 import Card from '../ui/Card';
+import Badge from '../ui/Badge';
 import { Info } from 'lucide-react';
 
 function DensityTooltip({ active, payload }: { active?: boolean; payload?: { payload?: LaneDensity }[] }) {
@@ -74,7 +75,11 @@ export default function DensityChart() {
   }
 
   return (
-    <Card title="Which roads are most crowded?" subtitle="Cars per kilometre on each monitored approach">
+    <Card
+      title="Which roads are most crowded?"
+      subtitle="Cars per kilometre on each monitored approach"
+      action={<Badge label="Live right now" variant="success" size="sm" />}
+    >
       <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
