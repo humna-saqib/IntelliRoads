@@ -28,7 +28,7 @@ const SIGNAL_FILL: Record<string, string> = {
   RED: 'fill-sig-red',
 };
 
-/** Density thresholds (veh/km): under 20 free flow, 20 to 40 congested, over 40 severe. */
+/** Density thresholds (cars per km): under 20 free flow, 20 to 40 congested, over 40 severe. */
 const densityState = (density: number) =>
   density < 20 ? { stroke: 'stroke-ok', label: 'Free flow', tone: 'text-ok' } :
   density < 40 ? { stroke: 'stroke-warn', label: 'Congested', tone: 'text-warn' } :

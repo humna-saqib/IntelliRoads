@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTraffic } from '../../context/TrafficContext';
+import { getJunctionName } from '../../constants/plainWords';
 import Card from '../ui/Card';
 import { Info } from 'lucide-react';
 import clsx from 'clsx';
@@ -9,13 +10,6 @@ const JUNCTION_LANE_MAP: Record<string, string[]> = {
   junctionB: ['lane_AB_east', 'lane_B_north_in', 'lane_B_east_in', 'lane_BC_north'],
   junctionC: ['lane_CD_east', 'lane_BC_south', 'lane_C_east_in', 'lane_C_south_in'],
   junctionD: ['lane_D_west_in', 'lane_AD_south', 'lane_CD_west', 'lane_D_south_in'],
-};
-
-const JUNCTION_NAMES: Record<string, string> = {
-  junctionA: 'Northwest Square',
-  junctionB: 'Northeast Plaza',
-  junctionC: 'Southeast Gateway',
-  junctionD: 'Southwest Crossing',
 };
 
 const APPROACH_LABELS: Record<string, string> = {
@@ -61,7 +55,7 @@ export default function OccupancyChart() {
   let average: number;
 
   if (selectedJunction === 'all') {
-    rows = Object.entries(JUNCTION_NAMES).map(([id, name]) => ({ id, name, percent: averageFor(JUNCTION_LANE_MAP[id]) }));
+    rows = Object.keys(JUNCTION_LANE_MAP).map((id) => ({ id, name: getJunctionName(id), percent: averageFor(JUNCTION_LANE_MAP[id]) }));
     average = rows.reduce((sum, r) => sum + r.percent, 0) / rows.length;
   } else {
     const targetLanes = JUNCTION_LANE_MAP[selectedJunction] ?? [];
@@ -76,7 +70,7 @@ export default function OccupancyChart() {
   return (
     <Card
       title="How full are the roads?"
-      subtitle={selectedJunction === 'all' ? 'Share of road space in use, by junction' : `Approaches at ${JUNCTION_NAMES[selectedJunction]}`}
+      subtitle={selectedJunction === 'all' ? 'Share of road space in use, by junction' : `Approaches at ${getJunctionName(selectedJunction)}`}
       action={
         <select
           value={selectedJunction}
@@ -85,8 +79,8 @@ export default function OccupancyChart() {
           aria-label="Junction"
         >
           <option value="all">All junctions</option>
-          {Object.entries(JUNCTION_NAMES).map(([id, name]) => (
-            <option key={id} value={id}>{name}</option>
+          {Object.keys(JUNCTION_LANE_MAP).map((id) => (
+            <option key={id} value={id}>{getJunctionName(id)}</option>
           ))}
         </select>
       }
@@ -97,7 +91,7 @@ export default function OccupancyChart() {
       </div>
 
       {rows.length === 0 ? (
-        <p className="py-6 text-center text-[13px] text-faint">No occupancy data available</p>
+        <p className="py-6 text-center text-[13px] text-faint">No road fullness data available</p>
       ) : (
         <ul className="space-y-3">
           {rows.map((row) => {
