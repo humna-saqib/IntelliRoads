@@ -34,7 +34,7 @@ const densityState = (density: number) =>
   density < 40 ? { stroke: 'stroke-warn', label: 'Congested', tone: 'text-warn' } :
   { stroke: 'stroke-bad', label: 'Severe', tone: 'text-bad' };
 
-const VEHICLE_TYPES = ['car', 'bus', 'truck', 'emergency', 'motorcycle'] as const;
+const VEHICLE_TYPES = ['car', 'bus', 'motorcycle', 'emergency'] as const;
 
 function VehicleIconSvg({ type, color }: { type: string; color: string }) {
   const norm = (type || 'car').toLowerCase();
@@ -44,15 +44,6 @@ function VehicleIconSvg({ type, color }: { type: string; color: string }) {
         <rect x="-6" y="-3.5" width="12" height="7" rx="1.5" fill={color} />
         <rect x="-4" y="-2" width="6" height="4" rx="0.5" fill="#fff" fillOpacity="0.75" />
         <line x1="3.5" y1="-2.5" x2="3.5" y2="2.5" stroke="#fff" strokeWidth="1" />
-      </g>
-    );
-  }
-  if (norm.includes('truck')) {
-    return (
-      <g>
-        <rect x="-7" y="-3.5" width="8" height="7" rx="1" fill={color} fillOpacity="0.9" />
-        <rect x="2" y="-3" width="4.5" height="6" rx="1" fill={color} />
-        <line x1="1" y1="-2" x2="1" y2="2" stroke="#fff" strokeWidth="0.8" />
       </g>
     );
   }
@@ -530,7 +521,7 @@ export default function IntersectionMap({ selectedJunctionId, onSelectJunction }
                 <svg width="15" height="11" viewBox="-7 -4 14 8" className="inline-block flex-shrink-0">
                   <VehicleIconSvg type={t} color={c.series[i % c.series.length]} />
                 </svg>
-                <span>{t === 'emergency' ? 'Emergency vehicle' : t.charAt(0).toUpperCase() + t.slice(1)}</span>
+                <span>{t === 'emergency' ? 'Emergency vehicle' : t === 'motorcycle' ? 'Motorcycle' : t === 'bus' ? 'Bus' : 'Car'}</span>
               </span>
             ))}
           </div>
