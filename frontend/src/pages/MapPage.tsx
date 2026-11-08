@@ -1,10 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTraffic } from '../context/TrafficContext';
 import IntersectionMap from '../components/widgets/IntersectionMap';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import ErrorState from '../components/ui/ErrorState';
+import { getJunctionName } from '../constants/plainWords';
 import clsx from 'clsx';
 
 const signalTone: Record<string, string> = {
@@ -15,6 +16,7 @@ const signalTone: Record<string, string> = {
 
 export default function MapPage() {
   const { intersections, isLoading, isBackendOffline, retryConnection } = useTraffic();
+  const [selectedJunctionId, setSelectedJunctionId] = useState<string | null>(null);
 
   useEffect(() => {
     document.title = 'Traffic Map · IntelliRoads';
@@ -43,16 +45,26 @@ export default function MapPage() {
   return (
     <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
       <div className="xl:col-span-2">
-        <IntersectionMap />
+        <IntersectionMap
+          selectedJunctionId={selectedJunctionId}
+          onSelectJunction={setSelectedJunctionId}
+        />
       </div>
 
       <div className="space-y-4">
-        <Card title="Junctions" subtitle="Status of each monitored junction" padded={false}>
+        <Card title="Junctions" subtitle="Click any junction on the map or list to inspect" padded={false}>
           <ul className="divide-y divide-line">
             {intersections.map((intersection) => (
-              <li key={intersection.id} className="px-4 py-3">
+              <li
+                key={intersection.id}
+                onClick={() => setSelectedJunctionId(intersection.id)}
+                className={clsx(
+                  'cursor-pointer px-4 py-3 transition-colors hover:bg-subtle',
+                  selectedJunctionId === intersection.id && 'bg-brand/5 border-l-2 border-brand',
+                )}
+              >
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-[13px] font-medium">{intersection.name}</p>
+                  <p className="text-[13px] font-medium">{getJunctionName(intersection.id)}</p>
                   <Badge
                     label={intersection.congestion_status === 'CONGESTED' ? 'Congested' : 'Clear'}
                     variant={intersection.congestion_status === 'CONGESTED' ? 'danger' : 'success'}
@@ -72,10 +84,10 @@ export default function MapPage() {
                     <dd className="mt-0.5 font-mono tabular-nums text-ink">{intersection.vehicle_count}</dd>
                   </div>
                   <div>
-                    <dt className="text-faint">Density</dt>
+                    <dt className="text-faint">How crowded</dt>
                     <dd className="mt-0.5 font-mono tabular-nums text-ink">
                       {Number(intersection.density).toFixed(1)}
-                      <span className="ml-0.5 text-2xs text-faint">veh/km</span>
+                      <span className="ml-0.5 text-2xs text-faint">cars/km</span>
                     </dd>
                   </div>
                 </dl>
@@ -87,12 +99,11 @@ export default function MapPage() {
         <Card title="How the signals are controlled">
           <div className="space-y-3 text-xs leading-relaxed text-muted">
             <p>
-              <span className="font-medium text-ink">Rule-based mode</span> sets the green time from lane density:
-              under 20 veh/km gives 20 s, 20 to 40 veh/km gives 35 s, and over 40 veh/km gives 55 s.
+              <span className="font-medium text-ink">Standard timing</span> sets the green light duration based on how crowded the road is:
+              light traffic (under 20 cars per km) gives 20 seconds, moderate traffic (20 to 40 cars per km) gives 35 seconds, and heavy traffic (over 40 cars per km) gives 55 seconds.
             </p>
             <p>
-              <span className="font-medium text-ink">DQN mode</span> lets a trained agent keep, switch, extend or reduce the
-              green every 5 seconds, always within a 10 to 60 second green and a fixed 5 second yellow.
+              <span className="font-medium text-ink">Smart AI</span> continuously monitors live vehicle queues and automatically extends or changes green lights every 5 seconds to clear bottlenecks.
             </p>
           </div>
         </Card>

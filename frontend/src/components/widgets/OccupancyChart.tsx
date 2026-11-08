@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { useTraffic } from '../../context/TrafficContext';
+import { getJunctionName } from '../../constants/plainWords';
 import Card from '../ui/Card';
+import Badge from '../ui/Badge';
+import { Info } from 'lucide-react';
 import clsx from 'clsx';
 
 const JUNCTION_LANE_MAP: Record<string, string[]> = {
@@ -8,13 +11,6 @@ const JUNCTION_LANE_MAP: Record<string, string[]> = {
   junctionB: ['lane_AB_east', 'lane_B_north_in', 'lane_B_east_in', 'lane_BC_north'],
   junctionC: ['lane_CD_east', 'lane_BC_south', 'lane_C_east_in', 'lane_C_south_in'],
   junctionD: ['lane_D_west_in', 'lane_AD_south', 'lane_CD_west', 'lane_D_south_in'],
-};
-
-const JUNCTION_NAMES: Record<string, string> = {
-  junctionA: 'Northwest Square',
-  junctionB: 'Northeast Plaza',
-  junctionC: 'Southeast Gateway',
-  junctionD: 'Southwest Crossing',
 };
 
 const APPROACH_LABELS: Record<string, string> = {
@@ -60,7 +56,7 @@ export default function OccupancyChart() {
   let average: number;
 
   if (selectedJunction === 'all') {
-    rows = Object.entries(JUNCTION_NAMES).map(([id, name]) => ({ id, name, percent: averageFor(JUNCTION_LANE_MAP[id]) }));
+    rows = Object.keys(JUNCTION_LANE_MAP).map((id) => ({ id, name: getJunctionName(id), percent: averageFor(JUNCTION_LANE_MAP[id]) }));
     average = rows.reduce((sum, r) => sum + r.percent, 0) / rows.length;
   } else {
     const targetLanes = JUNCTION_LANE_MAP[selectedJunction] ?? [];
@@ -74,20 +70,23 @@ export default function OccupancyChart() {
 
   return (
     <Card
-      title="Lane occupancy"
-      subtitle={selectedJunction === 'all' ? 'Share of road space in use, by junction' : `Approaches at ${JUNCTION_NAMES[selectedJunction]}`}
+      title="How full are the roads?"
+      subtitle={selectedJunction === 'all' ? 'Share of road space in use, by junction' : `Approaches at ${getJunctionName(selectedJunction)}`}
       action={
-        <select
-          value={selectedJunction}
-          onChange={(e) => setSelectedJunction(e.target.value)}
-          className="input h-7 w-auto pr-6 text-xs"
-          aria-label="Junction"
-        >
-          <option value="all">All junctions</option>
-          {Object.entries(JUNCTION_NAMES).map(([id, name]) => (
-            <option key={id} value={id}>{name}</option>
-          ))}
-        </select>
+        <div className="flex items-center gap-2">
+          <Badge label="Live right now" variant="success" size="sm" />
+          <select
+            value={selectedJunction}
+            onChange={(e) => setSelectedJunction(e.target.value)}
+            className="input h-7 w-auto pr-6 text-xs"
+            aria-label="Junction"
+          >
+            <option value="all">All junctions</option>
+            {Object.keys(JUNCTION_LANE_MAP).map((id) => (
+              <option key={id} value={id}>{getJunctionName(id)}</option>
+            ))}
+          </select>
+        </div>
       }
     >
       <div className="mb-4 flex items-baseline gap-2">
@@ -96,7 +95,7 @@ export default function OccupancyChart() {
       </div>
 
       {rows.length === 0 ? (
-        <p className="py-6 text-center text-[13px] text-faint">No occupancy data available</p>
+        <p className="py-6 text-center text-[13px] text-faint">No road fullness data available</p>
       ) : (
         <ul className="space-y-3">
           {rows.map((row) => {
@@ -120,6 +119,17 @@ export default function OccupancyChart() {
         <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-ok" />Clear, under 30%</span>
         <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-warn" />Moderate, 30 to 50%</span>
         <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-bad" />Severe, 50% and over</span>
+      </div>
+
+      <div className="mt-3 flex items-center gap-1.5 rounded-lg border border-line bg-subtle/50 px-3 py-2 text-xs text-muted">
+        <Info size={13} className="text-brand shrink-0" />
+        <span>
+          {rows.length > 0
+            ? `Roads are ${average.toFixed(0)}% full on average, with ${
+                rows.reduce((max, r) => (r.percent > max.percent ? r : max), rows[0]).name
+              } seeing the highest fullness at ${rows.reduce((max, r) => (r.percent > max.percent ? r : max), rows[0]).percent.toFixed(0)}%.`
+            : `Roads are ${average.toFixed(0)}% full on average across the network.`}
+        </span>
       </div>
     </Card>
   );
