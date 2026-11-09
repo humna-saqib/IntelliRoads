@@ -5,13 +5,7 @@ import ErrorState from '../components/ui/ErrorState';
 import PageIntro from '../components/ui/PageIntro';
 import Card from '../components/ui/Card';
 import { Check } from 'lucide-react';
-
-const JUNCTION_LABELS: Record<string, string> = {
-  junctionA: 'Junction A',
-  junctionB: 'Junction B',
-  junctionC: 'Junction C',
-  junctionD: 'Junction D',
-};
+import { getJunctionName } from '../constants/plainWords';
 
 type FormState = Record<string, JunctionThresholds>;
 type SaveState = Record<string, 'idle' | 'saving' | 'saved' | 'error'>;
@@ -97,7 +91,7 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <PageIntro description="Density and congestion thresholds for each junction, in vehicles per kilometre. They decide how lane density is classified and when an alert is raised." />
+      <PageIntro description="Set the car-density levels (cars per km) that decide when a road is 'light', 'moderate', or 'too busy'. Warnings appear when density passes the congestion limit." />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {Object.keys(form)
@@ -111,28 +105,28 @@ export default function SettingsPage() {
             return (
               <Card
                 key={junctionId}
-                title={JUNCTION_LABELS[junctionId] ?? junctionId}
+                title={getJunctionName(junctionId)}
                 action={dirty ? <span className="text-xs text-warn">Unsaved changes</span> : undefined}
               >
                 <div className="space-y-3.5">
                   <ThresholdField
                     id={`${junctionId}-low`}
                     label="Low density threshold"
-                    hint="Below this value density is low."
+                    hint="Roads are considered lightly trafficked below this many cars per km — no warning will appear."
                     value={values.low_threshold}
                     onChange={(v) => handleChange(junctionId, 'low_threshold', v)}
                   />
                   <ThresholdField
                     id={`${junctionId}-medium`}
                     label="Medium density threshold"
-                    hint="Below this value density is medium; at or above it is high."
+                    hint="Above this limit the road is classed as moderately busy. The signal gets more time for heavy approaches."
                     value={values.medium_threshold}
                     onChange={(v) => handleChange(junctionId, 'medium_threshold', v)}
                   />
                   <ThresholdField
                     id={`${junctionId}-congestion`}
                     label="Congestion threshold"
-                    hint="Density above this value raises a congestion alert."
+                    hint="A warning appears when the road carries more than this many cars per km."
                     value={values.congestion_threshold}
                     onChange={(v) => handleChange(junctionId, 'congestion_threshold', v)}
                   />
