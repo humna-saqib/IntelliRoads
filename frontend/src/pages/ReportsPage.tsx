@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, useRef, type ReactNode } from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { fetchPerformance, fetchPerformanceHistory, fetchDensityHistory, fetchActiveModel, fetchIntersections, type ActiveModelInfo } from '../services/api';
@@ -11,7 +11,7 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 import ErrorState from '../components/ui/ErrorState';
 import ChartTooltip from '../components/ui/ChartTooltip';
 import PageIntro from '../components/ui/PageIntro';
-import { Download, ChevronDown, ChevronRight, Calendar } from 'lucide-react';
+import { Download, ChevronDown, ChevronRight, Calendar, FileText, FileSpreadsheet } from 'lucide-react';
 import clsx from 'clsx';
 import {
   ResponsiveContainer,
@@ -103,6 +103,22 @@ export default function ReportsPage() {
   const [model, setModel] = useState<ActiveModelInfo | null>(null);
   const [intersections, setIntersections] = useState<IntersectionData[]>([]);
   const [junctionDensityReadings, setJunctionDensityReadings] = useState<Record<string, DensityReading[]>>({});
+  const [downloadMenuOpen, setDownloadMenuOpen] = useState<boolean>(false);
+  const downloadMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (downloadMenuRef.current && !downloadMenuRef.current.contains(event.target as Node)) {
+        setDownloadMenuOpen(false);
+      }
+    };
+    if (downloadMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [downloadMenuOpen]);
 
   // raw tick history panel
   const [historyOpen, setHistoryOpen] = useState<boolean>(false);
@@ -521,14 +537,62 @@ export default function ReportsPage() {
               <option value={60}>Last 60 minutes</option>
               <option value={120}>Last 120 minutes</option>
             </select>
-            <button onClick={handleExportCSV} disabled={chartData.length === 0} className="btn">
-              <Download size={14} strokeWidth={1.75} />
-              CSV
-            </button>
-            <button onClick={handleExportPDF} disabled={chartData.length === 0} className="btn btn-primary">
-              <Download size={14} strokeWidth={1.75} />
-              PDF
-            </button>
+            <div className="relative" ref={downloadMenuRef}>
+              <button
+                type="button"
+                onClick={() => setDownloadMenuOpen((prev) => !prev)}
+                disabled={!perfData}
+                className="btn btn-primary"
+                aria-haspopup="true"
+                aria-expanded={downloadMenuOpen}
+                id="download-report-btn"
+              >
+                <Download size={14} strokeWidth={1.75} />
+                Download report
+                <ChevronDown size={14} className={clsx('transition-transform duration-150', downloadMenuOpen && 'rotate-180')} />
+              </button>
+
+              {downloadMenuOpen && (
+                <div
+                  role="menu"
+                  aria-orientation="vertical"
+                  aria-labelledby="download-report-btn"
+                  className="absolute right-0 top-full z-20 mt-1.5 w-56 rounded-lg border border-line bg-surface p-1 shadow-lg animate-in fade-in zoom-in-95 duration-100"
+                >
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setDownloadMenuOpen(false);
+                      handleExportPDF();
+                    }}
+                    className="flex w-full items-start gap-2.5 rounded-md px-3 py-2 text-left text-xs transition-colors hover:bg-subtle text-ink"
+                  >
+                    <FileText size={16} className="mt-0.5 text-primary shrink-0" />
+                    <div>
+                      <span className="font-medium text-ink block">PDF report</span>
+                      <span className="text-2xs text-muted block">Formatted report with tables & metrics</span>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setDownloadMenuOpen(false);
+                      handleExportCSV();
+                    }}
+                    className="flex w-full items-start gap-2.5 rounded-md px-3 py-2 text-left text-xs transition-colors hover:bg-subtle text-ink"
+                  >
+                    <FileSpreadsheet size={16} className="mt-0.5 text-ok shrink-0" />
+                    <div>
+                      <span className="font-medium text-ink block">CSV data export</span>
+                      <span className="text-2xs text-muted block">Raw values for spreadsheets & Excel</span>
+                    </div>
+                  </button>
+                </div>
+              )}
+            </div>
           </>
         }
       />
