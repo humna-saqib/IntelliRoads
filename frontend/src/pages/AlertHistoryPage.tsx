@@ -56,6 +56,22 @@ export default function AlertHistoryPage() {
     return 'Road became congested';
   };
 
+  const toSec = (v: unknown) => {
+    if (!v) return null;
+    const n = typeof v === 'number' ? v : new Date(String(v)).getTime() / 1000;
+    return isNaN(n) ? null : n;
+  };
+
+  const formatDuration = (start: unknown, end?: unknown): string => {
+    const s = toSec(start);
+    const e = toSec(end);
+    if (!s) return '';
+    const dur = (e ?? Date.now() / 1000) - s;
+    if (dur < 60) return `${Math.round(dur)}s`;
+    const mins = Math.round(dur / 60);
+    return mins === 1 ? 'lasted 1 minute' : `lasted ${mins} minutes`;
+  };
+
   const isActiveEvent = (event: CongestionEvent) =>
     (event.status === 'CONGESTED' || (event.status as string) === 'ACTIVE') && !event.resolved_at;
 
@@ -175,7 +191,7 @@ export default function AlertHistoryPage() {
               <table className="tbl">
                 <thead>
                   <tr>
-                    <th>Event</th>
+                    <th>Warning</th>
                     <th>Junction</th>
                     <th>Approach</th>
                     <th>Density</th>
@@ -189,14 +205,23 @@ export default function AlertHistoryPage() {
                     const active = isActiveEvent(event);
                     return (
                       <tr key={event.id || `${event.intersection_id}-${idx}`}>
-                        <td className="font-mono text-xs text-muted" title={event.id}>{event.id ? event.id.substring(0, 14) : `evt-${idx}`}</td>
+                        <td>
+                          <p className="text-[13px] font-medium">{getCause(event)}</p>
+                          <p className="text-xs text-muted">
+                            {formatDuration(event.timestamp, event.resolved_at || undefined)}
+                            {!event.resolved_at && <span className="ml-1 text-bad">· still ongoing</span>}
+                          </p>
+                        </td>
                         <td>
                           <span className="text-[13px]">{getJunctionName(event.intersection_id)}</span>
                         </td>
                         <td className="text-muted">{event.direction ? `${event.direction}bound` : '–'}</td>
-                        <td className="whitespace-nowrap">
-                          <span className={active ? 'font-mono tabular-nums text-bad' : 'font-mono tabular-nums'}>{event.density_value.toFixed(1)}</span>
-                          <span className="ml-1 text-xs text-faint">cars/km · limit {event.threshold}</span>
+                        <td className="whitespace-nowrap text-xs">
+                          <span className={active ? 'font-mono tabular-nums text-bad' : 'font-mono tabular-nums'}>
+                            {event.density_value.toFixed(1)} cars/km
+                          </span>
+                          <br />
+                          <span className="text-faint">limit: {event.threshold} cars/km</span>
                         </td>
                         <td><Badge label={active ? 'Congested' : 'Resolved'} variant={active ? 'danger' : 'success'} size="sm" /></td>
                         <td className="whitespace-nowrap font-mono text-xs text-muted">{formatDateTime(event.timestamp)}</td>
