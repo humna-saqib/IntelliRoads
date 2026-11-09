@@ -7,6 +7,8 @@ import Card from '../components/ui/Card';
 import { Check } from 'lucide-react';
 import { getJunctionName } from '../constants/plainWords';
 
+const DEFAULTS: JunctionThresholds = { low_threshold: 20, medium_threshold: 40, congestion_threshold: 60 };
+
 type FormState = Record<string, JunctionThresholds>;
 type SaveState = Record<string, 'idle' | 'saving' | 'saved' | 'error'>;
 
@@ -52,6 +54,10 @@ export default function SettingsPage() {
     setSaveState((prev) => ({ ...prev, [junctionId]: 'idle' }));
   };
 
+  const handleResetAllToDefaults = () => {
+    setForm((prev) => Object.fromEntries(Object.keys(prev).map((k) => [k, { ...DEFAULTS }])));
+  };
+
   const handleSave = async (junctionId: string) => {
     const values = form[junctionId];
     if (values.low_threshold >= values.medium_threshold) {
@@ -91,7 +97,12 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <PageIntro description="Set the car-density levels (cars per km) that decide when a road is 'light', 'moderate', or 'too busy'. Warnings appear when density passes the congestion limit." />
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <PageIntro description="Set the car-density levels (cars per km) that decide when a road is 'light', 'moderate', or 'too busy'. Warnings appear when density passes the congestion limit." />
+        <button type="button" onClick={handleResetAllToDefaults} className="btn btn-ghost shrink-0">
+          Reset to defaults
+        </button>
+      </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {Object.keys(form)
