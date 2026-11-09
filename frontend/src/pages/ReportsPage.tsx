@@ -1,8 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { fetchPerformance, fetchPerformanceHistory, fetchDensityHistory, fetchActiveModel, type ActiveModelInfo } from '../services/api';
-import type { PerformanceResponse, PerformanceSnapshot, DensityReading } from '../types/traffic';
+import { fetchPerformance, fetchPerformanceHistory, fetchDensityHistory, fetchActiveModel, fetchIntersections, type ActiveModelInfo } from '../services/api';
+import type { PerformanceResponse, PerformanceSnapshot, DensityReading, IntersectionData } from '../types/traffic';
+import { getJunctionName } from '../constants/plainWords';
 import { useChartTheme } from '../theme/chartTheme';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
@@ -27,6 +28,19 @@ import {
 
 const EMPTY_MESSAGE = 'No performance history has been recorded yet.';
 
+const DEFAULT_JUNCTION_LIST: IntersectionData[] = [
+  { id: 'junctionA', name: 'Northwest Square', signal: 'RED', congestion_status: 'CLEAR', vehicle_count: 0, density: 0 },
+  { id: 'junctionB', name: 'Northeast Plaza', signal: 'RED', congestion_status: 'CLEAR', vehicle_count: 0, density: 0 },
+  { id: 'junctionC', name: 'Southeast Gateway', signal: 'RED', congestion_status: 'CLEAR', vehicle_count: 0, density: 0 },
+  { id: 'junctionD', name: 'Southwest Crossing', signal: 'RED', congestion_status: 'CLEAR', vehicle_count: 0, density: 0 },
+];
+
+function getRoadFullnessInWords(densityVal: number): string {
+  if (densityVal >= 40) return 'Heavy traffic (very full)';
+  if (densityVal >= 20) return 'Moderate traffic (half full)';
+  return 'Light traffic (free-flowing)';
+}
+
 export default function ReportsPage() {
   const c = useChartTheme();
 
@@ -37,6 +51,8 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [perfData, setPerfData] = useState<PerformanceResponse | null>(null);
   const [model, setModel] = useState<ActiveModelInfo | null>(null);
+  const [intersections, setIntersections] = useState<IntersectionData[]>([]);
+  const [junctionDensityReadings, setJunctionDensityReadings] = useState<Record<string, DensityReading[]>>({});
 
   // raw tick history panel
   const [historyOpen, setHistoryOpen] = useState<boolean>(false);
@@ -51,7 +67,24 @@ export default function ReportsPage() {
 
   const loadData = async () => {
     try {
-      setPerfData(await fetchPerformance(timeWindow));
+      const [perf, inters, densHist] = await Promise.all([
+        fetchPerformance(timeWindow),
+        fetchIntersections().catch(() => [] as IntersectionData[]),
+        fetchDensityHistory({ limit: 80 }).catch(() => [] as DensityReading[]),
+      ]);
+      setPerfData(perf);
+      setIntersections(inters);
+
+      const byJunction: Record<string, DensityReading[]> = {};
+      for (const reading of densHist) {
+        let jId = 'junctionA';
+        if (/_B_/i.test(reading.lane_id) || /lane_B/i.test(reading.lane_id)) jId = 'junctionB';
+        else if (/_C_/i.test(reading.lane_id) || /lane_C/i.test(reading.lane_id)) jId = 'junctionC';
+        else if (/_D_/i.test(reading.lane_id) || /lane_D/i.test(reading.lane_id)) jId = 'junctionD';
+        if (!byJunction[jId]) byJunction[jId] = [];
+        byJunction[jId].push(reading);
+      }
+      setJunctionDensityReadings(byJunction);
     } catch (err) {
       console.error('Failed to fetch performance data:', err);
     } finally {
@@ -386,6 +419,51 @@ export default function ReportsPage() {
             </dl>
           </Card>
         </div>
+
+        <Card title="Live junction conditions" subtitle="Current vehicle volume and road fullness across all junctions" padded={false}>
+          <div className="overflow-x-auto">
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th>Junction</th>
+                  <th>Vehicle count</th>
+                  <th>Road fullness</th>
+                  <th>Traffic status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(intersections.length > 0 ? intersections : DEFAULT_JUNCTION_LIST).map((j) => {
+                  const recentReadings = junctionDensityReadings[j.id] || [];
+                  const avgRecentDensity = recentReadings.length > 0
+                    ? recentReadings.reduce((sum, r) => sum + r.density, 0) / recentReadings.length
+                    : j.density;
+                  const isCongested = j.congestion_status === 'CONGESTED';
+                  return (
+                    <tr key={j.id}>
+                      <td className="font-medium text-ink">
+                        {getJunctionName(j.id)}
+                      </td>
+                      <td className="tabular-nums">
+                        {j.vehicle_count} {j.vehicle_count === 1 ? 'vehicle' : 'vehicles'}
+                      </td>
+                      <td className="text-muted">
+                        {getRoadFullnessInWords(avgRecentDensity)}
+                        <span className="ml-1 text-xs text-faint">({avgRecentDensity.toFixed(1)} cars/km)</span>
+                      </td>
+                      <td>
+                        <Badge
+                          label={isCongested ? 'Congested' : 'Clear'}
+                          variant={isCongested ? 'danger' : 'success'}
+                          size="sm"
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </Card>
 
         <section className="overflow-hidden rounded-lg border border-line bg-surface">
           <button
