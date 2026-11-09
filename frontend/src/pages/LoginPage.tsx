@@ -111,7 +111,13 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
           </button>
         </form>
 
-        <p className="mt-5 text-center text-xs text-faint">Final year project demo</p>
+        <div className="mt-5 space-y-2 text-center">
+          <p className="text-xs text-muted">
+            Don&apos;t have access?{' '}
+            <span className="text-faint">Ask your project admin to set up your account.</span>
+          </p>
+          <p className="text-xs text-faint">Final year project demo</p>
+        </div>
       </div>
     </div>
   );
