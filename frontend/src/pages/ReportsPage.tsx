@@ -35,6 +35,54 @@ const DEFAULT_JUNCTION_LIST: IntersectionData[] = [
   { id: 'junctionD', name: 'Southwest Crossing', signal: 'RED', congestion_status: 'CLEAR', vehicle_count: 0, density: 0 },
 ];
 
+/**
+ * Benchmark evaluation numbers read directly from:
+ * backend/evaluation_results/eval_summary.json (and README_RL.md section 3).
+ * Evaluated across 30 test episodes with 1,800 steps per episode on identical seeds.
+ */
+const TEST_SIMULATION_BENCHMARK = [
+  {
+    metric: 'Average waiting time',
+    standardTiming: '2.48 s (± 0.51)',
+    smartAI: '1.44 s (± 0.22)',
+    difference: '41.9% reduction',
+    advantage: 'Smart AI is faster',
+    variant: 'success' as const,
+  },
+  {
+    metric: 'Average queue length',
+    standardTiming: '1.13 cars (± 0.23)',
+    smartAI: '0.83 cars (± 0.46)',
+    difference: '26.8% reduction',
+    advantage: 'Shorter queues',
+    variant: 'success' as const,
+  },
+  {
+    metric: 'Road fullness (occupancy)',
+    standardTiming: '6.85% (± 1.17%)',
+    smartAI: '4.58% (± 1.43%)',
+    difference: '33.1% reduction',
+    advantage: 'Less crowded',
+    variant: 'success' as const,
+  },
+  {
+    metric: 'Throughput',
+    standardTiming: '1,221 cars (± 134)',
+    smartAI: '1,221 cars (± 133)',
+    difference: 'Equal (0.04% diff)',
+    advantage: 'Equal throughput',
+    variant: 'neutral' as const,
+  },
+  {
+    metric: 'Average travel time',
+    standardTiming: '152.0 s (± 4.58)',
+    smartAI: '155.9 s (± 3.50)',
+    difference: '+2.5% longer',
+    advantage: 'Within normal variation',
+    variant: 'neutral' as const,
+  },
+];
+
 function getRoadFullnessInWords(densityVal: number): string {
   if (densityVal >= 40) return 'Heavy traffic (very full)';
   if (densityVal >= 20) return 'Moderate traffic (half full)';
@@ -535,6 +583,47 @@ export default function ReportsPage() {
                 })}
               </tbody>
             </table>
+          </div>
+        </Card>
+
+        <Card
+          title="Test simulation results: Smart AI vs Standard timing"
+          subtitle="Benchmark evaluation over 30 test runs (1,800 simulation steps each). Read directly from backend/evaluation_results/eval_summary.json"
+          padded={false}
+        >
+          <div className="overflow-x-auto">
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th>Performance metric</th>
+                  <th>Standard timing (Fixed / Rule)</th>
+                  <th>Smart AI (Trained model)</th>
+                  <th>Improvement</th>
+                  <th>Advantage</th>
+                </tr>
+              </thead>
+              <tbody>
+                {TEST_SIMULATION_BENCHMARK.map((b) => (
+                  <tr key={b.metric}>
+                    <td className="font-medium text-ink">{b.metric}</td>
+                    <td className="tabular-nums text-muted">{b.standardTiming}</td>
+                    <td className="tabular-nums font-medium text-ink">{b.smartAI}</td>
+                    <td className="tabular-nums text-muted">{b.difference}</td>
+                    <td>
+                      <Badge label={b.advantage} variant={b.variant} size="sm" />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="border-t border-line px-4 py-3 bg-subtle/30 text-xs text-muted flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+            <span>
+              <strong>Source file:</strong> <code className="text-2xs bg-surface px-1 py-0.5 rounded border border-line">backend/evaluation_results/eval_summary.json</code>
+            </span>
+            <span>
+              Evaluated across 30 identical seeds (54,000 total steps per controller)
+            </span>
           </div>
         </Card>
 
