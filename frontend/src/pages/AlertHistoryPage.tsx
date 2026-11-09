@@ -6,7 +6,7 @@ import Badge from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import ErrorState from '../components/ui/ErrorState';
 import PageIntro from '../components/ui/PageIntro';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, Download } from 'lucide-react';
 import type { CongestionEvent } from '../types/traffic';
 import { getJunctionName } from '../constants/plainWords';
 
@@ -111,15 +111,43 @@ export default function AlertHistoryPage() {
     setSearchQuery('');
   };
 
+  const exportCsv = () => {
+    const header = ['Junction', 'Cause', 'Density (cars/km)', 'Warning limit', 'Status', 'Detected', 'Resolved'];
+    const rows = filteredHistory.map((e) => [
+      getJunctionName(e.intersection_id),
+      getCause(e),
+      e.density_value.toFixed(1),
+      String(e.threshold),
+      isActiveEvent(e) ? 'Ongoing' : 'Resolved',
+      formatDateTime(e.timestamp),
+      e.resolved_at ? formatDateTime(e.resolved_at) : 'Still active',
+    ]);
+    const csv = [header, ...rows].map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const dateStr = new Date().toISOString().slice(0, 10);
+    a.download = `intelliroads-warnings-${dateStr}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div>
       <PageIntro
         description="A record of congestion events — when a junction approach became overcrowded and when it cleared."
         actions={
-          <button onClick={loadHistory} className="btn">
-            <RotateCcw size={14} strokeWidth={1.75} />
-            Refresh
-          </button>
+          <div className="flex gap-2">
+            <button onClick={exportCsv} className="btn btn-ghost" disabled={filteredHistory.length === 0}>
+              <Download size={14} strokeWidth={1.75} />
+              Export CSV
+            </button>
+            <button onClick={loadHistory} className="btn">
+              <RotateCcw size={14} strokeWidth={1.75} />
+              Refresh
+            </button>
+          </div>
         }
       />
 
