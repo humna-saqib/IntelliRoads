@@ -5,6 +5,7 @@ import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import ErrorState from '../components/ui/ErrorState';
+import EmptyState from '../components/ui/EmptyState';
 import PageIntro from '../components/ui/PageIntro';
 import { RotateCcw, Download } from 'lucide-react';
 import type { CongestionEvent } from '../types/traffic';
@@ -234,10 +235,11 @@ export default function AlertHistoryPage() {
               />
             </div>
           ) : filteredHistory.length === 0 ? (
-            <div className="py-16 text-center">
-              <p className="text-[13px] font-medium">No past warnings match these filters</p>
-              <p className="mt-1 text-xs text-faint">Try resetting the filters or widening the time range.</p>
-            </div>
+            <EmptyState
+              title="No warnings match your search"
+              description="Try different search terms, adjust the filters, or widen the time range."
+              action={<button onClick={handleResetFilters} className="btn btn-ghost">Clear filters</button>}
+            />
           ) : (
             <div className="overflow-x-auto">
               <table className="tbl">
