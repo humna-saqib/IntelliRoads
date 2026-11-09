@@ -230,3 +230,12 @@ myenv/
 backend/old_runs/
 # lock file of the final-evaluation ledger (created by evaluate_fyp.py; never commit)
 backend/evaluation_runs/ledger.jsonl.lock
+
+# Test artifacts
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+frontend/test-results/
+frontend/playwright-report/
+coverage/
