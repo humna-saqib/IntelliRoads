@@ -337,6 +337,13 @@ export default function ReportsPage() {
 
   const chartEmpty = <div className="flex h-full items-center justify-center text-[13px] text-faint">{EMPTY_MESSAGE}</div>;
 
+  const avgWaitSec = summary ? summary.avg_waiting_time : current ? current.avg_waiting_time : 0;
+  const avgWaitMinutes = (avgWaitSec / 60).toFixed(1);
+  const totalServed = summary ? summary.total_throughput : current ? current.throughput_total : 0;
+  const warningCount = summary ? summary.total_congestion_events : current ? current.congestion_event_count : 0;
+
+  const summaryParagraph = `During this reporting period, vehicles waited an average of ${avgWaitMinutes} minutes (${Math.round(avgWaitSec)} seconds) before passing through signals. The system served ${totalServed.toLocaleString()} vehicles in total, with ${warningCount} traffic congestion warning${warningCount === 1 ? '' : 's'} recorded.`;
+
   return (
     <div>
       <PageIntro
@@ -398,6 +405,13 @@ export default function ReportsPage() {
               Filtering performance snapshots ({perfHistory.length} loaded)
             </span>
           )}
+        </div>
+
+        <div className="rounded-lg border border-line bg-surface p-4 shadow-2xs">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted">Executive summary</p>
+          <p className="mt-1 text-sm leading-relaxed text-ink">
+            {summaryParagraph}
+          </p>
         </div>
 
         <section className="grid grid-cols-2 overflow-hidden rounded-lg border border-line bg-surface lg:grid-cols-4" aria-label="Summary">
