@@ -115,6 +115,9 @@ export default function SettingsPage() {
                     hint="Roads are considered lightly trafficked below this many cars per km — no warning will appear."
                     value={values.low_threshold}
                     onChange={(v) => handleChange(junctionId, 'low_threshold', v)}
+                    min={0}
+                    max={150}
+                    previewFn={(v) => `Roads with up to ${v} cars per km will be treated as lightly trafficked.`}
                   />
                   <ThresholdField
                     id={`${junctionId}-medium`}
@@ -122,6 +125,9 @@ export default function SettingsPage() {
                     hint="Above this limit the road is classed as moderately busy. The signal gets more time for heavy approaches."
                     value={values.medium_threshold}
                     onChange={(v) => handleChange(junctionId, 'medium_threshold', v)}
+                    min={0}
+                    max={150}
+                    previewFn={(v) => `Roads crossing ${v} cars per km will move into the 'moderate' category.`}
                   />
                   <ThresholdField
                     id={`${junctionId}-congestion`}
@@ -129,6 +135,9 @@ export default function SettingsPage() {
                     hint="A warning appears when the road carries more than this many cars per km."
                     value={values.congestion_threshold}
                     onChange={(v) => handleChange(junctionId, 'congestion_threshold', v)}
+                    min={0}
+                    max={150}
+                    previewFn={(v) => `A warning will appear when more than ${v} cars per km are on the road.`}
                   />
                 </div>
 
@@ -157,18 +166,42 @@ function ThresholdField({
   hint,
   value,
   onChange,
+  min = 0,
+  max = 200,
+  previewFn,
 }: {
   id: string;
   label: string;
   hint: string;
   value: number;
   onChange: (value: string) => void;
+  min?: number;
+  max?: number;
+  previewFn?: (v: number) => string;
 }) {
   return (
     <div>
-      <label htmlFor={id} className="field-label">{label}</label>
-      <input id={id} type="number" step="0.1" min="0" value={value} onChange={(e) => onChange(e.target.value)} className="input font-mono tabular-nums" />
+      <div className="flex items-center justify-between">
+        <label htmlFor={id} className="field-label">{label}</label>
+        <span className="font-mono text-sm tabular-nums font-semibold text-ink">{value} cars/km</span>
+      </div>
+      <input
+        id={id}
+        type="range"
+        min={min}
+        max={max}
+        step={1}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="mt-1.5 w-full accent-brand"
+        aria-label={label}
+      />
       <p className="mt-1 text-xs text-faint">{hint}</p>
+      {previewFn && (
+        <p className="mt-1.5 rounded bg-subtle px-2.5 py-1.5 text-xs text-muted italic">
+          {previewFn(value)}
+        </p>
+      )}
     </div>
   );
 }
