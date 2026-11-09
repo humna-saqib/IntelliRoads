@@ -52,7 +52,7 @@ export default function AlertHistoryPage() {
     return date.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
   };
 
-  const getCause = (event: CongestionEvent): string => {
+  const getWhatHappened = (event: CongestionEvent): string => {
     if (event.density_value > event.threshold) {
       return 'Too many cars — road density exceeded the warning limit';
     }
@@ -85,8 +85,8 @@ export default function AlertHistoryPage() {
         if (!searchQuery.trim()) return true;
         const q = searchQuery.toLowerCase();
         const name = getJunctionName(event.intersection_id).toLowerCase();
-        const cause = getCause(event).toLowerCase();
-        return name.includes(q) || cause.includes(q);
+        const whatHappened = getWhatHappened(event).toLowerCase();
+        return name.includes(q) || whatHappened.includes(q);
       })
       .filter((event) => {
         if (selectedIntersection !== 'ALL' && !event.intersection_id.toLowerCase().includes(selectedIntersection.toLowerCase())) return false;
@@ -129,10 +129,10 @@ export default function AlertHistoryPage() {
   };
 
   const exportCsv = () => {
-    const header = ['Junction', 'Cause', 'Density (cars/km)', 'Warning limit', 'Status', 'Detected', 'Resolved'];
+    const header = ['Junction', 'What happened', 'Density (cars/km)', 'Warning limit', 'Status', 'Detected', 'Resolved'];
     const rows = filteredHistory.map((e) => [
       getJunctionName(e.intersection_id),
-      getCause(e),
+      getWhatHappened(e),
       e.density_value.toFixed(1),
       String(e.threshold),
       isActiveEvent(e) ? 'Ongoing' : 'Resolved',
@@ -175,7 +175,7 @@ export default function AlertHistoryPage() {
             <input
               id="f-search"
               type="search"
-              placeholder="Junction name or cause…"
+              placeholder="Junction name or what happened…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="input"
@@ -245,7 +245,7 @@ export default function AlertHistoryPage() {
               <table className="tbl">
                 <thead>
                   <tr>
-                    <th>Warning</th>
+                    <th>What happened</th>
                     <th>Junction</th>
                     <th>Approach</th>
                     <th>Density</th>
@@ -260,7 +260,7 @@ export default function AlertHistoryPage() {
                     return (
                       <tr key={event.id || `${event.intersection_id}-${idx}`}>
                         <td>
-                          <p className="text-[13px] font-medium">{getCause(event)}</p>
+                          <p className="text-[13px] font-medium">{getWhatHappened(event)}</p>
                           <p className="text-xs text-muted">
                             {formatDuration(event.timestamp, event.resolved_at || undefined)}
                             {!event.resolved_at && <span className="ml-1 text-bad">· still ongoing</span>}
