@@ -11,7 +11,7 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 import ErrorState from '../components/ui/ErrorState';
 import ChartTooltip from '../components/ui/ChartTooltip';
 import PageIntro from '../components/ui/PageIntro';
-import { Download, ChevronDown, ChevronRight } from 'lucide-react';
+import { Download, ChevronDown, ChevronRight, Calendar } from 'lucide-react';
 import clsx from 'clsx';
 import {
   ResponsiveContainer,
@@ -48,6 +48,8 @@ export default function ReportsPage() {
     document.title = 'Reports · IntelliRoads';
   }, []);
   const [timeWindow, setTimeWindow] = useState<number>(30);
+  const [dateFrom, setDateFrom] = useState<string>('');
+  const [dateTo, setDateTo] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
   const [perfData, setPerfData] = useState<PerformanceResponse | null>(null);
   const [model, setModel] = useState<ActiveModelInfo | null>(null);
@@ -126,6 +128,25 @@ export default function ReportsPage() {
       clearInterval(id);
     };
   }, []);
+
+  useEffect(() => {
+    if (!dateFrom && !dateTo) return;
+    const fetchRange = async () => {
+      setLoading(true);
+      try {
+        const params: { start_time?: number; end_time?: number; limit?: number } = { limit: 200 };
+        if (dateFrom) params.start_time = Math.floor(new Date(dateFrom).getTime() / 1000);
+        if (dateTo) params.end_time = Math.floor(new Date(dateTo).getTime() / 1000) + 86400;
+        const res = await fetchPerformanceHistory(params);
+        setPerfHistory(res);
+      } catch (err) {
+        console.error('Failed to fetch performance history for date range:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRange();
+  }, [dateFrom, dateTo]);
 
   useEffect(() => {
     if (historyOpen) loadHistoryData();
@@ -341,6 +362,44 @@ export default function ReportsPage() {
       />
 
       <div className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-surface p-3.5 shadow-2xs">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="flex items-center gap-1.5 text-xs font-medium text-ink">
+              <Calendar size={14} className="text-muted" />
+              Date range filter:
+            </span>
+            <input
+              type="date"
+              aria-label="Start date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="input h-8 w-auto text-xs"
+            />
+            <span className="text-xs text-faint">to</span>
+            <input
+              type="date"
+              aria-label="End date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="input h-8 w-auto text-xs"
+            />
+            {(dateFrom || dateTo) && (
+              <button
+                type="button"
+                onClick={() => { setDateFrom(''); setDateTo(''); loadData(); }}
+                className="btn btn-ghost h-8 px-2 text-xs"
+              >
+                Reset range
+              </button>
+            )}
+          </div>
+          {(dateFrom || dateTo) && (
+            <span className="text-xs text-muted">
+              Filtering performance snapshots ({perfHistory.length} loaded)
+            </span>
+          )}
+        </div>
+
         <section className="grid grid-cols-2 overflow-hidden rounded-lg border border-line bg-surface lg:grid-cols-4" aria-label="Summary">
           {stats.map((s, i) => (
             <div key={s.label} className={clsx('px-4 py-3.5', i % 2 === 1 && 'border-l border-line', i >= 2 && 'border-t border-line lg:border-t-0', i === 2 && 'lg:border-l')}>
