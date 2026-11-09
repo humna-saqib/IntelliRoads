@@ -276,68 +276,151 @@ export default function ReportsPage() {
   };
 
   const handleExportPDF = () => {
-    if (!perfData || perfData.per_minute.length === 0) return;
+    if (!perfData) return;
 
     const doc = new jsPDF();
+    let currentY = 16;
 
-    doc.setFontSize(18);
+    // Document header
+    doc.setFontSize(16);
     doc.setTextColor(24, 24, 27);
-    doc.text('IntelliRoads - Performance Report', 14, 20);
+    doc.text('IntelliRoads - Performance Report', 14, currentY);
+    currentY += 6;
 
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.setTextColor(113, 113, 122);
-    doc.text(`Generated: ${new Date().toLocaleString()} | Window: Last ${timeWindow} mins`, 14, 27);
+    const windowText = dateFrom || dateTo
+      ? `Date range: ${dateFrom || 'start'} to ${dateTo || 'now'}`
+      : `Window: Last ${timeWindow} mins`;
+    doc.text(`Generated: ${new Date().toLocaleString()} | ${windowText}`, 14, currentY);
+    currentY += 8;
 
-    doc.setFontSize(12);
+    // Executive Summary
+    doc.setFontSize(11);
     doc.setTextColor(24, 24, 27);
-    doc.text('System Overview Summary', 14, 38);
+    doc.text('Executive Summary', 14, currentY);
+    currentY += 5;
 
+    doc.setFontSize(9);
+    doc.setTextColor(71, 85, 105);
+    const splitSummary = doc.splitTextToSize(summaryParagraph, 182);
+    doc.text(splitSummary, 14, currentY);
+    currentY += splitSummary.length * 4.5 + 4;
+
+    // Summary statistics table
     const summaryData = [
-      ['Avg Waiting Time', perfData.simulation_summary ? `${perfData.simulation_summary.avg_waiting_time.toFixed(1)}s` : `${perfData.current?.avg_waiting_time.toFixed(1) || '0'}s`],
-      ['Avg Queue Length', perfData.simulation_summary ? perfData.simulation_summary.avg_queue_length.toFixed(1) : `${perfData.current?.avg_queue_length.toFixed(1) || '0'}`],
-      ['Avg Road Fullness', perfData.simulation_summary ? `${perfData.simulation_summary.avg_occupancy.toFixed(1)}%` : `${perfData.current?.avg_occupancy.toFixed(1) || '0'}%`],
-      ['Total Throughput', `${perfData.simulation_summary ? perfData.simulation_summary.total_throughput : perfData.current?.throughput_total || 0}`],
+      ['Average wait', summary ? `${summary.avg_waiting_time.toFixed(1)} s` : current ? `${current.avg_waiting_time.toFixed(1)} s` : '0.0 s', 'Mean wait per vehicle'],
+      ['Average queue', summary ? summary.avg_queue_length.toFixed(1) : current ? current.avg_queue_length.toFixed(1) : '0.0', 'Vehicles queued per lane'],
+      ['Average road fullness', summary ? `${summary.avg_occupancy.toFixed(1)}%` : current ? `${current.avg_occupancy.toFixed(1)}%` : '0.0%', 'Percentage of road space in use'],
+      ['Throughput', String(summary ? summary.total_throughput : current ? current.throughput_total : '0'), 'Vehicles cleared from grid'],
     ];
 
     autoTable(doc, {
-      startY: 42,
-      head: [['Metric', 'Value']],
+      startY: currentY,
+      head: [['Key Metric', 'Value', 'Description']],
       body: summaryData,
       theme: 'grid',
-      headStyles: { fillColor: [24, 24, 27], textColor: [255, 255, 255] },
+      headStyles: { fillColor: [24, 24, 27], textColor: [255, 255, 255], fontSize: 8 },
+      bodyStyles: { fontSize: 8 },
+      margin: { left: 14, right: 14 },
     });
 
-    const finalY = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable
-      ? (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10
-      : 90;
-    doc.setFontSize(12);
+    currentY = ((doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? currentY + 30) + 8;
+
+    // Live Junction Conditions
+    doc.setFontSize(11);
     doc.setTextColor(24, 24, 27);
-    doc.text('Per-Minute Performance Breakdown', 14, finalY);
+    doc.text('Live Junction Conditions', 14, currentY);
+    currentY += 4;
 
-    const headers = ['Period', 'Samples', 'Wait Time (s)', 'Queue Len', 'Road Fullness (%)', 'Throughput', 'Congestions', 'Emergencies', 'Decisions'];
-
-    const rows = perfData.per_minute.map((item) => [
-      item.period_label.replace('minute_', 'Min '),
-      item.sample_count,
-      item.avg_waiting_time.toFixed(1),
-      item.avg_queue_length.toFixed(1),
-      `${item.avg_occupancy.toFixed(1)}%`,
-      item.total_throughput,
-      item.total_congestion_events,
-      item.total_emergency_activations,
-      item.total_signal_decisions,
-    ]);
+    const junctionRows = (intersections.length > 0 ? intersections : DEFAULT_JUNCTION_LIST).map((j) => {
+      const readings = junctionDensityReadings[j.id] || [];
+      const avgDensity = readings.length > 0
+        ? readings.reduce((sum, r) => sum + r.density, 0) / readings.length
+        : j.density;
+      return [
+        getJunctionName(j.id),
+        `${j.vehicle_count} vehicles`,
+        `${getRoadFullnessInWords(avgDensity)} (${avgDensity.toFixed(1)} cars/km)`,
+        j.congestion_status === 'CONGESTED' ? 'Congested' : 'Clear',
+      ];
+    });
 
     autoTable(doc, {
-      startY: finalY + 4,
-      head: [headers],
-      body: rows,
+      startY: currentY,
+      head: [['Junction', 'Vehicle count', 'Road fullness', 'Traffic status']],
+      body: junctionRows,
       theme: 'striped',
       headStyles: { fillColor: [39, 39, 42], textColor: [255, 255, 255], fontSize: 8 },
       bodyStyles: { fontSize: 8 },
+      margin: { left: 14, right: 14 },
     });
 
-    doc.save(`intelliroads_performance_report_${timeWindow}m.pdf`);
+    currentY = ((doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? currentY + 30) + 8;
+
+    // Test simulation benchmark results
+    doc.setFontSize(11);
+    doc.setTextColor(24, 24, 27);
+    doc.text('Test Simulation Results (Smart AI vs Standard Timing)', 14, currentY);
+    currentY += 4;
+
+    const benchmarkRows = TEST_SIMULATION_BENCHMARK.map((b) => [
+      b.metric,
+      b.standardTiming,
+      b.smartAI,
+      b.difference,
+      b.advantage,
+    ]);
+
+    autoTable(doc, {
+      startY: currentY,
+      head: [['Metric', 'Standard Timing', 'Smart AI', 'Improvement', 'Advantage']],
+      body: benchmarkRows,
+      theme: 'striped',
+      headStyles: { fillColor: [39, 39, 42], textColor: [255, 255, 255], fontSize: 8 },
+      bodyStyles: { fontSize: 8 },
+      margin: { left: 14, right: 14 },
+    });
+
+    currentY = ((doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? currentY + 30) + 8;
+
+    // Per-minute breakdown (if present)
+    if (perfData.per_minute.length > 0) {
+      if (currentY > 220) {
+        doc.addPage();
+        currentY = 16;
+      }
+      doc.setFontSize(11);
+      doc.setTextColor(24, 24, 27);
+      doc.text('Per-Minute Performance Breakdown', 14, currentY);
+      currentY += 4;
+
+      const headers = ['Period', 'Samples', 'Wait Time (s)', 'Queue Len', 'Road Fullness (%)', 'Throughput', 'Congestions', 'Emergencies', 'Decisions'];
+
+      const rows = perfData.per_minute.map((item) => [
+        item.period_label.replace('minute_', 'Min '),
+        item.sample_count,
+        item.avg_waiting_time.toFixed(1),
+        item.avg_queue_length.toFixed(1),
+        `${item.avg_occupancy.toFixed(1)}%`,
+        item.total_throughput,
+        item.total_congestion_events,
+        item.total_emergency_activations,
+        item.total_signal_decisions,
+      ]);
+
+      autoTable(doc, {
+        startY: currentY,
+        head: [headers],
+        body: rows,
+        theme: 'striped',
+        headStyles: { fillColor: [39, 39, 42], textColor: [255, 255, 255], fontSize: 8 },
+        bodyStyles: { fontSize: 8 },
+        margin: { left: 14, right: 14 },
+      });
+    }
+
+    doc.save(`intelliroads_report_${new Date().toISOString().slice(0, 10)}.pdf`);
   };
 
   if (loading && !perfData) {
