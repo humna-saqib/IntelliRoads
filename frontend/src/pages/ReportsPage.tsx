@@ -387,52 +387,6 @@ export default function ReportsPage() {
           </Card>
         </div>
 
-        <Card title="Junction load baseline" subtitle="Reference wait-time limits per junction" padded={false}>
-          <div className="overflow-x-auto">
-            <table className="tbl">
-              <thead>
-                <tr>
-                  <th>Junction</th>
-                  <th>Name</th>
-                  <th>Wait-time limit</th>
-                  <th>Status</th>
-                  <th className="text-right">Efficiency</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td className="font-mono text-xs">junctionA</td>
-                  <td>Northwest Square</td>
-                  <td className="font-mono tabular-nums">90 s</td>
-                  <td><Badge label="Optimized" variant="success" size="sm" /></td>
-                  <td className="text-right font-mono tabular-nums">93%</td>
-                </tr>
-                <tr>
-                  <td className="font-mono text-xs">junctionB</td>
-                  <td>Northeast Plaza</td>
-                  <td className="font-mono tabular-nums">105 s</td>
-                  <td><Badge label="Normal load" variant="warning" size="sm" /></td>
-                  <td className="text-right font-mono tabular-nums">82%</td>
-                </tr>
-                <tr>
-                  <td className="font-mono text-xs">junctionC</td>
-                  <td>Southeast Gateway</td>
-                  <td className="font-mono tabular-nums">85 s</td>
-                  <td><Badge label="Optimized" variant="success" size="sm" /></td>
-                  <td className="text-right font-mono tabular-nums">91%</td>
-                </tr>
-                <tr>
-                  <td className="font-mono text-xs">junctionD</td>
-                  <td>Southwest Crossing</td>
-                  <td className="font-mono tabular-nums">95 s</td>
-                  <td><Badge label="Optimized" variant="success" size="sm" /></td>
-                  <td className="text-right font-mono tabular-nums">89%</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </Card>
-
         <section className="overflow-hidden rounded-lg border border-line bg-surface">
           <button
             id="raw-tick-history-toggle"
