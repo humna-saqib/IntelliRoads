@@ -5,12 +5,15 @@ import ErrorState from '../components/ui/ErrorState';
 import PageIntro from '../components/ui/PageIntro';
 import Card from '../components/ui/Card';
 import { Check } from 'lucide-react';
+import { getJunctionName } from '../constants/plainWords';
+import { useToast } from '../context/ToastContext';
 
-const JUNCTION_LABELS: Record<string, string> = {
-  junctionA: 'Junction A',
-  junctionB: 'Junction B',
-  junctionC: 'Junction C',
-  junctionD: 'Junction D',
+// Default thresholds matching backend/app/core/threshold_config.py (lines 32-34)
+// (DEFAULT_LOW_THRESHOLD = 20.0, DEFAULT_MEDIUM_THRESHOLD = 40.0, DEFAULT_CONGESTION_THRESHOLD = 40.0)
+const BACKEND_DEFAULTS: JunctionThresholds = {
+  low_threshold: 20,
+  medium_threshold: 40,
+  congestion_threshold: 40,
 };
 
 type FormState = Record<string, JunctionThresholds>;
@@ -18,6 +21,7 @@ type SaveState = Record<string, 'idle' | 'saving' | 'saved' | 'error'>;
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
+  const toast = useToast();
 
   useEffect(() => {
     document.title = 'Settings · IntelliRoads';
@@ -26,6 +30,7 @@ export default function SettingsPage() {
   const [form, setForm] = useState<FormState>({});
   const [saveState, setSaveState] = useState<SaveState>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [pendingJunctionId, setPendingJunctionId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -52,11 +57,29 @@ export default function SettingsPage() {
 
   const isDirty = (junctionId: string) => JSON.stringify(form[junctionId]) !== JSON.stringify(original[junctionId]);
 
-  const handleReset = (junctionId: string) => {
+  const handleUndo = (junctionId: string) => {
     setForm((prev) => ({ ...prev, [junctionId]: original[junctionId] }));
     setErrors((prev) => ({ ...prev, [junctionId]: '' }));
     setSaveState((prev) => ({ ...prev, [junctionId]: 'idle' }));
   };
+
+  const handleResetToDefaults = (junctionId: string) => {
+    setForm((prev) => ({ ...prev, [junctionId]: { ...BACKEND_DEFAULTS } }));
+    setErrors((prev) => ({ ...prev, [junctionId]: '' }));
+    setSaveState((prev) => ({ ...prev, [junctionId]: 'idle' }));
+  };
+
+  const handleResetAllToDefaults = () => {
+    setForm((prev) => Object.fromEntries(Object.keys(prev).map((k) => [k, { ...BACKEND_DEFAULTS }])));
+    setErrors({});
+  };
+
+  const handleUndoAll = () => {
+    setForm({ ...original });
+    setErrors({});
+  };
+
+  const hasAnyChanges = Object.keys(form).some((id) => isDirty(id));
 
   const handleSave = async (junctionId: string) => {
     const values = form[junctionId];
@@ -72,10 +95,12 @@ export default function SettingsPage() {
       setForm((prev) => ({ ...prev, [junctionId]: saved }));
       setSaveState((prev) => ({ ...prev, [junctionId]: 'saved' }));
       setTimeout(() => setSaveState((prev) => ({ ...prev, [junctionId]: 'idle' })), 2000);
+      toast.success('Settings saved.', 'Changes applied');
     } catch (err) {
       console.error(`Failed to save thresholds for ${junctionId}:`, err);
       setErrors((prev) => ({ ...prev, [junctionId]: 'Could not save. Please try again.' }));
       setSaveState((prev) => ({ ...prev, [junctionId]: 'error' }));
+      toast.error('Could not save. Please try again.', 'Save failed');
     }
   };
 
@@ -97,7 +122,19 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <PageIntro description="Density and congestion thresholds for each junction, in vehicles per kilometre. They decide how lane density is classified and when an alert is raised." />
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <PageIntro description="Set the car-density levels (cars per km) that decide when a road is 'light', 'moderate', or 'too busy'. Warnings appear when density passes the congestion limit." />
+        <div className="flex items-center gap-2 shrink-0">
+          {hasAnyChanges && (
+            <button type="button" onClick={handleUndoAll} className="btn btn-ghost" title="Revert all unsaved changes to last saved values">
+              Undo changes
+            </button>
+          )}
+          <button type="button" onClick={handleResetAllToDefaults} className="btn btn-ghost">
+            Reset to defaults
+          </button>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {Object.keys(form)
@@ -111,48 +148,81 @@ export default function SettingsPage() {
             return (
               <Card
                 key={junctionId}
-                title={JUNCTION_LABELS[junctionId] ?? junctionId}
+                title={getJunctionName(junctionId)}
                 action={dirty ? <span className="text-xs text-warn">Unsaved changes</span> : undefined}
               >
                 <div className="space-y-3.5">
                   <ThresholdField
                     id={`${junctionId}-low`}
                     label="Low density threshold"
-                    hint="Below this value density is low."
+                    hint="Roads are considered lightly trafficked below this many cars per km — no warning will appear."
                     value={values.low_threshold}
                     onChange={(v) => handleChange(junctionId, 'low_threshold', v)}
+                    min={0}
+                    max={150}
+                    previewFn={(v) => `Roads with up to ${v} cars per km will be treated as lightly trafficked.`}
                   />
                   <ThresholdField
                     id={`${junctionId}-medium`}
                     label="Medium density threshold"
-                    hint="Below this value density is medium; at or above it is high."
+                    hint="Above this limit the road is classed as moderately busy. The signal gets more time for heavy approaches."
                     value={values.medium_threshold}
                     onChange={(v) => handleChange(junctionId, 'medium_threshold', v)}
+                    min={0}
+                    max={150}
+                    previewFn={(v) => `Roads crossing ${v} cars per km will move into the 'moderate' category.`}
                   />
                   <ThresholdField
                     id={`${junctionId}-congestion`}
                     label="Congestion threshold"
-                    hint="Density above this value raises a congestion alert."
+                    hint="A warning appears when the road carries more than this many cars per km."
                     value={values.congestion_threshold}
                     onChange={(v) => handleChange(junctionId, 'congestion_threshold', v)}
+                    min={0}
+                    max={150}
+                    previewFn={(v) => `A warning will appear when more than ${v} cars per km are on the road.`}
                   />
                 </div>
 
                 {error && <p className="mt-3 text-xs text-bad">{error}</p>}
 
-                <div className="mt-4 flex items-center gap-2">
-                  <button type="button" disabled={!dirty || state === 'saving'} onClick={() => handleSave(junctionId)} className="btn btn-primary">
+                <div className="mt-4 flex items-center gap-2 flex-wrap">
+                  <button type="button" disabled={!dirty || state === 'saving'} onClick={() => setPendingJunctionId(junctionId)} className="btn btn-primary">
                     {state === 'saved' && <Check size={14} />}
                     {state === 'saving' ? 'Saving…' : state === 'saved' ? 'Saved' : 'Save changes'}
                   </button>
-                  <button type="button" disabled={!dirty} onClick={() => handleReset(junctionId)} className="btn btn-ghost">
-                    Reset
+                  <button type="button" disabled={!dirty} onClick={() => handleUndo(junctionId)} className="btn btn-ghost" title="Revert to last saved values">
+                    Undo changes
+                  </button>
+                  <button type="button" onClick={() => handleResetToDefaults(junctionId)} className="btn btn-ghost text-xs text-muted" title="Restore system defaults (20 / 40 / 40)">
+                    Reset to defaults
                   </button>
                 </div>
               </Card>
             );
           })}
       </div>
+
+      {pendingJunctionId && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+          <div className="w-full max-w-sm rounded-xl border border-line bg-surface p-6 shadow-xl">
+            <h2 id="confirm-title" className="text-sm font-semibold text-ink">Save changes?</h2>
+            <p className="mt-1.5 text-xs text-muted">
+              Saving new thresholds for <strong>{getJunctionName(pendingJunctionId)}</strong> will immediately change when warnings appear and how signals are timed.
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button type="button" onClick={() => setPendingJunctionId(null)} className="btn btn-ghost">Cancel</button>
+              <button
+                type="button"
+                onClick={() => { const id = pendingJunctionId; setPendingJunctionId(null); handleSave(id); }}
+                className="btn btn-primary"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -163,18 +233,42 @@ function ThresholdField({
   hint,
   value,
   onChange,
+  min = 0,
+  max = 200,
+  previewFn,
 }: {
   id: string;
   label: string;
   hint: string;
   value: number;
   onChange: (value: string) => void;
+  min?: number;
+  max?: number;
+  previewFn?: (v: number) => string;
 }) {
   return (
     <div>
-      <label htmlFor={id} className="field-label">{label}</label>
-      <input id={id} type="number" step="0.1" min="0" value={value} onChange={(e) => onChange(e.target.value)} className="input font-mono tabular-nums" />
+      <div className="flex items-center justify-between">
+        <label htmlFor={id} className="field-label">{label}</label>
+        <span className="font-mono text-sm tabular-nums font-semibold text-ink">{value} cars/km</span>
+      </div>
+      <input
+        id={id}
+        type="range"
+        min={min}
+        max={max}
+        step={1}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="mt-1.5 w-full accent-brand"
+        aria-label={label}
+      />
       <p className="mt-1 text-xs text-faint">{hint}</p>
+      {previewFn && (
+        <p className="mt-1.5 rounded bg-subtle px-2.5 py-1.5 text-xs text-muted italic">
+          {previewFn(value)}
+        </p>
+      )}
     </div>
   );
 }

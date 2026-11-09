@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { loginApi } from '../services/api';
 import Logo from '../components/ui/Logo';
 import ThemeToggle from '../components/ui/ThemeToggle';
+import { Eye, EyeOff } from 'lucide-react';
 
 interface LoginPageProps {
   onLoginSuccess: (token: string) => void;
@@ -12,18 +13,46 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    document.title = 'Sign in · IntelliRoads';
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
 
+    if (!username.trim() && !password.trim()) {
+      setError('Please enter your username and password.');
+      setIsSubmitting(false);
+      return;
+    }
+    if (!username.trim()) {
+      setError('Please enter your username.');
+      setIsSubmitting(false);
+      return;
+    }
+    if (!password.trim()) {
+      setError('Please enter your password.');
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const res = await loginApi(username, password);
       localStorage.setItem('intelliroads_token', res.access_token);
       onLoginSuccess(res.access_token);
     } catch (err: unknown) {
-      setError(err instanceof Error && err.message ? err.message : 'Sign-in failed. Check your username and password.');
+      const msg = err instanceof Error ? err.message : '';
+      if (!navigator.onLine || msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network')) {
+        setError("We can't reach the server right now. Check your connection and try again.");
+      } else if (msg.includes('401') || msg.toLowerCase().includes('unauthorized') || msg.toLowerCase().includes('incorrect')) {
+        setError('Wrong username or password. Please try again.');
+      } else {
+        setError('Sign-in failed. Please check your details and try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -56,7 +85,25 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
 
           <div>
             <label htmlFor="password" className="field-label">Password</label>
-            <input id="password" type="password" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} className="input h-9" />
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                required
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="input h-9 pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-faint hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+              </button>
+            </div>
           </div>
 
           <button type="submit" disabled={isSubmitting} className="btn btn-primary h-9 w-full">
@@ -64,7 +111,13 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
           </button>
         </form>
 
-        <p className="mt-5 text-center text-xs text-faint">Final year project demo</p>
+        <div className="mt-5 space-y-2 text-center">
+          <p className="text-xs text-muted">
+            Don&apos;t have access?{' '}
+            <span className="text-faint">Ask your project admin to set up your account.</span>
+          </p>
+          <p className="text-xs text-faint">Final year project demo</p>
+        </div>
       </div>
     </div>
   );

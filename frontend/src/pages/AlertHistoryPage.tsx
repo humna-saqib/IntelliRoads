@@ -5,9 +5,11 @@ import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import ErrorState from '../components/ui/ErrorState';
+import EmptyState from '../components/ui/EmptyState';
 import PageIntro from '../components/ui/PageIntro';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, Download } from 'lucide-react';
 import type { CongestionEvent } from '../types/traffic';
+import { getJunctionName } from '../constants/plainWords';
 
 export default function AlertHistoryPage() {
   const { isBackendOffline } = useTraffic();
@@ -17,6 +19,9 @@ export default function AlertHistoryPage() {
   const [selectedIntersection, setSelectedIntersection] = useState<string>('ALL');
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
   const [timeRange, setTimeRange] = useState<string>('ALL');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [dateFrom, setDateFrom] = useState<string>('');
+  const [dateTo, setDateTo] = useState<string>('');
 
   const loadHistory = async () => {
     setLoading(true);
@@ -47,13 +52,27 @@ export default function AlertHistoryPage() {
     return date.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
   };
 
-  const getJunctionName = (id: string) => {
-    if (!id) return 'Unknown junction';
-    if (id.includes('A')) return 'Junction A · Northwest Square';
-    if (id.includes('B')) return 'Junction B · Northeast Plaza';
-    if (id.includes('C')) return 'Junction C · Southeast Gateway';
-    if (id.includes('D')) return 'Junction D · Southwest Crossing';
-    return id;
+  const getWhatHappened = (event: CongestionEvent): string => {
+    if (event.density_value > event.threshold) {
+      return 'Too many cars — road density exceeded the warning limit';
+    }
+    return 'Road became congested';
+  };
+
+  const toSec = (v: unknown) => {
+    if (!v) return null;
+    const n = typeof v === 'number' ? v : new Date(String(v)).getTime() / 1000;
+    return isNaN(n) ? null : n;
+  };
+
+  const formatDuration = (start: unknown, end?: unknown): string => {
+    const s = toSec(start);
+    const e = toSec(end);
+    if (!s) return '';
+    const dur = (e ?? Date.now() / 1000) - s;
+    if (dur < 60) return `${Math.round(dur)}s`;
+    const mins = Math.round(dur / 60);
+    return mins === 1 ? 'lasted 1 minute' : `lasted ${mins} minutes`;
   };
 
   const isActiveEvent = (event: CongestionEvent) =>
@@ -61,28 +80,74 @@ export default function AlertHistoryPage() {
 
   const filteredHistory = useMemo(() => {
     const nowSec = Date.now() / 1000;
-    return history.filter((event) => {
-      if (selectedIntersection !== 'ALL' && !event.intersection_id.toLowerCase().includes(selectedIntersection.toLowerCase())) return false;
+    return history
+      .filter((event) => {
+        if (!searchQuery.trim()) return true;
+        const q = searchQuery.toLowerCase();
+        const name = getJunctionName(event.intersection_id).toLowerCase();
+        const whatHappened = getWhatHappened(event).toLowerCase();
+        return name.includes(q) || whatHappened.includes(q);
+      })
+      .filter((event) => {
+        if (selectedIntersection !== 'ALL' && !event.intersection_id.toLowerCase().includes(selectedIntersection.toLowerCase())) return false;
 
-      if (selectedStatus !== 'ALL') {
-        const active = isActiveEvent(event);
-        if (selectedStatus === 'ACTIVE' && !active) return false;
-        if (selectedStatus === 'RESOLVED' && active) return false;
-      }
+        if (selectedStatus !== 'ALL') {
+          const active = isActiveEvent(event);
+          if (selectedStatus === 'ACTIVE' && !active) return false;
+          if (selectedStatus === 'RESOLVED' && active) return false;
+        }
 
-      if (timeRange !== 'ALL') {
-        const eventTs = typeof event.timestamp === 'number' ? event.timestamp : new Date(event.timestamp).getTime() / 1000;
-        const limit = timeRange === '15M' ? 15 * 60 : timeRange === '1H' ? 60 * 60 : 24 * 60 * 60;
-        if (nowSec - eventTs > limit) return false;
-      }
-      return true;
-    });
-  }, [history, selectedIntersection, selectedStatus, timeRange]);
+        if (timeRange !== 'ALL') {
+          const eventTs = typeof event.timestamp === 'number' ? event.timestamp : new Date(event.timestamp).getTime() / 1000;
+          const limit = timeRange === '15M' ? 15 * 60 : timeRange === '1H' ? 60 * 60 : 24 * 60 * 60;
+          if (nowSec - eventTs > limit) return false;
+        }
+
+        if (dateFrom) {
+          const fromTs = new Date(dateFrom).getTime() / 1000;
+          const eventTs = typeof event.timestamp === 'number' ? event.timestamp : new Date(String(event.timestamp)).getTime() / 1000;
+          if (eventTs < fromTs) return false;
+        }
+
+        if (dateTo) {
+          const toTs = (new Date(dateTo).getTime() / 1000) + 86400;
+          const eventTs = typeof event.timestamp === 'number' ? event.timestamp : new Date(String(event.timestamp)).getTime() / 1000;
+          if (eventTs > toTs) return false;
+        }
+
+        return true;
+      });
+  }, [history, selectedIntersection, selectedStatus, timeRange, searchQuery, dateFrom, dateTo]);
 
   const handleResetFilters = () => {
     setSelectedIntersection('ALL');
     setSelectedStatus('ALL');
     setTimeRange('ALL');
+    setSearchQuery('');
+    setDateFrom('');
+    setDateTo('');
+  };
+
+  const exportCsv = () => {
+    const header = ['Junction', 'What happened', 'Density (cars/km)', 'Warning limit', 'Status', 'Detected', 'Resolved'];
+    const rows = filteredHistory.map((e) => [
+      getJunctionName(e.intersection_id),
+      getWhatHappened(e),
+      e.density_value.toFixed(1),
+      String(e.threshold),
+      isActiveEvent(e) ? 'Ongoing' : 'Resolved',
+      formatDateTime(e.timestamp),
+      e.resolved_at ? formatDateTime(e.resolved_at) : 'Still active',
+    ]);
+    const csv = [header, ...rows].map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const dateStr = new Date().toISOString().slice(0, 10);
+    a.download = `intelliroads-warnings-${dateStr}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -90,44 +155,71 @@ export default function AlertHistoryPage() {
       <PageIntro
         description="A record of congestion events — when a junction approach became overcrowded and when it cleared."
         actions={
-          <button onClick={loadHistory} className="btn">
-            <RotateCcw size={14} strokeWidth={1.75} />
-            Refresh
-          </button>
+          <div className="flex gap-2">
+            <button onClick={exportCsv} className="btn btn-ghost" disabled={filteredHistory.length === 0}>
+              <Download size={14} strokeWidth={1.75} />
+              Export CSV
+            </button>
+            <button onClick={loadHistory} className="btn">
+              <RotateCcw size={14} strokeWidth={1.75} />
+              Refresh
+            </button>
+          </div>
         }
       />
 
       <div className="space-y-4">
         <div className="grid grid-cols-1 gap-3 rounded-lg border border-line bg-surface p-4 sm:grid-cols-4">
-          <div>
-            <label htmlFor="f-junction" className="field-label">Junction</label>
-            <select id="f-junction" value={selectedIntersection} onChange={(e) => setSelectedIntersection(e.target.value)} className="input">
-              <option value="ALL">All junctions</option>
-              <option value="junctionA">Junction A (Northwest)</option>
-              <option value="junctionB">Junction B (Northeast)</option>
-              <option value="junctionC">Junction C (Southeast)</option>
-              <option value="junctionD">Junction D (Southwest)</option>
-            </select>
+          <div className="sm:col-span-4">
+            <label htmlFor="f-search" className="field-label">Search</label>
+            <input
+              id="f-search"
+              type="search"
+              placeholder="Junction name or what happened…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="input"
+            />
           </div>
-          <div>
-            <label htmlFor="f-status" className="field-label">Status</label>
-            <select id="f-status" value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)} className="input">
-              <option value="ALL">Active and resolved</option>
-              <option value="ACTIVE">Active only</option>
-              <option value="RESOLVED">Resolved only</option>
-            </select>
-          </div>
-          <div>
-            <label htmlFor="f-time" className="field-label">Time range</label>
-            <select id="f-time" value={timeRange} onChange={(e) => setTimeRange(e.target.value)} className="input">
-              <option value="ALL">All time</option>
-              <option value="15M">Last 15 minutes</option>
-              <option value="1H">Last hour</option>
-              <option value="24H">Last 24 hours</option>
-            </select>
-          </div>
-          <div className="flex items-end">
-            <button onClick={handleResetFilters} className="btn btn-ghost">Reset filters</button>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-4 sm:col-span-4">
+            <div>
+              <label htmlFor="f-junction" className="field-label">Junction</label>
+              <select id="f-junction" value={selectedIntersection} onChange={(e) => setSelectedIntersection(e.target.value)} className="input">
+                <option value="ALL">All junctions</option>
+                <option value="junctionA">Junction A (Northwest)</option>
+                <option value="junctionB">Junction B (Northeast)</option>
+                <option value="junctionC">Junction C (Southeast)</option>
+                <option value="junctionD">Junction D (Southwest)</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="f-status" className="field-label">Status</label>
+              <select id="f-status" value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)} className="input">
+                <option value="ALL">Active and resolved</option>
+                <option value="ACTIVE">Active only</option>
+                <option value="RESOLVED">Resolved only</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="f-time" className="field-label">Time range</label>
+              <select id="f-time" value={timeRange} onChange={(e) => setTimeRange(e.target.value)} className="input">
+                <option value="ALL">All time</option>
+                <option value="15M">Last 15 minutes</option>
+                <option value="1H">Last hour</option>
+                <option value="24H">Last 24 hours</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="f-from" className="field-label">From date</label>
+              <input id="f-from" type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="input" />
+            </div>
+            <div>
+              <label htmlFor="f-to" className="field-label">To date</label>
+              <input id="f-to" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="input" />
+            </div>
+            <div className="flex items-end">
+              <button onClick={handleResetFilters} className="btn btn-ghost">Reset filters</button>
+            </div>
           </div>
         </div>
 
@@ -143,16 +235,17 @@ export default function AlertHistoryPage() {
               />
             </div>
           ) : filteredHistory.length === 0 ? (
-            <div className="py-16 text-center">
-              <p className="text-[13px] font-medium">No past warnings match these filters</p>
-              <p className="mt-1 text-xs text-faint">Try resetting the filters or widening the time range.</p>
-            </div>
+            <EmptyState
+              title="No warnings match your search"
+              description="Try different search terms, adjust the filters, or widen the time range."
+              action={<button onClick={handleResetFilters} className="btn btn-ghost">Clear filters</button>}
+            />
           ) : (
             <div className="overflow-x-auto">
               <table className="tbl">
                 <thead>
                   <tr>
-                    <th>Event</th>
+                    <th>What happened</th>
                     <th>Junction</th>
                     <th>Approach</th>
                     <th>Density</th>
@@ -166,14 +259,23 @@ export default function AlertHistoryPage() {
                     const active = isActiveEvent(event);
                     return (
                       <tr key={event.id || `${event.intersection_id}-${idx}`}>
-                        <td className="font-mono text-xs text-muted" title={event.id}>{event.id ? event.id.substring(0, 14) : `evt-${idx}`}</td>
+                        <td>
+                          <p className="text-[13px] font-medium">{getWhatHappened(event)}</p>
+                          <p className="text-xs text-muted">
+                            {formatDuration(event.timestamp, event.resolved_at || undefined)}
+                            {!event.resolved_at && <span className="ml-1 text-bad">· still ongoing</span>}
+                          </p>
+                        </td>
                         <td>
                           <span className="text-[13px]">{getJunctionName(event.intersection_id)}</span>
                         </td>
                         <td className="text-muted">{event.direction ? `${event.direction}bound` : '–'}</td>
-                        <td className="whitespace-nowrap">
-                          <span className={active ? 'font-mono tabular-nums text-bad' : 'font-mono tabular-nums'}>{event.density_value.toFixed(1)}</span>
-                          <span className="ml-1 text-xs text-faint">cars/km · limit {event.threshold}</span>
+                        <td className="whitespace-nowrap text-xs">
+                          <span className={active ? 'font-mono tabular-nums text-bad' : 'font-mono tabular-nums'}>
+                            {event.density_value.toFixed(1)} cars/km
+                          </span>
+                          <br />
+                          <span className="text-faint">limit: {event.threshold} cars/km</span>
                         </td>
                         <td><Badge label={active ? 'Congested' : 'Resolved'} variant={active ? 'danger' : 'success'} size="sm" /></td>
                         <td className="whitespace-nowrap font-mono text-xs text-muted">{formatDateTime(event.timestamp)}</td>
