@@ -19,6 +19,8 @@ export default function AlertHistoryPage() {
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
   const [timeRange, setTimeRange] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [dateFrom, setDateFrom] = useState<string>('');
+  const [dateTo, setDateTo] = useState<string>('');
 
   const loadHistory = async () => {
     setLoading(true);
@@ -100,15 +102,29 @@ export default function AlertHistoryPage() {
           if (nowSec - eventTs > limit) return false;
         }
 
+        if (dateFrom) {
+          const fromTs = new Date(dateFrom).getTime() / 1000;
+          const eventTs = typeof event.timestamp === 'number' ? event.timestamp : new Date(String(event.timestamp)).getTime() / 1000;
+          if (eventTs < fromTs) return false;
+        }
+
+        if (dateTo) {
+          const toTs = (new Date(dateTo).getTime() / 1000) + 86400;
+          const eventTs = typeof event.timestamp === 'number' ? event.timestamp : new Date(String(event.timestamp)).getTime() / 1000;
+          if (eventTs > toTs) return false;
+        }
+
         return true;
       });
-  }, [history, selectedIntersection, selectedStatus, timeRange, searchQuery]);
+  }, [history, selectedIntersection, selectedStatus, timeRange, searchQuery, dateFrom, dateTo]);
 
   const handleResetFilters = () => {
     setSelectedIntersection('ALL');
     setSelectedStatus('ALL');
     setTimeRange('ALL');
     setSearchQuery('');
+    setDateFrom('');
+    setDateTo('');
   };
 
   const exportCsv = () => {
@@ -191,6 +207,14 @@ export default function AlertHistoryPage() {
                 <option value="1H">Last hour</option>
                 <option value="24H">Last 24 hours</option>
               </select>
+            </div>
+            <div>
+              <label htmlFor="f-from" className="field-label">From date</label>
+              <input id="f-from" type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="input" />
+            </div>
+            <div>
+              <label htmlFor="f-to" className="field-label">To date</label>
+              <input id="f-to" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="input" />
             </div>
             <div className="flex items-end">
               <button onClick={handleResetFilters} className="btn btn-ghost">Reset filters</button>
