@@ -201,41 +201,75 @@ export default function ReportsPage() {
   }, [historyOpen, historyTab, densityLaneFilter, densityLevelFilter, densityLimit, perfLimit]);
 
   const handleExportCSV = () => {
-    if (!perfData || perfData.per_minute.length === 0) return;
+    if (!perfData) return;
 
-    const headers = [
-      'Period',
-      'Sample Count',
-      'Avg Waiting Time (s)',
-      'Avg Queue Length',
-      'Avg Road Fullness (%)',
-      'Total Throughput',
-      'Total Congestion Events',
-      'Total Emergency Activations',
-      'Total Signal Decisions',
-      'Avg Controller Response Time (ms)',
-      'Avg Tick Processing Time (ms)',
+    const lines: string[] = [];
+
+    // --- Executive Summary ---
+    lines.push('--- Executive Summary ---');
+    lines.push(`"${summaryParagraph}"`);
+    lines.push('');
+
+    // --- Key Metrics ---
+    lines.push('--- Key Metrics ---');
+    lines.push('Metric,Value,Note');
+    const csvStats = [
+      { label: 'Average wait', value: summary ? `${summary.avg_waiting_time.toFixed(1)} s` : current ? `${current.avg_waiting_time.toFixed(1)} s` : '0.0 s', note: 'mean wait per vehicle' },
+      { label: 'Average queue', value: summary ? summary.avg_queue_length.toFixed(1) : current ? current.avg_queue_length.toFixed(1) : '0.0', note: 'vehicles queued per lane' },
+      { label: 'Average road fullness', value: summary ? `${summary.avg_occupancy.toFixed(1)}%` : current ? `${current.avg_occupancy.toFixed(1)}%` : '0.0%', note: 'how full the roads are' },
+      { label: 'Throughput', value: String(summary ? summary.total_throughput : current ? current.throughput_total : '0'), note: 'vehicles cleared from the grid' },
     ];
+    csvStats.forEach((s) => lines.push(`"${s.label}","${s.value}","${s.note}"`));
+    lines.push('');
 
-    const rows = perfData.per_minute.map((item) => [
-      item.period_label,
-      item.sample_count,
-      item.avg_waiting_time,
-      item.avg_queue_length,
-      item.avg_occupancy,
-      item.total_throughput,
-      item.total_congestion_events,
-      item.total_emergency_activations,
-      item.total_signal_decisions,
-      item.avg_controller_response_time_ms,
-      item.avg_tick_processing_time_ms,
-    ]);
+    // --- Live Junction Conditions ---
+    lines.push('--- Live Junction Conditions ---');
+    lines.push('Junction,Vehicle Count,Road Fullness,Traffic Status');
+    (intersections.length > 0 ? intersections : DEFAULT_JUNCTION_LIST).forEach((j) => {
+      const readings = junctionDensityReadings[j.id] || [];
+      const avgDensity = readings.length > 0
+        ? readings.reduce((sum, r) => sum + r.density, 0) / readings.length
+        : j.density;
+      const fullness = getRoadFullnessInWords(avgDensity);
+      const status = j.congestion_status === 'CONGESTED' ? 'Congested' : 'Clear';
+      lines.push(`"${getJunctionName(j.id)}",${j.vehicle_count},"${fullness} (${avgDensity.toFixed(1)} cars/km)","${status}"`);
+    });
+    lines.push('');
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+    // --- Test Simulation Results ---
+    lines.push('--- Test Simulation Results: Smart AI vs Standard Timing ---');
+    lines.push('Metric,Standard Timing,Smart AI,Improvement,Advantage');
+    TEST_SIMULATION_BENCHMARK.forEach((b) => {
+      lines.push(`"${b.metric}","${b.standardTiming}","${b.smartAI}","${b.difference}","${b.advantage}"`);
+    });
+    lines.push('');
+
+    // --- Per-Minute Breakdown ---
+    if (perfData.per_minute.length > 0) {
+      lines.push('--- Per-Minute Performance Breakdown ---');
+      lines.push('Period,Sample Count,Avg Waiting Time (s),Avg Queue Length,Avg Road Fullness (%),Total Throughput,Congestion Events,Emergency Activations,Signal Decisions,Controller Response Time (ms),Tick Processing Time (ms)');
+      perfData.per_minute.forEach((item) => {
+        lines.push([
+          item.period_label,
+          item.sample_count,
+          item.avg_waiting_time,
+          item.avg_queue_length,
+          item.avg_occupancy,
+          item.total_throughput,
+          item.total_congestion_events,
+          item.total_emergency_activations,
+          item.total_signal_decisions,
+          item.avg_controller_response_time_ms,
+          item.avg_tick_processing_time_ms,
+        ].join(','));
+      });
+    }
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + lines.join('\n');
 
     const link = document.createElement('a');
     link.setAttribute('href', encodeURI(csvContent));
-    link.setAttribute('download', `intelliroads_performance_report_${timeWindow}m.csv`);
+    link.setAttribute('download', `intelliroads_report_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
