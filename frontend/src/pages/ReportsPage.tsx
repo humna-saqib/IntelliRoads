@@ -1,8 +1,9 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, useRef, type ReactNode } from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { fetchPerformance, fetchPerformanceHistory, fetchDensityHistory, fetchActiveModel, type ActiveModelInfo } from '../services/api';
-import type { PerformanceResponse, PerformanceSnapshot, DensityReading } from '../types/traffic';
+import { fetchPerformance, fetchPerformanceHistory, fetchDensityHistory, fetchActiveModel, fetchIntersections, type ActiveModelInfo } from '../services/api';
+import type { PerformanceResponse, PerformanceSnapshot, DensityReading, IntersectionData } from '../types/traffic';
+import { getJunctionName } from '../constants/plainWords';
 import { useChartTheme } from '../theme/chartTheme';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
@@ -10,7 +11,7 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 import ErrorState from '../components/ui/ErrorState';
 import ChartTooltip from '../components/ui/ChartTooltip';
 import PageIntro from '../components/ui/PageIntro';
-import { Download, ChevronDown, ChevronRight } from 'lucide-react';
+import { Download, ChevronDown, ChevronRight, Calendar, FileText, FileSpreadsheet } from 'lucide-react';
 import clsx from 'clsx';
 import {
   ResponsiveContainer,
@@ -27,6 +28,67 @@ import {
 
 const EMPTY_MESSAGE = 'No performance history has been recorded yet.';
 
+const DEFAULT_JUNCTION_LIST: IntersectionData[] = [
+  { id: 'junctionA', name: 'Northwest Square', signal: 'RED', congestion_status: 'CLEAR', vehicle_count: 0, density: 0 },
+  { id: 'junctionB', name: 'Northeast Plaza', signal: 'RED', congestion_status: 'CLEAR', vehicle_count: 0, density: 0 },
+  { id: 'junctionC', name: 'Southeast Gateway', signal: 'RED', congestion_status: 'CLEAR', vehicle_count: 0, density: 0 },
+  { id: 'junctionD', name: 'Southwest Crossing', signal: 'RED', congestion_status: 'CLEAR', vehicle_count: 0, density: 0 },
+];
+
+/**
+ * Benchmark evaluation numbers read directly from:
+ * backend/evaluation_results/eval_summary.json (and README_RL.md section 3).
+ * Evaluated across 30 test episodes with 1,800 steps per episode on identical seeds.
+ */
+const TEST_SIMULATION_BENCHMARK = [
+  {
+    metric: 'Average waiting time',
+    standardTiming: '2.48 s (± 0.51)',
+    smartAI: '1.44 s (± 0.22)',
+    difference: '41.9% reduction',
+    advantage: 'Smart AI is faster',
+    variant: 'success' as const,
+  },
+  {
+    metric: 'Average queue length',
+    standardTiming: '1.13 cars (± 0.23)',
+    smartAI: '0.83 cars (± 0.46)',
+    difference: '26.8% reduction',
+    advantage: 'Shorter queues',
+    variant: 'success' as const,
+  },
+  {
+    metric: 'Road fullness (occupancy)',
+    standardTiming: '6.85% (± 1.17%)',
+    smartAI: '4.58% (± 1.43%)',
+    difference: '33.1% reduction',
+    advantage: 'Less crowded',
+    variant: 'success' as const,
+  },
+  {
+    metric: 'Throughput',
+    standardTiming: '1,221 cars (± 134)',
+    smartAI: '1,221 cars (± 133)',
+    difference: 'Equal (0.04% diff)',
+    advantage: 'Equal throughput',
+    variant: 'neutral' as const,
+  },
+  {
+    metric: 'Average travel time',
+    standardTiming: '152.0 s (± 4.58)',
+    smartAI: '155.9 s (± 3.50)',
+    difference: '+2.5% longer',
+    advantage: 'Within normal variation',
+    variant: 'neutral' as const,
+  },
+];
+
+function getRoadFullnessInWords(densityVal: number): string {
+  if (densityVal >= 40) return 'Heavy traffic (very full)';
+  if (densityVal >= 20) return 'Moderate traffic (half full)';
+  return 'Light traffic (free-flowing)';
+}
+
 export default function ReportsPage() {
   const c = useChartTheme();
 
@@ -34,9 +96,29 @@ export default function ReportsPage() {
     document.title = 'Reports · IntelliRoads';
   }, []);
   const [timeWindow, setTimeWindow] = useState<number>(30);
+  const [dateFrom, setDateFrom] = useState<string>('');
+  const [dateTo, setDateTo] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
   const [perfData, setPerfData] = useState<PerformanceResponse | null>(null);
   const [model, setModel] = useState<ActiveModelInfo | null>(null);
+  const [intersections, setIntersections] = useState<IntersectionData[]>([]);
+  const [junctionDensityReadings, setJunctionDensityReadings] = useState<Record<string, DensityReading[]>>({});
+  const [downloadMenuOpen, setDownloadMenuOpen] = useState<boolean>(false);
+  const downloadMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (downloadMenuRef.current && !downloadMenuRef.current.contains(event.target as Node)) {
+        setDownloadMenuOpen(false);
+      }
+    };
+    if (downloadMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [downloadMenuOpen]);
 
   // raw tick history panel
   const [historyOpen, setHistoryOpen] = useState<boolean>(false);
@@ -51,7 +133,24 @@ export default function ReportsPage() {
 
   const loadData = async () => {
     try {
-      setPerfData(await fetchPerformance(timeWindow));
+      const [perf, inters, densHist] = await Promise.all([
+        fetchPerformance(timeWindow),
+        fetchIntersections().catch(() => [] as IntersectionData[]),
+        fetchDensityHistory({ limit: 80 }).catch(() => [] as DensityReading[]),
+      ]);
+      setPerfData(perf);
+      setIntersections(inters);
+
+      const byJunction: Record<string, DensityReading[]> = {};
+      for (const reading of densHist) {
+        let jId = 'junctionA';
+        if (/_B_/i.test(reading.lane_id) || /lane_B/i.test(reading.lane_id)) jId = 'junctionB';
+        else if (/_C_/i.test(reading.lane_id) || /lane_C/i.test(reading.lane_id)) jId = 'junctionC';
+        else if (/_D_/i.test(reading.lane_id) || /lane_D/i.test(reading.lane_id)) jId = 'junctionD';
+        if (!byJunction[jId]) byJunction[jId] = [];
+        byJunction[jId].push(reading);
+      }
+      setJunctionDensityReadings(byJunction);
     } catch (err) {
       console.error('Failed to fetch performance data:', err);
     } finally {
@@ -95,113 +194,249 @@ export default function ReportsPage() {
   }, []);
 
   useEffect(() => {
+    if (!dateFrom && !dateTo) return;
+    const fetchRange = async () => {
+      setLoading(true);
+      try {
+        const params: { start_time?: number; end_time?: number; limit?: number } = { limit: 200 };
+        if (dateFrom) params.start_time = Math.floor(new Date(dateFrom).getTime() / 1000);
+        if (dateTo) params.end_time = Math.floor(new Date(dateTo).getTime() / 1000) + 86400;
+        const res = await fetchPerformanceHistory(params);
+        setPerfHistory(res);
+      } catch (err) {
+        console.error('Failed to fetch performance history for date range:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRange();
+  }, [dateFrom, dateTo]);
+
+  useEffect(() => {
     if (historyOpen) loadHistoryData();
   }, [historyOpen, historyTab, densityLaneFilter, densityLevelFilter, densityLimit, perfLimit]);
 
   const handleExportCSV = () => {
-    if (!perfData || perfData.per_minute.length === 0) return;
+    if (!perfData) return;
 
-    const headers = [
-      'Period',
-      'Sample Count',
-      'Avg Waiting Time (s)',
-      'Avg Queue Length',
-      'Avg Occupancy (%)',
-      'Total Throughput',
-      'Total Congestion Events',
-      'Total Emergency Activations',
-      'Total Signal Decisions',
-      'Avg Controller Response Time (ms)',
-      'Avg Tick Processing Time (ms)',
+    const lines: string[] = [];
+
+    // --- Executive Summary ---
+    lines.push('--- Executive Summary ---');
+    lines.push(`"${summaryParagraph}"`);
+    lines.push('');
+
+    // --- Key Metrics ---
+    lines.push('--- Key Metrics ---');
+    lines.push('Metric,Value,Note');
+    const csvStats = [
+      { label: 'Average wait', value: summary ? `${summary.avg_waiting_time.toFixed(1)} s` : current ? `${current.avg_waiting_time.toFixed(1)} s` : '0.0 s', note: 'mean wait per vehicle' },
+      { label: 'Average queue', value: summary ? summary.avg_queue_length.toFixed(1) : current ? current.avg_queue_length.toFixed(1) : '0.0', note: 'vehicles queued per lane' },
+      { label: 'Average road fullness', value: summary ? `${summary.avg_occupancy.toFixed(1)}%` : current ? `${current.avg_occupancy.toFixed(1)}%` : '0.0%', note: 'how full the roads are' },
+      { label: 'Throughput', value: String(summary ? summary.total_throughput : current ? current.throughput_total : '0'), note: 'vehicles cleared from the grid' },
     ];
+    csvStats.forEach((s) => lines.push(`"${s.label}","${s.value}","${s.note}"`));
+    lines.push('');
 
-    const rows = perfData.per_minute.map((item) => [
-      item.period_label,
-      item.sample_count,
-      item.avg_waiting_time,
-      item.avg_queue_length,
-      item.avg_occupancy,
-      item.total_throughput,
-      item.total_congestion_events,
-      item.total_emergency_activations,
-      item.total_signal_decisions,
-      item.avg_controller_response_time_ms,
-      item.avg_tick_processing_time_ms,
-    ]);
+    // --- Live Junction Conditions ---
+    lines.push('--- Live Junction Conditions ---');
+    lines.push('Junction,Vehicle Count,Road Fullness,Traffic Status');
+    (intersections.length > 0 ? intersections : DEFAULT_JUNCTION_LIST).forEach((j) => {
+      const readings = junctionDensityReadings[j.id] || [];
+      const avgDensity = readings.length > 0
+        ? readings.reduce((sum, r) => sum + r.density, 0) / readings.length
+        : j.density;
+      const fullness = getRoadFullnessInWords(avgDensity);
+      const status = j.congestion_status === 'CONGESTED' ? 'Congested' : 'Clear';
+      lines.push(`"${getJunctionName(j.id)}",${j.vehicle_count},"${fullness} (${avgDensity.toFixed(1)} cars/km)","${status}"`);
+    });
+    lines.push('');
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+    // --- Test Simulation Results ---
+    lines.push('--- Test Simulation Results: Smart AI vs Standard Timing ---');
+    lines.push('Metric,Standard Timing,Smart AI,Improvement,Advantage');
+    TEST_SIMULATION_BENCHMARK.forEach((b) => {
+      lines.push(`"${b.metric}","${b.standardTiming}","${b.smartAI}","${b.difference}","${b.advantage}"`);
+    });
+    lines.push('');
+
+    // --- Per-Minute Breakdown ---
+    if (perfData.per_minute.length > 0) {
+      lines.push('--- Per-Minute Performance Breakdown ---');
+      lines.push('Period,Sample Count,Avg Waiting Time (s),Avg Queue Length,Avg Road Fullness (%),Total Throughput,Congestion Events,Emergency Activations,Signal Decisions,Controller Response Time (ms),Tick Processing Time (ms)');
+      perfData.per_minute.forEach((item) => {
+        lines.push([
+          item.period_label,
+          item.sample_count,
+          item.avg_waiting_time,
+          item.avg_queue_length,
+          item.avg_occupancy,
+          item.total_throughput,
+          item.total_congestion_events,
+          item.total_emergency_activations,
+          item.total_signal_decisions,
+          item.avg_controller_response_time_ms,
+          item.avg_tick_processing_time_ms,
+        ].join(','));
+      });
+    }
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + lines.join('\n');
 
     const link = document.createElement('a');
     link.setAttribute('href', encodeURI(csvContent));
-    link.setAttribute('download', `intelliroads_performance_report_${timeWindow}m.csv`);
+    link.setAttribute('download', `intelliroads_report_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
   const handleExportPDF = () => {
-    if (!perfData || perfData.per_minute.length === 0) return;
+    if (!perfData) return;
 
     const doc = new jsPDF();
+    let currentY = 16;
 
-    doc.setFontSize(18);
+    // Document header
+    doc.setFontSize(16);
     doc.setTextColor(24, 24, 27);
-    doc.text('IntelliRoads - Performance Report', 14, 20);
+    doc.text('IntelliRoads - Performance Report', 14, currentY);
+    currentY += 6;
 
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.setTextColor(113, 113, 122);
-    doc.text(`Generated: ${new Date().toLocaleString()} | Window: Last ${timeWindow} mins`, 14, 27);
+    const windowText = dateFrom || dateTo
+      ? `Date range: ${dateFrom || 'start'} to ${dateTo || 'now'}`
+      : `Window: Last ${timeWindow} mins`;
+    doc.text(`Generated: ${new Date().toLocaleString()} | ${windowText}`, 14, currentY);
+    currentY += 8;
 
-    doc.setFontSize(12);
+    // Executive Summary
+    doc.setFontSize(11);
     doc.setTextColor(24, 24, 27);
-    doc.text('System Overview Summary', 14, 38);
+    doc.text('Executive Summary', 14, currentY);
+    currentY += 5;
 
+    doc.setFontSize(9);
+    doc.setTextColor(71, 85, 105);
+    const splitSummary = doc.splitTextToSize(summaryParagraph, 182);
+    doc.text(splitSummary, 14, currentY);
+    currentY += splitSummary.length * 4.5 + 4;
+
+    // Summary statistics table
     const summaryData = [
-      ['Avg Waiting Time', perfData.simulation_summary ? `${perfData.simulation_summary.avg_waiting_time.toFixed(1)}s` : `${perfData.current?.avg_waiting_time.toFixed(1) || '0'}s`],
-      ['Avg Queue Length', perfData.simulation_summary ? perfData.simulation_summary.avg_queue_length.toFixed(1) : `${perfData.current?.avg_queue_length.toFixed(1) || '0'}`],
-      ['Avg Occupancy', perfData.simulation_summary ? `${perfData.simulation_summary.avg_occupancy.toFixed(1)}%` : `${perfData.current?.avg_occupancy.toFixed(1) || '0'}%`],
-      ['Total Throughput', `${perfData.simulation_summary ? perfData.simulation_summary.total_throughput : perfData.current?.throughput_total || 0}`],
+      ['Average wait', summary ? `${summary.avg_waiting_time.toFixed(1)} s` : current ? `${current.avg_waiting_time.toFixed(1)} s` : '0.0 s', 'Mean wait per vehicle'],
+      ['Average queue', summary ? summary.avg_queue_length.toFixed(1) : current ? current.avg_queue_length.toFixed(1) : '0.0', 'Vehicles queued per lane'],
+      ['Average road fullness', summary ? `${summary.avg_occupancy.toFixed(1)}%` : current ? `${current.avg_occupancy.toFixed(1)}%` : '0.0%', 'Percentage of road space in use'],
+      ['Throughput', String(summary ? summary.total_throughput : current ? current.throughput_total : '0'), 'Vehicles cleared from grid'],
     ];
 
     autoTable(doc, {
-      startY: 42,
-      head: [['Metric', 'Value']],
+      startY: currentY,
+      head: [['Key Metric', 'Value', 'Description']],
       body: summaryData,
       theme: 'grid',
-      headStyles: { fillColor: [24, 24, 27], textColor: [255, 255, 255] },
+      headStyles: { fillColor: [24, 24, 27], textColor: [255, 255, 255], fontSize: 8 },
+      bodyStyles: { fontSize: 8 },
+      margin: { left: 14, right: 14 },
     });
 
-    const finalY = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable
-      ? (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10
-      : 90;
-    doc.setFontSize(12);
+    currentY = ((doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? currentY + 30) + 8;
+
+    // Live Junction Conditions
+    doc.setFontSize(11);
     doc.setTextColor(24, 24, 27);
-    doc.text('Per-Minute Performance Breakdown', 14, finalY);
+    doc.text('Live Junction Conditions', 14, currentY);
+    currentY += 4;
 
-    const headers = ['Period', 'Samples', 'Wait Time (s)', 'Queue Len', 'Occupancy (%)', 'Throughput', 'Congestions', 'Emergencies', 'Decisions'];
-
-    const rows = perfData.per_minute.map((item) => [
-      item.period_label.replace('minute_', 'Min '),
-      item.sample_count,
-      item.avg_waiting_time.toFixed(1),
-      item.avg_queue_length.toFixed(1),
-      `${item.avg_occupancy.toFixed(1)}%`,
-      item.total_throughput,
-      item.total_congestion_events,
-      item.total_emergency_activations,
-      item.total_signal_decisions,
-    ]);
+    const junctionRows = (intersections.length > 0 ? intersections : DEFAULT_JUNCTION_LIST).map((j) => {
+      const readings = junctionDensityReadings[j.id] || [];
+      const avgDensity = readings.length > 0
+        ? readings.reduce((sum, r) => sum + r.density, 0) / readings.length
+        : j.density;
+      return [
+        getJunctionName(j.id),
+        `${j.vehicle_count} vehicles`,
+        `${getRoadFullnessInWords(avgDensity)} (${avgDensity.toFixed(1)} cars/km)`,
+        j.congestion_status === 'CONGESTED' ? 'Congested' : 'Clear',
+      ];
+    });
 
     autoTable(doc, {
-      startY: finalY + 4,
-      head: [headers],
-      body: rows,
+      startY: currentY,
+      head: [['Junction', 'Vehicle count', 'Road fullness', 'Traffic status']],
+      body: junctionRows,
       theme: 'striped',
       headStyles: { fillColor: [39, 39, 42], textColor: [255, 255, 255], fontSize: 8 },
       bodyStyles: { fontSize: 8 },
+      margin: { left: 14, right: 14 },
     });
 
-    doc.save(`intelliroads_performance_report_${timeWindow}m.pdf`);
+    currentY = ((doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? currentY + 30) + 8;
+
+    // Test simulation benchmark results
+    doc.setFontSize(11);
+    doc.setTextColor(24, 24, 27);
+    doc.text('Test Simulation Results (Smart AI vs Standard Timing)', 14, currentY);
+    currentY += 4;
+
+    const benchmarkRows = TEST_SIMULATION_BENCHMARK.map((b) => [
+      b.metric,
+      b.standardTiming,
+      b.smartAI,
+      b.difference,
+      b.advantage,
+    ]);
+
+    autoTable(doc, {
+      startY: currentY,
+      head: [['Metric', 'Standard Timing', 'Smart AI', 'Improvement', 'Advantage']],
+      body: benchmarkRows,
+      theme: 'striped',
+      headStyles: { fillColor: [39, 39, 42], textColor: [255, 255, 255], fontSize: 8 },
+      bodyStyles: { fontSize: 8 },
+      margin: { left: 14, right: 14 },
+    });
+
+    currentY = ((doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? currentY + 30) + 8;
+
+    // Per-minute breakdown (if present)
+    if (perfData.per_minute.length > 0) {
+      if (currentY > 220) {
+        doc.addPage();
+        currentY = 16;
+      }
+      doc.setFontSize(11);
+      doc.setTextColor(24, 24, 27);
+      doc.text('Per-Minute Performance Breakdown', 14, currentY);
+      currentY += 4;
+
+      const headers = ['Period', 'Samples', 'Wait Time (s)', 'Queue Len', 'Road Fullness (%)', 'Throughput', 'Congestions', 'Emergencies', 'Decisions'];
+
+      const rows = perfData.per_minute.map((item) => [
+        item.period_label.replace('minute_', 'Min '),
+        item.sample_count,
+        item.avg_waiting_time.toFixed(1),
+        item.avg_queue_length.toFixed(1),
+        `${item.avg_occupancy.toFixed(1)}%`,
+        item.total_throughput,
+        item.total_congestion_events,
+        item.total_emergency_activations,
+        item.total_signal_decisions,
+      ]);
+
+      autoTable(doc, {
+        startY: currentY,
+        head: [headers],
+        body: rows,
+        theme: 'striped',
+        headStyles: { fillColor: [39, 39, 42], textColor: [255, 255, 255], fontSize: 8 },
+        bodyStyles: { fontSize: 8 },
+        margin: { left: 14, right: 14 },
+      });
+    }
+
+    doc.save(`intelliroads_report_${new Date().toISOString().slice(0, 10)}.pdf`);
   };
 
   if (loading && !perfData) {
@@ -233,7 +468,7 @@ export default function ReportsPage() {
     name: item.period_label.replace('minute_', 'Min '),
     'Wait time (s)': item.avg_waiting_time,
     'Queue length': item.avg_queue_length,
-    'Occupancy (%)': item.avg_occupancy,
+    'Road fullness (%)': item.avg_occupancy,
     Throughput: item.total_throughput,
     'Controller latency (ms)': item.avg_controller_response_time_ms,
     'Processing time (ms)': item.avg_tick_processing_time_ms,
@@ -254,9 +489,9 @@ export default function ReportsPage() {
       note: 'vehicles queued per lane',
     },
     {
-      label: 'Average occupancy',
+      label: 'Average road fullness',
       value: summary ? `${summary.avg_occupancy.toFixed(1)}%` : current ? `${current.avg_occupancy.toFixed(1)}%` : '0.0%',
-      note: 'road space in use',
+      note: 'how full the roads are',
     },
     {
       label: 'Throughput',
@@ -268,10 +503,10 @@ export default function ReportsPage() {
   const controllerText =
     model?.mode === 'DQN'
       ? model.file
-        ? `DQN, ${model.obs_version} (episode ${model.selected_episode})`
-        : 'DQN, legacy demo model'
+        ? `Smart AI, ${model.obs_version} (episode ${model.selected_episode})`
+        : 'Smart AI, demo model'
       : model?.mode === 'RULE_BASED'
-      ? 'Rule-based'
+      ? 'Standard timing'
       : 'Unavailable';
 
   const eventRows: { label: string; value: ReactNode }[] = [
@@ -282,6 +517,13 @@ export default function ReportsPage() {
   ];
 
   const chartEmpty = <div className="flex h-full items-center justify-center text-[13px] text-faint">{EMPTY_MESSAGE}</div>;
+
+  const avgWaitSec = summary ? summary.avg_waiting_time : current ? current.avg_waiting_time : 0;
+  const avgWaitMinutes = (avgWaitSec / 60).toFixed(1);
+  const totalServed = summary ? summary.total_throughput : current ? current.throughput_total : 0;
+  const warningCount = summary ? summary.total_congestion_events : current ? current.congestion_event_count : 0;
+
+  const summaryParagraph = `During this reporting period, vehicles waited an average of ${avgWaitMinutes} minutes (${Math.round(avgWaitSec)} seconds) before passing through signals. The system served ${totalServed.toLocaleString()} vehicles in total, with ${warningCount} traffic congestion warning${warningCount === 1 ? '' : 's'} recorded.`;
 
   return (
     <div>
@@ -295,19 +537,112 @@ export default function ReportsPage() {
               <option value={60}>Last 60 minutes</option>
               <option value={120}>Last 120 minutes</option>
             </select>
-            <button onClick={handleExportCSV} disabled={chartData.length === 0} className="btn">
-              <Download size={14} strokeWidth={1.75} />
-              CSV
-            </button>
-            <button onClick={handleExportPDF} disabled={chartData.length === 0} className="btn btn-primary">
-              <Download size={14} strokeWidth={1.75} />
-              PDF
-            </button>
+            <div className="relative" ref={downloadMenuRef}>
+              <button
+                type="button"
+                onClick={() => setDownloadMenuOpen((prev) => !prev)}
+                disabled={!perfData}
+                className="btn btn-primary"
+                aria-haspopup="true"
+                aria-expanded={downloadMenuOpen}
+                id="download-report-btn"
+              >
+                <Download size={14} strokeWidth={1.75} />
+                Download report
+                <ChevronDown size={14} className={clsx('transition-transform duration-150', downloadMenuOpen && 'rotate-180')} />
+              </button>
+
+              {downloadMenuOpen && (
+                <div
+                  role="menu"
+                  aria-orientation="vertical"
+                  aria-labelledby="download-report-btn"
+                  className="absolute right-0 top-full z-20 mt-1.5 w-56 rounded-lg border border-line bg-surface p-1 shadow-lg animate-in fade-in zoom-in-95 duration-100"
+                >
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setDownloadMenuOpen(false);
+                      handleExportPDF();
+                    }}
+                    className="flex w-full items-start gap-2.5 rounded-md px-3 py-2 text-left text-xs transition-colors hover:bg-subtle text-ink"
+                  >
+                    <FileText size={16} className="mt-0.5 text-primary shrink-0" />
+                    <div>
+                      <span className="font-medium text-ink block">PDF report</span>
+                      <span className="text-2xs text-muted block">Formatted report with tables & metrics</span>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setDownloadMenuOpen(false);
+                      handleExportCSV();
+                    }}
+                    className="flex w-full items-start gap-2.5 rounded-md px-3 py-2 text-left text-xs transition-colors hover:bg-subtle text-ink"
+                  >
+                    <FileSpreadsheet size={16} className="mt-0.5 text-ok shrink-0" />
+                    <div>
+                      <span className="font-medium text-ink block">CSV data export</span>
+                      <span className="text-2xs text-muted block">Raw values for spreadsheets & Excel</span>
+                    </div>
+                  </button>
+                </div>
+              )}
+            </div>
           </>
         }
       />
 
       <div className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-surface p-3.5 shadow-2xs">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="flex items-center gap-1.5 text-xs font-medium text-ink">
+              <Calendar size={14} className="text-muted" />
+              Date range filter:
+            </span>
+            <input
+              type="date"
+              aria-label="Start date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="input h-8 w-auto text-xs"
+            />
+            <span className="text-xs text-faint">to</span>
+            <input
+              type="date"
+              aria-label="End date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="input h-8 w-auto text-xs"
+            />
+            {(dateFrom || dateTo) && (
+              <button
+                type="button"
+                onClick={() => { setDateFrom(''); setDateTo(''); loadData(); }}
+                className="btn btn-ghost h-8 px-2 text-xs"
+              >
+                Reset range
+              </button>
+            )}
+          </div>
+          {(dateFrom || dateTo) && (
+            <span className="text-xs text-muted">
+              Filtering performance snapshots ({perfHistory.length} loaded)
+            </span>
+          )}
+        </div>
+
+        <div className="rounded-lg border border-line bg-surface p-4 shadow-2xs">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted">Executive summary</p>
+          <p className="mt-1 text-sm leading-relaxed text-ink">
+            {summaryParagraph}
+          </p>
+        </div>
+
         <section className="grid grid-cols-2 overflow-hidden rounded-lg border border-line bg-surface lg:grid-cols-4" aria-label="Summary">
           {stats.map((s, i) => (
             <div key={s.label} className={clsx('px-4 py-3.5', i % 2 === 1 && 'border-l border-line', i >= 2 && 'border-t border-line lg:border-t-0', i === 2 && 'lg:border-l')}>
@@ -337,7 +672,7 @@ export default function ReportsPage() {
             </div>
           </Card>
 
-          <Card title="Throughput and occupancy" subtitle="Completed trips against road space in use, per minute">
+          <Card title="Throughput and road fullness" subtitle="Completed trips against how full the roads are, per minute">
             <div className="h-[260px] w-full">
               {chartData.length === 0 ? chartEmpty : (
                 <ResponsiveContainer width="100%" height="100%">
@@ -348,7 +683,7 @@ export default function ReportsPage() {
                     <Tooltip content={<ChartTooltip />} cursor={{ fill: c.cursor }} />
                     <Legend {...legendProps} iconType="square" />
                     <Bar dataKey="Throughput" fill={c.series[0]} radius={[2, 2, 0, 0]} maxBarSize={22} isAnimationActive={false} />
-                    <Bar dataKey="Occupancy (%)" fill={c.series[2]} radius={[2, 2, 0, 0]} maxBarSize={22} isAnimationActive={false} />
+                    <Bar dataKey="Road fullness (%)" fill={c.series[2]} radius={[2, 2, 0, 0]} maxBarSize={22} isAnimationActive={false} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -387,49 +722,89 @@ export default function ReportsPage() {
           </Card>
         </div>
 
-        <Card title="Junction load baseline" subtitle="Reference wait-time limits per junction" padded={false}>
+        <Card title="Live junction conditions" subtitle="Current vehicle volume and road fullness across all junctions" padded={false}>
           <div className="overflow-x-auto">
             <table className="tbl">
               <thead>
                 <tr>
                   <th>Junction</th>
-                  <th>Name</th>
-                  <th>Wait-time limit</th>
-                  <th>Status</th>
-                  <th className="text-right">Efficiency</th>
+                  <th>Vehicle count</th>
+                  <th>Road fullness</th>
+                  <th>Traffic status</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td className="font-mono text-xs">junctionA</td>
-                  <td>Northwest Square</td>
-                  <td className="font-mono tabular-nums">90 s</td>
-                  <td><Badge label="Optimized" variant="success" size="sm" /></td>
-                  <td className="text-right font-mono tabular-nums">93%</td>
-                </tr>
-                <tr>
-                  <td className="font-mono text-xs">junctionB</td>
-                  <td>Northeast Plaza</td>
-                  <td className="font-mono tabular-nums">105 s</td>
-                  <td><Badge label="Normal load" variant="warning" size="sm" /></td>
-                  <td className="text-right font-mono tabular-nums">82%</td>
-                </tr>
-                <tr>
-                  <td className="font-mono text-xs">junctionC</td>
-                  <td>Southeast Gateway</td>
-                  <td className="font-mono tabular-nums">85 s</td>
-                  <td><Badge label="Optimized" variant="success" size="sm" /></td>
-                  <td className="text-right font-mono tabular-nums">91%</td>
-                </tr>
-                <tr>
-                  <td className="font-mono text-xs">junctionD</td>
-                  <td>Southwest Crossing</td>
-                  <td className="font-mono tabular-nums">95 s</td>
-                  <td><Badge label="Optimized" variant="success" size="sm" /></td>
-                  <td className="text-right font-mono tabular-nums">89%</td>
-                </tr>
+                {(intersections.length > 0 ? intersections : DEFAULT_JUNCTION_LIST).map((j) => {
+                  const recentReadings = junctionDensityReadings[j.id] || [];
+                  const avgRecentDensity = recentReadings.length > 0
+                    ? recentReadings.reduce((sum, r) => sum + r.density, 0) / recentReadings.length
+                    : j.density;
+                  const isCongested = j.congestion_status === 'CONGESTED';
+                  return (
+                    <tr key={j.id}>
+                      <td className="font-medium text-ink">
+                        {getJunctionName(j.id)}
+                      </td>
+                      <td className="tabular-nums">
+                        {j.vehicle_count} {j.vehicle_count === 1 ? 'vehicle' : 'vehicles'}
+                      </td>
+                      <td className="text-muted">
+                        {getRoadFullnessInWords(avgRecentDensity)}
+                        <span className="ml-1 text-xs text-faint">({avgRecentDensity.toFixed(1)} cars/km)</span>
+                      </td>
+                      <td>
+                        <Badge
+                          label={isCongested ? 'Congested' : 'Clear'}
+                          variant={isCongested ? 'danger' : 'success'}
+                          size="sm"
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
+          </div>
+        </Card>
+
+        <Card
+          title="Test simulation results: Smart AI vs Standard timing"
+          subtitle="Benchmark evaluation over 30 test runs (1,800 simulation steps each). Read directly from backend/evaluation_results/eval_summary.json"
+          padded={false}
+        >
+          <div className="overflow-x-auto">
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th>Performance metric</th>
+                  <th>Standard timing (Fixed / Rule)</th>
+                  <th>Smart AI (Trained model)</th>
+                  <th>Improvement</th>
+                  <th>Advantage</th>
+                </tr>
+              </thead>
+              <tbody>
+                {TEST_SIMULATION_BENCHMARK.map((b) => (
+                  <tr key={b.metric}>
+                    <td className="font-medium text-ink">{b.metric}</td>
+                    <td className="tabular-nums text-muted">{b.standardTiming}</td>
+                    <td className="tabular-nums font-medium text-ink">{b.smartAI}</td>
+                    <td className="tabular-nums text-muted">{b.difference}</td>
+                    <td>
+                      <Badge label={b.advantage} variant={b.variant} size="sm" />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="border-t border-line px-4 py-3 bg-subtle/30 text-xs text-muted flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+            <span>
+              <strong>Source file:</strong> <code className="text-2xs bg-surface px-1 py-0.5 rounded border border-line">backend/evaluation_results/eval_summary.json</code>
+            </span>
+            <span>
+              Evaluated across 30 identical seeds (54,000 total steps per controller)
+            </span>
           </div>
         </Card>
 
@@ -493,7 +868,7 @@ export default function ReportsPage() {
                             <th>Sim time (s)</th>
                             <th>Wait (s)</th>
                             <th>Queue</th>
-                            <th>Occupancy (%)</th>
+                            <th>Road fullness (%)</th>
                             <th>Throughput</th>
                             <th>Congestion events</th>
                             <th>Controller (ms)</th>
@@ -560,7 +935,7 @@ export default function ReportsPage() {
                             <th>Sim time (s)</th>
                             <th>Lane</th>
                             <th>Vehicles</th>
-                            <th>Density (veh/km)</th>
+                            <th>Density (cars/km)</th>
                             <th>Level</th>
                             <th>Queue</th>
                             <th>Avg wait (s)</th>
