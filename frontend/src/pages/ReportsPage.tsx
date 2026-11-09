@@ -208,7 +208,7 @@ export default function ReportsPage() {
       'Sample Count',
       'Avg Waiting Time (s)',
       'Avg Queue Length',
-      'Avg Occupancy (%)',
+      'Avg Road Fullness (%)',
       'Total Throughput',
       'Total Congestion Events',
       'Total Emergency Activations',
@@ -261,7 +261,7 @@ export default function ReportsPage() {
     const summaryData = [
       ['Avg Waiting Time', perfData.simulation_summary ? `${perfData.simulation_summary.avg_waiting_time.toFixed(1)}s` : `${perfData.current?.avg_waiting_time.toFixed(1) || '0'}s`],
       ['Avg Queue Length', perfData.simulation_summary ? perfData.simulation_summary.avg_queue_length.toFixed(1) : `${perfData.current?.avg_queue_length.toFixed(1) || '0'}`],
-      ['Avg Occupancy', perfData.simulation_summary ? `${perfData.simulation_summary.avg_occupancy.toFixed(1)}%` : `${perfData.current?.avg_occupancy.toFixed(1) || '0'}%`],
+      ['Avg Road Fullness', perfData.simulation_summary ? `${perfData.simulation_summary.avg_occupancy.toFixed(1)}%` : `${perfData.current?.avg_occupancy.toFixed(1) || '0'}%`],
       ['Total Throughput', `${perfData.simulation_summary ? perfData.simulation_summary.total_throughput : perfData.current?.throughput_total || 0}`],
     ];
 
@@ -280,7 +280,7 @@ export default function ReportsPage() {
     doc.setTextColor(24, 24, 27);
     doc.text('Per-Minute Performance Breakdown', 14, finalY);
 
-    const headers = ['Period', 'Samples', 'Wait Time (s)', 'Queue Len', 'Occupancy (%)', 'Throughput', 'Congestions', 'Emergencies', 'Decisions'];
+    const headers = ['Period', 'Samples', 'Wait Time (s)', 'Queue Len', 'Road Fullness (%)', 'Throughput', 'Congestions', 'Emergencies', 'Decisions'];
 
     const rows = perfData.per_minute.map((item) => [
       item.period_label.replace('minute_', 'Min '),
@@ -335,7 +335,7 @@ export default function ReportsPage() {
     name: item.period_label.replace('minute_', 'Min '),
     'Wait time (s)': item.avg_waiting_time,
     'Queue length': item.avg_queue_length,
-    'Occupancy (%)': item.avg_occupancy,
+    'Road fullness (%)': item.avg_occupancy,
     Throughput: item.total_throughput,
     'Controller latency (ms)': item.avg_controller_response_time_ms,
     'Processing time (ms)': item.avg_tick_processing_time_ms,
@@ -356,9 +356,9 @@ export default function ReportsPage() {
       note: 'vehicles queued per lane',
     },
     {
-      label: 'Average occupancy',
+      label: 'Average road fullness',
       value: summary ? `${summary.avg_occupancy.toFixed(1)}%` : current ? `${current.avg_occupancy.toFixed(1)}%` : '0.0%',
-      note: 'road space in use',
+      note: 'how full the roads are',
     },
     {
       label: 'Throughput',
@@ -370,10 +370,10 @@ export default function ReportsPage() {
   const controllerText =
     model?.mode === 'DQN'
       ? model.file
-        ? `DQN, ${model.obs_version} (episode ${model.selected_episode})`
-        : 'DQN, legacy demo model'
+        ? `Smart AI, ${model.obs_version} (episode ${model.selected_episode})`
+        : 'Smart AI, demo model'
       : model?.mode === 'RULE_BASED'
-      ? 'Rule-based'
+      ? 'Standard timing'
       : 'Unavailable';
 
   const eventRows: { label: string; value: ReactNode }[] = [
@@ -491,7 +491,7 @@ export default function ReportsPage() {
             </div>
           </Card>
 
-          <Card title="Throughput and occupancy" subtitle="Completed trips against road space in use, per minute">
+          <Card title="Throughput and road fullness" subtitle="Completed trips against how full the roads are, per minute">
             <div className="h-[260px] w-full">
               {chartData.length === 0 ? chartEmpty : (
                 <ResponsiveContainer width="100%" height="100%">
@@ -502,7 +502,7 @@ export default function ReportsPage() {
                     <Tooltip content={<ChartTooltip />} cursor={{ fill: c.cursor }} />
                     <Legend {...legendProps} iconType="square" />
                     <Bar dataKey="Throughput" fill={c.series[0]} radius={[2, 2, 0, 0]} maxBarSize={22} isAnimationActive={false} />
-                    <Bar dataKey="Occupancy (%)" fill={c.series[2]} radius={[2, 2, 0, 0]} maxBarSize={22} isAnimationActive={false} />
+                    <Bar dataKey="Road fullness (%)" fill={c.series[2]} radius={[2, 2, 0, 0]} maxBarSize={22} isAnimationActive={false} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -687,7 +687,7 @@ export default function ReportsPage() {
                             <th>Sim time (s)</th>
                             <th>Wait (s)</th>
                             <th>Queue</th>
-                            <th>Occupancy (%)</th>
+                            <th>Road fullness (%)</th>
                             <th>Throughput</th>
                             <th>Congestion events</th>
                             <th>Controller (ms)</th>
@@ -754,7 +754,7 @@ export default function ReportsPage() {
                             <th>Sim time (s)</th>
                             <th>Lane</th>
                             <th>Vehicles</th>
-                            <th>Density (veh/km)</th>
+                            <th>Density (cars/km)</th>
                             <th>Level</th>
                             <th>Queue</th>
                             <th>Avg wait (s)</th>
