@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { loginApi } from '../services/api';
 import Logo from '../components/ui/Logo';
 import ThemeToggle from '../components/ui/ThemeToggle';
@@ -13,17 +13,44 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    document.title = 'Sign in · IntelliRoads';
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsSubmitting(true);
+
+    if (!username.trim() && !password.trim()) {
+      setError('Please enter your username and password.');
+      setIsSubmitting(false);
+      return;
+    }
+    if (!username.trim()) {
+      setError('Please enter your username.');
+      setIsSubmitting(false);
+      return;
+    }
+    if (!password.trim()) {
+      setError('Please enter your password.');
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       const res = await loginApi(username, password);
       localStorage.setItem('intelliroads_token', res.access_token);
       onLoginSuccess(res.access_token);
     } catch (err: unknown) {
-      setError(err instanceof Error && err.message ? err.message : 'Sign-in failed. Check your username and password.');
+      const msg = err instanceof Error ? err.message : '';
+      if (!navigator.onLine || msg.toLowerCase().includes('fetch') || msg.toLowerCase().includes('network')) {
+        setError("We can't reach the server right now. Check your connection and try again.");
+      } else if (msg.includes('401') || msg.toLowerCase().includes('unauthorized') || msg.toLowerCase().includes('incorrect')) {
+        setError('Wrong username or password. Please try again.');
+      } else {
+        setError('Sign-in failed. Please check your details and try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
