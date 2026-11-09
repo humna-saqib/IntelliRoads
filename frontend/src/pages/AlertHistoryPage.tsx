@@ -8,6 +8,7 @@ import ErrorState from '../components/ui/ErrorState';
 import PageIntro from '../components/ui/PageIntro';
 import { RotateCcw } from 'lucide-react';
 import type { CongestionEvent } from '../types/traffic';
+import { getJunctionName } from '../constants/plainWords';
 
 export default function AlertHistoryPage() {
   const { isBackendOffline } = useTraffic();
@@ -17,6 +18,7 @@ export default function AlertHistoryPage() {
   const [selectedIntersection, setSelectedIntersection] = useState<string>('ALL');
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
   const [timeRange, setTimeRange] = useState<string>('ALL');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   const loadHistory = async () => {
     setLoading(true);
@@ -47,13 +49,11 @@ export default function AlertHistoryPage() {
     return date.toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
   };
 
-  const getJunctionName = (id: string) => {
-    if (!id) return 'Unknown junction';
-    if (id.includes('A')) return 'Junction A · Northwest Square';
-    if (id.includes('B')) return 'Junction B · Northeast Plaza';
-    if (id.includes('C')) return 'Junction C · Southeast Gateway';
-    if (id.includes('D')) return 'Junction D · Southwest Crossing';
-    return id;
+  const getCause = (event: CongestionEvent): string => {
+    if (event.density_value > event.threshold) {
+      return 'Too many cars — road density exceeded the warning limit';
+    }
+    return 'Road became congested';
   };
 
   const isActiveEvent = (event: CongestionEvent) =>
@@ -61,28 +61,38 @@ export default function AlertHistoryPage() {
 
   const filteredHistory = useMemo(() => {
     const nowSec = Date.now() / 1000;
-    return history.filter((event) => {
-      if (selectedIntersection !== 'ALL' && !event.intersection_id.toLowerCase().includes(selectedIntersection.toLowerCase())) return false;
+    return history
+      .filter((event) => {
+        if (!searchQuery.trim()) return true;
+        const q = searchQuery.toLowerCase();
+        const name = getJunctionName(event.intersection_id).toLowerCase();
+        const cause = getCause(event).toLowerCase();
+        return name.includes(q) || cause.includes(q);
+      })
+      .filter((event) => {
+        if (selectedIntersection !== 'ALL' && !event.intersection_id.toLowerCase().includes(selectedIntersection.toLowerCase())) return false;
 
-      if (selectedStatus !== 'ALL') {
-        const active = isActiveEvent(event);
-        if (selectedStatus === 'ACTIVE' && !active) return false;
-        if (selectedStatus === 'RESOLVED' && active) return false;
-      }
+        if (selectedStatus !== 'ALL') {
+          const active = isActiveEvent(event);
+          if (selectedStatus === 'ACTIVE' && !active) return false;
+          if (selectedStatus === 'RESOLVED' && active) return false;
+        }
 
-      if (timeRange !== 'ALL') {
-        const eventTs = typeof event.timestamp === 'number' ? event.timestamp : new Date(event.timestamp).getTime() / 1000;
-        const limit = timeRange === '15M' ? 15 * 60 : timeRange === '1H' ? 60 * 60 : 24 * 60 * 60;
-        if (nowSec - eventTs > limit) return false;
-      }
-      return true;
-    });
-  }, [history, selectedIntersection, selectedStatus, timeRange]);
+        if (timeRange !== 'ALL') {
+          const eventTs = typeof event.timestamp === 'number' ? event.timestamp : new Date(event.timestamp).getTime() / 1000;
+          const limit = timeRange === '15M' ? 15 * 60 : timeRange === '1H' ? 60 * 60 : 24 * 60 * 60;
+          if (nowSec - eventTs > limit) return false;
+        }
+
+        return true;
+      });
+  }, [history, selectedIntersection, selectedStatus, timeRange, searchQuery]);
 
   const handleResetFilters = () => {
     setSelectedIntersection('ALL');
     setSelectedStatus('ALL');
     setTimeRange('ALL');
+    setSearchQuery('');
   };
 
   return (
@@ -99,35 +109,48 @@ export default function AlertHistoryPage() {
 
       <div className="space-y-4">
         <div className="grid grid-cols-1 gap-3 rounded-lg border border-line bg-surface p-4 sm:grid-cols-4">
-          <div>
-            <label htmlFor="f-junction" className="field-label">Junction</label>
-            <select id="f-junction" value={selectedIntersection} onChange={(e) => setSelectedIntersection(e.target.value)} className="input">
-              <option value="ALL">All junctions</option>
-              <option value="junctionA">Junction A (Northwest)</option>
-              <option value="junctionB">Junction B (Northeast)</option>
-              <option value="junctionC">Junction C (Southeast)</option>
-              <option value="junctionD">Junction D (Southwest)</option>
-            </select>
+          <div className="sm:col-span-4">
+            <label htmlFor="f-search" className="field-label">Search</label>
+            <input
+              id="f-search"
+              type="search"
+              placeholder="Junction name or cause…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="input"
+            />
           </div>
-          <div>
-            <label htmlFor="f-status" className="field-label">Status</label>
-            <select id="f-status" value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)} className="input">
-              <option value="ALL">Active and resolved</option>
-              <option value="ACTIVE">Active only</option>
-              <option value="RESOLVED">Resolved only</option>
-            </select>
-          </div>
-          <div>
-            <label htmlFor="f-time" className="field-label">Time range</label>
-            <select id="f-time" value={timeRange} onChange={(e) => setTimeRange(e.target.value)} className="input">
-              <option value="ALL">All time</option>
-              <option value="15M">Last 15 minutes</option>
-              <option value="1H">Last hour</option>
-              <option value="24H">Last 24 hours</option>
-            </select>
-          </div>
-          <div className="flex items-end">
-            <button onClick={handleResetFilters} className="btn btn-ghost">Reset filters</button>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-4 sm:col-span-4">
+            <div>
+              <label htmlFor="f-junction" className="field-label">Junction</label>
+              <select id="f-junction" value={selectedIntersection} onChange={(e) => setSelectedIntersection(e.target.value)} className="input">
+                <option value="ALL">All junctions</option>
+                <option value="junctionA">Junction A (Northwest)</option>
+                <option value="junctionB">Junction B (Northeast)</option>
+                <option value="junctionC">Junction C (Southeast)</option>
+                <option value="junctionD">Junction D (Southwest)</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="f-status" className="field-label">Status</label>
+              <select id="f-status" value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)} className="input">
+                <option value="ALL">Active and resolved</option>
+                <option value="ACTIVE">Active only</option>
+                <option value="RESOLVED">Resolved only</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="f-time" className="field-label">Time range</label>
+              <select id="f-time" value={timeRange} onChange={(e) => setTimeRange(e.target.value)} className="input">
+                <option value="ALL">All time</option>
+                <option value="15M">Last 15 minutes</option>
+                <option value="1H">Last hour</option>
+                <option value="24H">Last 24 hours</option>
+              </select>
+            </div>
+            <div className="flex items-end">
+              <button onClick={handleResetFilters} className="btn btn-ghost">Reset filters</button>
+            </div>
           </div>
         </div>
 
