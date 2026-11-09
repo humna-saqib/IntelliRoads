@@ -6,6 +6,7 @@ import PageIntro from '../components/ui/PageIntro';
 import Card from '../components/ui/Card';
 import { Check } from 'lucide-react';
 import { getJunctionName } from '../constants/plainWords';
+import { useToast } from '../context/ToastContext';
 
 const DEFAULTS: JunctionThresholds = { low_threshold: 20, medium_threshold: 40, congestion_threshold: 60 };
 
@@ -14,6 +15,7 @@ type SaveState = Record<string, 'idle' | 'saving' | 'saved' | 'error'>;
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
+  const toast = useToast();
 
   useEffect(() => {
     document.title = 'Settings · IntelliRoads';
@@ -22,6 +24,7 @@ export default function SettingsPage() {
   const [form, setForm] = useState<FormState>({});
   const [saveState, setSaveState] = useState<SaveState>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [pendingJunctionId, setPendingJunctionId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -72,10 +75,12 @@ export default function SettingsPage() {
       setForm((prev) => ({ ...prev, [junctionId]: saved }));
       setSaveState((prev) => ({ ...prev, [junctionId]: 'saved' }));
       setTimeout(() => setSaveState((prev) => ({ ...prev, [junctionId]: 'idle' })), 2000);
+      toast.success('Settings saved.', 'Changes applied');
     } catch (err) {
       console.error(`Failed to save thresholds for ${junctionId}:`, err);
       setErrors((prev) => ({ ...prev, [junctionId]: 'Could not save. Please try again.' }));
       setSaveState((prev) => ({ ...prev, [junctionId]: 'error' }));
+      toast.error('Could not save. Please try again.', 'Save failed');
     }
   };
 
@@ -155,7 +160,7 @@ export default function SettingsPage() {
                 {error && <p className="mt-3 text-xs text-bad">{error}</p>}
 
                 <div className="mt-4 flex items-center gap-2">
-                  <button type="button" disabled={!dirty || state === 'saving'} onClick={() => handleSave(junctionId)} className="btn btn-primary">
+                  <button type="button" disabled={!dirty || state === 'saving'} onClick={() => setPendingJunctionId(junctionId)} className="btn btn-primary">
                     {state === 'saved' && <Check size={14} />}
                     {state === 'saving' ? 'Saving…' : state === 'saved' ? 'Saved' : 'Save changes'}
                   </button>
@@ -167,6 +172,27 @@ export default function SettingsPage() {
             );
           })}
       </div>
+
+      {pendingJunctionId && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+          <div className="w-full max-w-sm rounded-xl border border-line bg-surface p-6 shadow-xl">
+            <h2 id="confirm-title" className="text-sm font-semibold text-ink">Save changes?</h2>
+            <p className="mt-1.5 text-xs text-muted">
+              Saving new thresholds for <strong>{getJunctionName(pendingJunctionId)}</strong> will immediately change when warnings appear and how signals are timed.
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <button type="button" onClick={() => setPendingJunctionId(null)} className="btn btn-ghost">Cancel</button>
+              <button
+                type="button"
+                onClick={() => { const id = pendingJunctionId; setPendingJunctionId(null); handleSave(id); }}
+                className="btn btn-primary"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
