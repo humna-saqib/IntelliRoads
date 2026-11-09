@@ -8,7 +8,13 @@ import { Check } from 'lucide-react';
 import { getJunctionName } from '../constants/plainWords';
 import { useToast } from '../context/ToastContext';
 
-const DEFAULTS: JunctionThresholds = { low_threshold: 20, medium_threshold: 40, congestion_threshold: 60 };
+// Default thresholds matching backend/app/core/threshold_config.py (lines 32-34)
+// (DEFAULT_LOW_THRESHOLD = 20.0, DEFAULT_MEDIUM_THRESHOLD = 40.0, DEFAULT_CONGESTION_THRESHOLD = 40.0)
+const BACKEND_DEFAULTS: JunctionThresholds = {
+  low_threshold: 20,
+  medium_threshold: 40,
+  congestion_threshold: 40,
+};
 
 type FormState = Record<string, JunctionThresholds>;
 type SaveState = Record<string, 'idle' | 'saving' | 'saved' | 'error'>;
@@ -51,15 +57,29 @@ export default function SettingsPage() {
 
   const isDirty = (junctionId: string) => JSON.stringify(form[junctionId]) !== JSON.stringify(original[junctionId]);
 
-  const handleReset = (junctionId: string) => {
+  const handleUndo = (junctionId: string) => {
     setForm((prev) => ({ ...prev, [junctionId]: original[junctionId] }));
     setErrors((prev) => ({ ...prev, [junctionId]: '' }));
     setSaveState((prev) => ({ ...prev, [junctionId]: 'idle' }));
   };
 
-  const handleResetAllToDefaults = () => {
-    setForm((prev) => Object.fromEntries(Object.keys(prev).map((k) => [k, { ...DEFAULTS }])));
+  const handleResetToDefaults = (junctionId: string) => {
+    setForm((prev) => ({ ...prev, [junctionId]: { ...BACKEND_DEFAULTS } }));
+    setErrors((prev) => ({ ...prev, [junctionId]: '' }));
+    setSaveState((prev) => ({ ...prev, [junctionId]: 'idle' }));
   };
+
+  const handleResetAllToDefaults = () => {
+    setForm((prev) => Object.fromEntries(Object.keys(prev).map((k) => [k, { ...BACKEND_DEFAULTS }])));
+    setErrors({});
+  };
+
+  const handleUndoAll = () => {
+    setForm({ ...original });
+    setErrors({});
+  };
+
+  const hasAnyChanges = Object.keys(form).some((id) => isDirty(id));
 
   const handleSave = async (junctionId: string) => {
     const values = form[junctionId];
@@ -104,9 +124,16 @@ export default function SettingsPage() {
     <div>
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <PageIntro description="Set the car-density levels (cars per km) that decide when a road is 'light', 'moderate', or 'too busy'. Warnings appear when density passes the congestion limit." />
-        <button type="button" onClick={handleResetAllToDefaults} className="btn btn-ghost shrink-0">
-          Reset to defaults
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          {hasAnyChanges && (
+            <button type="button" onClick={handleUndoAll} className="btn btn-ghost" title="Revert all unsaved changes to last saved values">
+              Undo changes
+            </button>
+          )}
+          <button type="button" onClick={handleResetAllToDefaults} className="btn btn-ghost">
+            Reset to defaults
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -159,13 +186,16 @@ export default function SettingsPage() {
 
                 {error && <p className="mt-3 text-xs text-bad">{error}</p>}
 
-                <div className="mt-4 flex items-center gap-2">
+                <div className="mt-4 flex items-center gap-2 flex-wrap">
                   <button type="button" disabled={!dirty || state === 'saving'} onClick={() => setPendingJunctionId(junctionId)} className="btn btn-primary">
                     {state === 'saved' && <Check size={14} />}
                     {state === 'saving' ? 'Saving…' : state === 'saved' ? 'Saved' : 'Save changes'}
                   </button>
-                  <button type="button" disabled={!dirty} onClick={() => handleReset(junctionId)} className="btn btn-ghost">
-                    Reset
+                  <button type="button" disabled={!dirty} onClick={() => handleUndo(junctionId)} className="btn btn-ghost" title="Revert to last saved values">
+                    Undo changes
+                  </button>
+                  <button type="button" onClick={() => handleResetToDefaults(junctionId)} className="btn btn-ghost text-xs text-muted" title="Restore system defaults (20 / 40 / 40)">
+                    Reset to defaults
                   </button>
                 </div>
               </Card>
