@@ -25,12 +25,13 @@ export const MOCK_KPIS = {
 };
 
 export const MOCK_SIGNALS = {
-  junctions: {
-    junctionA: { junction_id: 'junctionA', phase: 'GREEN', duration_seconds: 25, time_in_phase: 5, reason: 'obs-v2 DQN action: EXTEND_GREEN' },
-    junctionB: { junction_id: 'junctionB', phase: 'RED', duration_seconds: 30, time_in_phase: 10, reason: 'LOW density on North approach -> 15s green phase' },
-    junctionC: { junction_id: 'junctionC', phase: 'GREEN', duration_seconds: 25, time_in_phase: 6, reason: 'obs-v2 DQN action: EXTEND_GREEN' },
-    junctionD: { junction_id: 'junctionD', phase: 'RED', duration_seconds: 30, time_in_phase: 11, reason: 'LOW density on South approach -> 15s green phase' },
-  },
+  signals: [
+    { junction_id: 'junctionA', phase: 'GREEN', duration_seconds: 25, density_level: 'LOW', triggered_at: new Date().toISOString(), reason: 'obs-v2 DQN action: EXTEND_GREEN' },
+    { junction_id: 'junctionB', phase: 'RED', duration_seconds: 30, density_level: 'LOW', triggered_at: new Date().toISOString(), reason: 'LOW density on North approach -> 15s green phase' },
+    { junction_id: 'junctionC', phase: 'GREEN', duration_seconds: 25, density_level: 'LOW', triggered_at: new Date().toISOString(), reason: 'obs-v2 DQN action: EXTEND_GREEN' },
+    { junction_id: 'junctionD', phase: 'RED', duration_seconds: 30, density_level: 'LOW', triggered_at: new Date().toISOString(), reason: 'LOW density on South approach -> 15s green phase' },
+  ],
+  timestamp: Date.now(),
 };
 
 export const MOCK_DENSITY = {
