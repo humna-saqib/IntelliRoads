@@ -6,6 +6,6 @@ test.describe('Playwright Setup & Route Interception', () => {
     await setupApiMocks(page, { authenticated: true });
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await expect(page).toHaveTitle(/IntelliRoads/i);
-    await expect(page.locator('h1')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole('heading', { name: 'Overview', exact: true })).toBeVisible({ timeout: 15_000 });
   });
 });
