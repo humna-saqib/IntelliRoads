@@ -17,11 +17,16 @@ export const MOCK_INTERSECTIONS = [
 
 export const MOCK_KPIS = {
   total_vehicles: 14,
+  active_intersections: 4,
   average_speed: 11.5,
   average_wait_time: 3.8,
   congestion_percentage: 6.5,
   active_alerts: 0,
   emergency_vehicles_active: 0,
+  simulation_time: 120,
+  data_source: 'LIVE' as const,
+  fetch_latency_ms: 15,
+  timestamp: Date.now(),
 };
 
 export const MOCK_SIGNALS = {
@@ -66,10 +71,11 @@ export const MOCK_CONTROLLER_MODE = {
 
 export const MOCK_VEHICLES = {
   vehicles: [
-    { id: 'veh_01', type: 'car', speed: 11.2, waiting_time: 2.1, lane_id: 'lane_A_west_in', route_id: 'route_01', distance: 150.0 },
-    { id: 'veh_02', type: 'bus', speed: 9.4, waiting_time: 4.5, lane_id: 'lane_B_north_in', route_id: 'route_02', distance: 120.0 },
-    { id: 'veh_03', type: 'motorcycle', speed: 13.0, waiting_time: 1.0, lane_id: 'lane_C_east_in', route_id: 'route_03', distance: 90.0 },
+    { vehicle_id: 'veh_01', vehicle_type: 'car' as const, speed: 11.2, waiting_time: 2.1, lane_id: 'lane_A_west_in', road_id: 'road_01', lane_position: 10, position_x: 0, position_y: 0, timestamp: Date.now() },
+    { vehicle_id: 'veh_02', vehicle_type: 'bus' as const, speed: 9.4, waiting_time: 4.5, lane_id: 'lane_B_north_in', road_id: 'road_02', lane_position: 20, position_x: 10, position_y: 10, timestamp: Date.now() },
+    { vehicle_id: 'veh_03', vehicle_type: 'motorcycle' as const, speed: 13.0, waiting_time: 1.0, lane_id: 'lane_C_east_in', road_id: 'road_03', lane_position: 30, position_x: 20, position_y: 20, timestamp: Date.now() },
   ],
+  total: 3,
 };
 
 export const MOCK_CLASSIFICATION = {
@@ -83,16 +89,13 @@ export const MOCK_CONGESTION = {
 
 export const MOCK_CONGESTION_HISTORY = [
   {
-    id: 1,
-    timestamp: 1700000000,
-    junction_id: 'junctionA',
-    lane_id: 'lane_A_west_in',
-    density: 48.2,
-    vehicle_count: 18,
-    congestion_threshold: 40.0,
-    severity: 'HIGH',
-    resolved: true,
-    duration_seconds: 240,
+    id: 'alert_1',
+    timestamp: Math.floor(Date.now() / 1000) - 300,
+    intersection_id: 'junctionA',
+    density_value: 48.2,
+    threshold: 40.0,
+    status: 'CONGESTED' as const,
+    resolved_at: Math.floor(Date.now() / 1000) - 60,
   },
 ];
 
