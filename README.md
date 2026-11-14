@@ -185,3 +185,44 @@ To run tests with code coverage:
 cd backend
 pytest --cov=app --cov-report=term-missing
 ```
+
+## Running Frontend Tests
+
+The frontend test suite includes component tests (Vitest + React Testing Library + jsdom) and end-to-end tests (Playwright with route interception and mock data, requiring no backend or SUMO).
+
+### 1. Install Dependencies
+
+```bash
+cd frontend
+npm install
+```
+
+### 2. Run Component & Unit Tests (Vitest)
+
+Run the fast unit and component test suite:
+
+```bash
+npm run test:run
+```
+
+For watch mode during development:
+
+```bash
+npm test
+```
+
+### 3. Run End-to-End Tests (Playwright)
+
+Install the Playwright Chromium browser binary (one-time setup):
+
+```bash
+npx playwright install chromium
+```
+
+Run the end-to-end test suite:
+
+```bash
+npm run test:e2e
+```
+
+All Playwright tests mock backend REST endpoints and WebSocket feeds via route interception, allowing the full test suite to execute deterministically offline without starting the backend or SUMO simulation.
