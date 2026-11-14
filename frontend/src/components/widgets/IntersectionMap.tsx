@@ -482,15 +482,15 @@ export default function IntersectionMap({ selectedJunctionId, onSelectJunction }
           <div className="mt-1.5 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-muted">
             <span className="flex items-center gap-1.5">
               <span className="inline-block h-3 w-3 rounded-full border-2 border-ok bg-ok/20" />
-              <span>Circle: Light traffic (flowing freely, under 20 cars/km)</span>
+              <span>Circle: Light (under 20 cars/km)</span>
             </span>
             <span className="flex items-center gap-1.5">
               <span className="inline-block h-0 w-0 border-x-[6px] border-b-[10px] border-x-transparent border-b-warn" />
-              <span>Triangle: Moderate traffic (slowing down, 20 to 40 cars/km)</span>
+              <span>Triangle: Moderate (20 to 40 cars/km)</span>
             </span>
             <span className="flex items-center gap-1.5">
               <span className="inline-block h-3 w-3 rounded-xs border-2 border-bad bg-bad/20" />
-              <span>Square: Heavy traffic (crowded, over 40 cars/km)</span>
+              <span>Square: Heavy / Traffic jam (over 40 cars/km or alert)</span>
             </span>
           </div>
         </div>

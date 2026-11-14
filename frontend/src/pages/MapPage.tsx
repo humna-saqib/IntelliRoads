@@ -5,7 +5,7 @@ import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import ErrorState from '../components/ui/ErrorState';
-import { getJunctionName } from '../constants/plainWords';
+import { getJunctionName, getTrafficLevelInWords } from '../constants/plainWords';
 import clsx from 'clsx';
 
 const signalTone: Record<string, string> = {
@@ -63,13 +63,27 @@ export default function MapPage() {
                   selectedJunctionId === intersection.id && 'bg-brand/5 border-l-2 border-brand',
                 )}
               >
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center justify-between gap-2">
                   <p className="text-[13px] font-medium">{getJunctionName(intersection.id)}</p>
-                  <Badge
-                    label={intersection.congestion_status === 'CONGESTED' ? 'Congested' : 'Clear'}
-                    variant={intersection.congestion_status === 'CONGESTED' ? 'danger' : 'success'}
-                    size="sm"
-                  />
+                  <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                    {(() => {
+                      const level = getTrafficLevelInWords(intersection.congestion_status, intersection.density);
+                      return (
+                        <Badge
+                          label={level.label}
+                          variant={level.variant}
+                          size="sm"
+                        />
+                      );
+                    })()}
+                    {intersection.congestion_status === 'CONGESTED' && (
+                      <Badge
+                        label="Warning active"
+                        variant="danger"
+                        size="sm"
+                      />
+                    )}
+                  </div>
                 </div>
                 <dl className="mt-2 grid grid-cols-3 gap-2 text-xs">
                   <div>

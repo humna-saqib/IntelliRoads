@@ -160,6 +160,24 @@ export function formatDensity(density: number): string {
   return `${density.toFixed(1)} cars/km`;
 }
 
+/** Translate technical density level to plain language words matching map markers and junction cards */
+export function getTrafficLevelInWords(status: string | undefined, density: number): {
+  label: string;
+  variant: 'success' | 'warning' | 'danger' | 'neutral';
+  tone: string;
+} {
+  if (status === 'CONGESTED') {
+    return { label: 'Traffic jam', variant: 'danger', tone: 'text-bad bg-bad/10 border-bad/20' };
+  }
+  if (density >= 40) {
+    return { label: 'Heavy traffic', variant: 'danger', tone: 'text-bad bg-bad/10 border-bad/20' };
+  }
+  if (density >= 20) {
+    return { label: 'Moderate traffic', variant: 'warning', tone: 'text-warn bg-warn/10 border-warn/20' };
+  }
+  return { label: 'Light traffic', variant: 'success', tone: 'text-ok bg-ok/10 border-ok/20' };
+}
+
 /** Format road fullness percentage. */
 export function formatRoadFullness(occupancyPercent: number): string {
   if (typeof occupancyPercent !== 'number' || isNaN(occupancyPercent)) return '0%';
