@@ -45,7 +45,7 @@ export default function LiveStatusBadge({
         className={clsx(
           'h-2 w-2 rounded-full transition-transform',
           isLive && 'bg-ok shadow-[0_0_6px_rgba(34,197,94,0.6)]',
-          isConnecting && 'animate-pulse bg-warn',
+          isConnecting && 'animate-pulse motion-reduce:animate-none bg-warn',
           isOffline && 'bg-bad',
         )}
       />

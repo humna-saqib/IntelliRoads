@@ -124,7 +124,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             key={toast.id}
             role="status"
             className={clsx(
-              'pointer-events-auto flex items-start gap-3 rounded-lg border p-3.5 shadow-lg backdrop-blur-sm transition-all animate-in fade-in slide-in-from-bottom-2',
+              'pointer-events-auto flex items-start gap-3 rounded-lg border p-3.5 shadow-lg backdrop-blur-sm transition-all animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none motion-reduce:transition-none',
               toast.type === 'success' && 'border-ok/30 bg-surface text-ink',
               toast.type === 'error' && 'border-bad/30 bg-surface text-ink',
               toast.type === 'warning' && 'border-warn/30 bg-surface text-ink',

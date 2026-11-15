@@ -86,7 +86,7 @@ export default function FirstVisitTour({ forceOpen = false, onClose }: FirstVisi
       role="dialog"
       aria-modal="true"
       aria-label="First-visit guided tour"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in motion-reduce:animate-none"
     >
       <div className="w-full max-w-lg rounded-2xl border border-line bg-surface p-6 shadow-2xl">
         <div className="flex items-center justify-between border-b border-line pb-4">

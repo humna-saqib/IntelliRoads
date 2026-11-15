@@ -52,7 +52,7 @@ function VehicleIconSvg({ type, color }: { type: string; color: string }) {
       <g>
         <rect x="-5.5" y="-3.5" width="11" height="7" rx="1.5" fill={color} stroke="#ef4444" strokeWidth="1" />
         <rect x="-2" y="-1.5" width="4" height="3" rx="0.5" fill="#fff" fillOpacity="0.8" />
-        <circle cx="0" cy="0" r="1.5" fill="#ef4444" className="animate-pulse" />
+        <circle cx="0" cy="0" r="1.5" fill="#ef4444" className="animate-pulse motion-reduce:animate-none" />
       </g>
     );
   }
@@ -204,7 +204,7 @@ export default function IntersectionMap({ selectedJunctionId, onSelectJunction }
 
         <svg
           viewBox={`${minX} ${minY} ${viewWidth} ${viewHeight}`}
-          className="h-full w-full transition-all duration-300 ease-out"
+          className="h-full w-full transition-all duration-300 ease-out motion-reduce:transition-none"
           role="img"
           aria-label="Road network with four signalised junctions"
         >
@@ -260,7 +260,7 @@ export default function IntersectionMap({ selectedJunctionId, onSelectJunction }
                     cy={coords.y}
                     r="25"
                     fill="none"
-                    className="stroke-brand animate-pulse"
+                    className="stroke-brand animate-pulse motion-reduce:animate-none"
                     strokeWidth="2"
                     strokeDasharray="4 2"
                   />
