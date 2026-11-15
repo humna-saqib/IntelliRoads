@@ -89,7 +89,7 @@ export default function DensityChart() {
         </div>
       }
     >
-      <div className="h-56">
+      <div className="h-56" role="region" aria-label="Road crowdedness bar chart showing cars per kilometre on each monitored approach">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
             <CartesianGrid stroke={c.grid} vertical={false} />

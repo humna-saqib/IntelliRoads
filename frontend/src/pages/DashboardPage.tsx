@@ -46,10 +46,10 @@ export default function DashboardPage() {
     <div>
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold tracking-tight text-ink sm:text-xl">Detailed data</h1>
+          <h2 className="text-lg font-semibold tracking-tight text-ink sm:text-xl">Detailed data</h2>
           <p className="text-xs text-muted">Diagnostic traffic metrics, signal controllers, and vehicle inspection</p>
         </div>
-        <Link to="/" className="btn btn-secondary min-h-[36px] flex items-center gap-1.5 text-xs font-medium">
+        <Link to="/" className="btn btn-secondary min-h-[44px] flex items-center gap-1.5 text-xs font-medium">
           <ArrowLeft size={14} />
           <span>Back to Overview</span>
         </Link>

@@ -53,7 +53,7 @@ export default function Header({ onMenuClick, onLogout }: HeaderProps) {
         </span>
         <ThemeToggle />
         {onLogout && (
-          <button onClick={onLogout} className="btn btn-ghost" title="Log out">
+          <button onClick={onLogout} className="btn btn-ghost" title="Log out" aria-label="Log out of IntelliRoads">
             <LogOut size={15} strokeWidth={1.75} />
             <span className="hidden sm:inline">Log out</span>
           </button>

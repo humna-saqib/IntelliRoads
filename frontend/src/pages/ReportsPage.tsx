@@ -623,7 +623,7 @@ export default function ReportsPage() {
               <button
                 type="button"
                 onClick={() => { setDateFrom(''); setDateTo(''); loadData(); }}
-                className="btn btn-ghost h-8 px-2 text-xs"
+                className="btn btn-ghost min-h-[44px] px-2 text-xs"
               >
                 Reset range
               </button>
@@ -655,7 +655,7 @@ export default function ReportsPage() {
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <Card title="Wait time and queue length" subtitle="How waiting relates to queue size, per minute">
-            <div className="h-[260px] w-full">
+            <div className="h-[260px] w-full" role="region" aria-label="Wait time and queue length line chart, showing per-minute trends">
               {chartData.length === 0 ? chartEmpty : (
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
@@ -673,7 +673,7 @@ export default function ReportsPage() {
           </Card>
 
           <Card title="Throughput and road fullness" subtitle="Completed trips against how full the roads are, per minute">
-            <div className="h-[260px] w-full">
+            <div className="h-[260px] w-full" role="region" aria-label="Throughput and road fullness bar chart, showing completed trips vs road occupancy percentage">
               {chartData.length === 0 ? chartEmpty : (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
@@ -693,7 +693,7 @@ export default function ReportsPage() {
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           <Card title="Controller response time" subtitle="Time the control pipeline takes per simulation step" className="lg:col-span-2">
-            <div className="h-[200px] w-full">
+            <div className="h-[200px] w-full" role="region" aria-label="Controller response time line chart, showing latency in milliseconds">
               {chartData.length === 0 ? chartEmpty : (
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
@@ -833,7 +833,7 @@ export default function ReportsPage() {
                     aria-selected={historyTab === tab}
                     onClick={() => setHistoryTab(tab)}
                     className={clsx(
-                      'h-7 rounded px-3 text-[13px] font-medium transition-colors',
+                      'min-h-[44px] rounded px-3 text-[13px] font-medium transition-colors',
                       historyTab === tab ? 'border border-line bg-surface text-ink shadow-sm' : 'border border-transparent text-muted hover:text-ink',
                     )}
                   >

@@ -37,7 +37,7 @@ export default {
         card: '0 1px 2px rgb(var(--ink) / 0.04), 0 4px 16px -6px rgb(var(--ink) / 0.06)',
       },
       fontSize: {
-        '2xs': ['11px', '16px'],
+        '2xs': ['12px', '16px'],
       },
     },
   },

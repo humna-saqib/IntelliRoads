@@ -25,7 +25,8 @@ describe('JunctionCard component', () => {
     junction_id: 'junctionA',
     phase: 'GREEN',
     duration_seconds: 25,
-    time_in_phase: 5,
+    density_level: 'LOW',
+    triggered_at: new Date().toISOString(),
     reason: 'HOLD_GREEN_AI_BUSY',
   };
 

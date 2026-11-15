@@ -207,10 +207,7 @@ export default function HomePage() {
       {/* Overview Header with Glossary & Guided Tour shortcuts */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-ink sm:text-2xl">
-            Traffic Overview
-          </h1>
-          <p className="mt-0.5 text-xs text-muted sm:text-sm">
+          <p className="text-xs text-muted sm:text-sm">
             Live corridor operations, intersection flow, and automated signal coordination.
           </p>
         </div>
@@ -219,7 +216,7 @@ export default function HomePage() {
           <button
             type="button"
             onClick={() => setGlossaryOpen(true)}
-            className="btn btn-secondary min-h-[36px] flex items-center gap-1.5 text-xs font-medium"
+            className="btn btn-secondary min-h-[44px] flex items-center gap-1.5 text-xs font-medium"
             aria-label="Open plain-language glossary"
           >
             <BookOpen size={14} />
@@ -229,7 +226,7 @@ export default function HomePage() {
           <button
             type="button"
             onClick={() => setTourOpen(true)}
-            className="btn btn-secondary min-h-[36px] flex items-center gap-1.5 text-xs font-medium"
+            className="btn btn-secondary min-h-[44px] flex items-center gap-1.5 text-xs font-medium"
             aria-label="Take the first-visit guided tour"
           >
             <HelpCircle size={14} />
@@ -260,9 +257,9 @@ export default function HomePage() {
               {tone === 'good' && <CheckCircle2 size={20} className="text-ok" />}
             </div>
             <div className="min-w-0 flex-1">
-              <h1 className="text-base font-semibold tracking-tight text-ink sm:text-lg">
+              <h2 className="text-base font-semibold tracking-tight text-ink sm:text-lg">
                 {statusTitle}
-              </h1>
+              </h2>
               <p className="mt-1 text-sm text-muted">
                 <span className="font-medium text-ink">What to do: </span>
                 {whatToDo}
@@ -384,7 +381,7 @@ export default function HomePage() {
           <div className="flex items-center gap-2">
             <Link
               to="/details"
-              className="btn btn-secondary min-h-[36px] flex items-center gap-1.5 text-xs font-medium"
+              className="btn btn-secondary min-h-[44px] flex items-center gap-1.5 text-xs font-medium"
             >
               <span>Open full page</span>
               <ExternalLink size={13} />

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { IntersectionData, SignalTiming, SignalPhase } from '../../types/traffic';
-import { getJunctionName, formatSignalReason } from '../../constants/plainWords';
+import { getJunctionName, formatSignalReason, getTrafficLevelInWords } from '../../constants/plainWords';
 import Card from '../ui/Card';
 import Badge from '../ui/Badge';
 import clsx from 'clsx';
@@ -10,20 +10,6 @@ interface JunctionCardProps {
   intersection: IntersectionData;
   signal?: SignalTiming;
   controllerMode?: string | null;
-}
-
-/** Translate technical density level to plain language */
-function getTrafficLevelInWords(status: string, density: number): { label: string; variant: 'success' | 'warning' | 'danger' | 'neutral' } {
-  if (status === 'CONGESTED') {
-    return { label: 'Traffic jam', variant: 'danger' };
-  }
-  if (density >= 40) {
-    return { label: 'Heavy traffic', variant: 'danger' };
-  }
-  if (density >= 20) {
-    return { label: 'Moderate traffic', variant: 'warning' };
-  }
-  return { label: 'Light traffic', variant: 'success' };
 }
 
 /** Format light color in words */

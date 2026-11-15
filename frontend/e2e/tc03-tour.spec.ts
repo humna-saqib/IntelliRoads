@@ -3,9 +3,12 @@ import { setupApiMocks } from './mocks/setupMocks';
 
 test.describe('TC-03: First-visit tour opens once and does not return after Skip', () => {
   test('tour appears on first visit and does not reappear after skipping', async ({ page }) => {
-    // Make sure the tour flag is cleared (first visit)
+    // Make sure the tour flag is cleared on first visit (sessionStorage prevents clearing again on reload)
     await page.addInitScript(() => {
-      localStorage.removeItem('intelliroads_tour_completed');
+      if (!sessionStorage.getItem('tour_cleared_for_test')) {
+        sessionStorage.setItem('tour_cleared_for_test', 'true');
+        localStorage.removeItem('intelliroads_tour_completed');
+      }
     });
     await setupApiMocks(page, { authenticated: true });
 

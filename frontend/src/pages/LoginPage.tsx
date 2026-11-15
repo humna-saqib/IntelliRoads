@@ -98,15 +98,15 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-faint hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
+                className="absolute right-1 top-1/2 -translate-y-1/2 flex min-h-[44px] min-w-[44px] items-center justify-center rounded p-1 text-faint hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
-                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
           </div>
 
-          <button type="submit" disabled={isSubmitting} className="btn btn-primary h-9 w-full">
+          <button type="submit" disabled={isSubmitting} className="btn btn-primary min-h-[44px] w-full">
             {isSubmitting ? 'Signing in…' : 'Sign in'}
           </button>
         </form>

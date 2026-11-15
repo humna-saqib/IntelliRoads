@@ -113,7 +113,7 @@ export default function GlossaryModal({ isOpen, onClose }: GlossaryModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="btn btn-secondary min-h-[36px] text-xs font-medium"
+            className="btn btn-secondary min-h-[44px] text-xs font-medium"
           >
             Close
           </button>

@@ -52,7 +52,7 @@ function VehicleIconSvg({ type, color }: { type: string; color: string }) {
       <g>
         <rect x="-5.5" y="-3.5" width="11" height="7" rx="1.5" fill={color} stroke="#ef4444" strokeWidth="1" />
         <rect x="-2" y="-1.5" width="4" height="3" rx="0.5" fill="#fff" fillOpacity="0.8" />
-        <circle cx="0" cy="0" r="1.5" fill="#ef4444" className="animate-pulse" />
+        <circle cx="0" cy="0" r="1.5" fill="#ef4444" className="animate-pulse motion-reduce:animate-none" />
       </g>
     );
   }
@@ -172,9 +172,9 @@ export default function IntersectionMap({ selectedJunctionId, onSelectJunction }
             disabled={zoom >= 2.5}
             aria-label="Zoom in"
             title="Zoom in"
-            className="btn btn-ghost btn-icon h-7 w-7 text-ink disabled:opacity-40"
+            className="btn btn-ghost btn-icon min-h-[44px] min-w-[44px] text-ink disabled:opacity-40"
           >
-            <ZoomIn size={14} />
+            <ZoomIn size={16} />
           </button>
           <button
             type="button"
@@ -182,9 +182,9 @@ export default function IntersectionMap({ selectedJunctionId, onSelectJunction }
             disabled={zoom <= 1}
             aria-label="Zoom out"
             title="Zoom out"
-            className="btn btn-ghost btn-icon h-7 w-7 text-ink disabled:opacity-40"
+            className="btn btn-ghost btn-icon min-h-[44px] min-w-[44px] text-ink disabled:opacity-40"
           >
-            <ZoomOut size={14} />
+            <ZoomOut size={16} />
           </button>
           <button
             type="button"
@@ -192,9 +192,9 @@ export default function IntersectionMap({ selectedJunctionId, onSelectJunction }
             disabled={zoom === 1}
             aria-label="Reset view"
             title="Reset view to 100%"
-            className="btn btn-ghost h-7 px-2 text-2xs font-medium text-ink disabled:opacity-40 flex items-center gap-1"
+            className="btn btn-ghost min-h-[44px] px-2.5 text-xs font-medium text-ink disabled:opacity-40 flex items-center gap-1"
           >
-            <RotateCcw size={12} />
+            <RotateCcw size={14} />
             <span>Reset view</span>
           </button>
           <span className="px-1 font-mono text-2xs text-faint tabular-nums" aria-hidden="true">
@@ -204,7 +204,7 @@ export default function IntersectionMap({ selectedJunctionId, onSelectJunction }
 
         <svg
           viewBox={`${minX} ${minY} ${viewWidth} ${viewHeight}`}
-          className="h-full w-full transition-all duration-300 ease-out"
+          className="h-full w-full transition-all duration-300 ease-out motion-reduce:transition-none"
           role="img"
           aria-label="Road network with four signalised junctions"
         >
@@ -260,7 +260,7 @@ export default function IntersectionMap({ selectedJunctionId, onSelectJunction }
                     cy={coords.y}
                     r="25"
                     fill="none"
-                    className="stroke-brand animate-pulse"
+                    className="stroke-brand animate-pulse motion-reduce:animate-none"
                     strokeWidth="2"
                     strokeDasharray="4 2"
                   />
@@ -409,10 +409,10 @@ export default function IntersectionMap({ selectedJunctionId, onSelectJunction }
                       setSelectedJunction(null);
                       onSelectJunction?.(null);
                     }}
-                    className="btn btn-ghost btn-icon h-7 w-7 text-muted hover:text-ink"
+                    className="btn btn-ghost btn-icon min-h-[44px] min-w-[44px] text-muted hover:text-ink"
                     aria-label="Close side panel"
                   >
-                    <X size={15} />
+                    <X size={16} />
                   </button>
                 </div>
 
@@ -482,15 +482,15 @@ export default function IntersectionMap({ selectedJunctionId, onSelectJunction }
           <div className="mt-1.5 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-muted">
             <span className="flex items-center gap-1.5">
               <span className="inline-block h-3 w-3 rounded-full border-2 border-ok bg-ok/20" />
-              <span>Circle: Light traffic (flowing freely, under 20 cars/km)</span>
+              <span>Circle: Light (under 20 cars/km)</span>
             </span>
             <span className="flex items-center gap-1.5">
               <span className="inline-block h-0 w-0 border-x-[6px] border-b-[10px] border-x-transparent border-b-warn" />
-              <span>Triangle: Moderate traffic (slowing down, 20 to 40 cars/km)</span>
+              <span>Triangle: Moderate (20 to 40 cars/km)</span>
             </span>
             <span className="flex items-center gap-1.5">
               <span className="inline-block h-3 w-3 rounded-xs border-2 border-bad bg-bad/20" />
-              <span>Square: Heavy traffic (crowded, over 40 cars/km)</span>
+              <span>Square: Heavy / Traffic jam (over 40 cars/km or alert)</span>
             </span>
           </div>
         </div>

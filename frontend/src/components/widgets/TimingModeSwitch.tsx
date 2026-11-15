@@ -59,7 +59,7 @@ export default function TimingModeSwitch({ onModeChange }: TimingModeSwitchProps
       <div
         role="radiogroup"
         aria-label="Signal control mode"
-        className="flex min-h-[44px] items-center rounded-lg border border-line bg-subtle p-1"
+        className="flex min-h-[48px] items-center rounded-lg border border-line bg-subtle p-1"
       >
         <button
           type="button"
@@ -68,7 +68,7 @@ export default function TimingModeSwitch({ onModeChange }: TimingModeSwitchProps
           disabled={switching || mode === null}
           onClick={() => handleSwitch('RULE_BASED')}
           className={clsx(
-            'flex min-h-[36px] items-center gap-1.5 rounded-md px-3 text-xs font-medium transition-all',
+            'flex min-h-[44px] items-center gap-1.5 rounded-md px-3 text-xs font-medium transition-all',
             mode === 'RULE_BASED'
               ? 'bg-surface text-ink shadow-xs'
               : 'text-muted hover:text-ink',
@@ -86,7 +86,7 @@ export default function TimingModeSwitch({ onModeChange }: TimingModeSwitchProps
           disabled={switching || mode === null}
           onClick={() => handleSwitch('DQN')}
           className={clsx(
-            'flex min-h-[36px] items-center gap-1.5 rounded-md px-3 text-xs font-medium transition-all',
+            'flex min-h-[44px] items-center gap-1.5 rounded-md px-3 text-xs font-medium transition-all',
             mode === 'DQN'
               ? 'bg-surface text-brand shadow-xs'
               : 'text-muted hover:text-ink',

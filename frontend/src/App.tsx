@@ -36,13 +36,21 @@ export default function App() {
     <TrafficProvider>
       <ToastProvider>
         <Router>
+          {/* Accessibility: Skip to main content link for keyboard and screen reader navigation */}
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-md focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-white focus:shadow-lg focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-ink"
+          >
+            Skip to main content
+          </a>
+
           <div className="flex h-screen overflow-hidden bg-page text-ink">
             <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
             <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
               <Header onMenuClick={() => setSidebarOpen(true)} onLogout={handleLogout} />
 
-              <main className="flex-1 overflow-y-auto">
+              <main id="main-content" tabIndex={-1} className="flex-1 overflow-y-auto focus:outline-none">
                 <div className="mx-auto w-full max-w-[1200px] px-4 py-5 sm:px-6 sm:py-6">
                   <Routes>
                     <Route path="/" element={<HomePage />} />

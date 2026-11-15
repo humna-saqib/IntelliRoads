@@ -124,7 +124,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             key={toast.id}
             role="status"
             className={clsx(
-              'pointer-events-auto flex items-start gap-3 rounded-lg border p-3.5 shadow-lg backdrop-blur-sm transition-all animate-in fade-in slide-in-from-bottom-2',
+              'pointer-events-auto flex items-start gap-3 rounded-lg border p-3.5 shadow-lg backdrop-blur-sm transition-all animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none motion-reduce:transition-none',
               toast.type === 'success' && 'border-ok/30 bg-surface text-ink',
               toast.type === 'error' && 'border-bad/30 bg-surface text-ink',
               toast.type === 'warning' && 'border-warn/30 bg-surface text-ink',
@@ -148,7 +148,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             <button
               type="button"
               onClick={() => dismiss(toast.id)}
-              className="btn btn-ghost btn-icon -mr-1.5 -mt-1.5 h-6 w-6 text-faint hover:text-ink"
+              className="btn btn-ghost btn-icon -mr-1 -mt-1 min-h-[44px] min-w-[44px] text-faint hover:text-ink"
               aria-label="Dismiss notification"
             >
               <X size={13} />
