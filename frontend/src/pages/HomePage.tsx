@@ -216,7 +216,7 @@ export default function HomePage() {
           <button
             type="button"
             onClick={() => setGlossaryOpen(true)}
-            className="btn btn-secondary min-h-[36px] flex items-center gap-1.5 text-xs font-medium"
+            className="btn btn-secondary min-h-[44px] flex items-center gap-1.5 text-xs font-medium"
             aria-label="Open plain-language glossary"
           >
             <BookOpen size={14} />
@@ -226,7 +226,7 @@ export default function HomePage() {
           <button
             type="button"
             onClick={() => setTourOpen(true)}
-            className="btn btn-secondary min-h-[36px] flex items-center gap-1.5 text-xs font-medium"
+            className="btn btn-secondary min-h-[44px] flex items-center gap-1.5 text-xs font-medium"
             aria-label="Take the first-visit guided tour"
           >
             <HelpCircle size={14} />
@@ -381,7 +381,7 @@ export default function HomePage() {
           <div className="flex items-center gap-2">
             <Link
               to="/details"
-              className="btn btn-secondary min-h-[36px] flex items-center gap-1.5 text-xs font-medium"
+              className="btn btn-secondary min-h-[44px] flex items-center gap-1.5 text-xs font-medium"
             >
               <span>Open full page</span>
               <ExternalLink size={13} />

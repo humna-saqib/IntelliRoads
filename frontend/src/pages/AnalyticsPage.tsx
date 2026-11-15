@@ -67,7 +67,7 @@ export default function AnalyticsPage() {
                   aria-checked={active}
                   onClick={() => setTimeRangeMinutes(range.value)}
                   className={clsx(
-                    'min-h-[36px] rounded-md px-3 text-xs font-medium transition-all',
+                    'min-h-[44px] rounded-md px-3 text-xs font-medium transition-all',
                     active ? 'bg-surface text-brand shadow-xs' : 'text-muted hover:text-ink',
                   )}
                 >

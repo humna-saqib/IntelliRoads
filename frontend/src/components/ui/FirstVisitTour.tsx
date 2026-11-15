@@ -135,7 +135,7 @@ export default function FirstVisitTour({ forceOpen = false, onClose }: FirstVisi
             <button
               type="button"
               onClick={dismissTour}
-              className="btn btn-ghost min-h-[36px] text-xs font-medium text-muted hover:text-ink"
+              className="btn btn-ghost min-h-[44px] text-xs font-medium text-muted hover:text-ink"
             >
               Skip
             </button>
@@ -144,7 +144,7 @@ export default function FirstVisitTour({ forceOpen = false, onClose }: FirstVisi
               <button
                 type="button"
                 onClick={handleBack}
-                className="btn btn-secondary min-h-[36px] flex items-center gap-1 text-xs font-medium"
+                className="btn btn-secondary min-h-[44px] flex items-center gap-1 text-xs font-medium"
               >
                 <ArrowLeft size={13} />
                 <span>Back</span>
@@ -154,7 +154,7 @@ export default function FirstVisitTour({ forceOpen = false, onClose }: FirstVisi
             <button
               type="button"
               onClick={handleNext}
-              className="btn btn-brand min-h-[36px] flex items-center gap-1 text-xs font-medium"
+              className="btn btn-brand min-h-[44px] flex items-center gap-1 text-xs font-medium"
             >
               <span>{currentStep === TOUR_STEPS.length - 1 ? 'Got it' : 'Next'}</span>
               {currentStep === TOUR_STEPS.length - 1 ? <Check size={13} /> : <ArrowRight size={13} />}

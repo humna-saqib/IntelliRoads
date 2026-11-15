@@ -148,7 +148,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             <button
               type="button"
               onClick={() => dismiss(toast.id)}
-              className="btn btn-ghost btn-icon -mr-1.5 -mt-1.5 h-6 w-6 text-faint hover:text-ink"
+              className="btn btn-ghost btn-icon -mr-1 -mt-1 min-h-[44px] min-w-[44px] text-faint hover:text-ink"
               aria-label="Dismiss notification"
             >
               <X size={13} />

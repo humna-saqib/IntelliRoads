@@ -172,9 +172,9 @@ export default function IntersectionMap({ selectedJunctionId, onSelectJunction }
             disabled={zoom >= 2.5}
             aria-label="Zoom in"
             title="Zoom in"
-            className="btn btn-ghost btn-icon h-7 w-7 text-ink disabled:opacity-40"
+            className="btn btn-ghost btn-icon min-h-[44px] min-w-[44px] text-ink disabled:opacity-40"
           >
-            <ZoomIn size={14} />
+            <ZoomIn size={16} />
           </button>
           <button
             type="button"
@@ -182,9 +182,9 @@ export default function IntersectionMap({ selectedJunctionId, onSelectJunction }
             disabled={zoom <= 1}
             aria-label="Zoom out"
             title="Zoom out"
-            className="btn btn-ghost btn-icon h-7 w-7 text-ink disabled:opacity-40"
+            className="btn btn-ghost btn-icon min-h-[44px] min-w-[44px] text-ink disabled:opacity-40"
           >
-            <ZoomOut size={14} />
+            <ZoomOut size={16} />
           </button>
           <button
             type="button"
@@ -192,9 +192,9 @@ export default function IntersectionMap({ selectedJunctionId, onSelectJunction }
             disabled={zoom === 1}
             aria-label="Reset view"
             title="Reset view to 100%"
-            className="btn btn-ghost h-7 px-2 text-2xs font-medium text-ink disabled:opacity-40 flex items-center gap-1"
+            className="btn btn-ghost min-h-[44px] px-2.5 text-xs font-medium text-ink disabled:opacity-40 flex items-center gap-1"
           >
-            <RotateCcw size={12} />
+            <RotateCcw size={14} />
             <span>Reset view</span>
           </button>
           <span className="px-1 font-mono text-2xs text-faint tabular-nums" aria-hidden="true">
@@ -409,10 +409,10 @@ export default function IntersectionMap({ selectedJunctionId, onSelectJunction }
                       setSelectedJunction(null);
                       onSelectJunction?.(null);
                     }}
-                    className="btn btn-ghost btn-icon h-7 w-7 text-muted hover:text-ink"
+                    className="btn btn-ghost btn-icon min-h-[44px] min-w-[44px] text-muted hover:text-ink"
                     aria-label="Close side panel"
                   >
-                    <X size={15} />
+                    <X size={16} />
                   </button>
                 </div>
 

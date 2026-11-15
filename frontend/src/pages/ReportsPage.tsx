@@ -623,7 +623,7 @@ export default function ReportsPage() {
               <button
                 type="button"
                 onClick={() => { setDateFrom(''); setDateTo(''); loadData(); }}
-                className="btn btn-ghost h-8 px-2 text-xs"
+                className="btn btn-ghost min-h-[44px] px-2 text-xs"
               >
                 Reset range
               </button>

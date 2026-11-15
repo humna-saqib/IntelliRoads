@@ -67,7 +67,7 @@ export default function VehicleInjectionPanel() {
         <div>
           <p className="field-label">How many vehicles?</p>
           <div className="flex items-center gap-2">
-            <button type="button" className="btn btn-icon h-10 w-10 rounded-lg" onClick={() => setCount(clamp((count || 0) - 10))} aria-label="Remove 10">
+            <button type="button" className="btn btn-icon min-h-[44px] min-w-[44px] rounded-lg" onClick={() => setCount(clamp((count || 0) - 10))} aria-label="Remove 10">
               <Minus size={16} />
             </button>
             <input
@@ -78,9 +78,9 @@ export default function VehicleInjectionPanel() {
               value={Number.isNaN(count) ? '' : count}
               onChange={(e) => setCount(e.target.valueAsNumber)}
               aria-label="Number of vehicles"
-              className="input h-10 text-center font-mono text-lg font-semibold tabular-nums"
+              className="input min-h-[44px] text-center font-mono text-lg font-semibold tabular-nums"
             />
-            <button type="button" className="btn btn-icon h-10 w-10 rounded-lg" onClick={() => setCount(clamp((count || 0) + 10))} aria-label="Add 10">
+            <button type="button" className="btn btn-icon min-h-[44px] min-w-[44px] rounded-lg" onClick={() => setCount(clamp((count || 0) + 10))} aria-label="Add 10">
               <Plus size={16} />
             </button>
           </div>
