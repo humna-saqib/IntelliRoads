@@ -833,7 +833,7 @@ export default function ReportsPage() {
                     aria-selected={historyTab === tab}
                     onClick={() => setHistoryTab(tab)}
                     className={clsx(
-                      'h-7 rounded px-3 text-[13px] font-medium transition-colors',
+                      'min-h-[44px] rounded px-3 text-[13px] font-medium transition-colors',
                       historyTab === tab ? 'border border-line bg-surface text-ink shadow-sm' : 'border border-transparent text-muted hover:text-ink',
                     )}
                   >
