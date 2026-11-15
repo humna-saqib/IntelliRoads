@@ -5,7 +5,7 @@
 >   creates all tables and indexes via `executescript`. Every table and column
 >   below comes directly from that file. No columns or tables have been invented.
 
-The SQLite database (`intelliroads.db`) contains **14 tables**.  
+The SQLite database (`intelliroads.db`) contains **15 tables**.  
 One foreign-key relationship exists:
 `dqn_experiment_epoch_stats.experiment_id` → `dqn_experiments.experiment_id` (ON DELETE CASCADE).
 
@@ -183,6 +183,15 @@ erDiagram
         TEXT    summary_json
     }
 
+    dqn_summary_statistics {
+        INTEGER id PK
+        TEXT    metric_name
+        TEXT    metric_value
+        TEXT    source_id
+        TEXT    source_type
+        REAL    timestamp
+    }
+
     dqn_experiments ||--o{ dqn_experiment_epoch_stats : "experiment_id (CASCADE DELETE)"
 ```
 
@@ -206,3 +215,4 @@ erDiagram
 | `dqn_experiment_epoch_stats` | Per-epoch stats for each offline experiment (FK → `dqn_experiments`) |
 | `sumo_simulation_runs` | Summary record of each SUMO simulation run |
 | `dqn_centralized_summary` | JSON blob storing centralized DQN summary output |
+| `dqn_summary_statistics` | Per-metric summary stats from DQN experiments; indexed on `metric_name` |

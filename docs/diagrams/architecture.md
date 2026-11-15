@@ -126,6 +126,6 @@ flowchart TD
 | EmergencyPriorityController | `services/priority_controller.py` | Overrides signal to 90 s GREEN at any junction with an active emergency vehicle |
 | InMemoryStateStore | `core/state_store.py` | Thread-safe in-memory cache; source of truth for REST and WS |
 | DBLogger | `services/db_logger.py` | Persists telemetry to SQLite after every tick |
-| SQLite | `core/database.py` | 14-table schema; WAL mode |
+| SQLite | `core/database.py` | 15-table schema; WAL mode |
 | WebSocketManager | `websocket/manager.py` | Broadcasts full snapshot JSON to all connected clients every ~1 s |
 | TrafficContext | `frontend/src/context/TrafficContext.tsx` | Maintains WS connection; falls back to polling REST every 5 s when WS drops |

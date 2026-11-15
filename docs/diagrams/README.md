@@ -12,7 +12,7 @@ code — no information has been invented.
 |---|---|
 | [`architecture.md`](./architecture.md) | System component map — SUMO + TraCI, FastAPI backend, controllers (rule-based / DQN), safety layer, SQLite, WebSocket `/ws/live`, React dashboard |
 | [`data-flow.md`](./data-flow.md) | Two sequence diagrams: (1) one simulation tick from SUMO to the browser screen; (2) a user switching between Standard timing and Smart AI mode |
-| [`database-schema.md`](./database-schema.md) | ER diagram of all 14 real SQLite tables with column names and data types, sourced from `backend/app/core/database.py` |
+| [`database-schema.md`](./database-schema.md) | ER diagram of all 15 real SQLite tables with column names and data types, sourced from `backend/app/core/database.py` |
 | [`frontend-structure.md`](./frontend-structure.md) | Page and component map — React Router routes, `TrafficContext`, `services/api.ts`, `services/websocket.ts`, all pages and their key widgets |
 
 ---
