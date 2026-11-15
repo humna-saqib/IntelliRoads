@@ -77,7 +77,7 @@
     background: rgb(var(--ink) / 0.14);
   }
   :focus-visible {
-    @apply outline outline-2 outline-offset-2 outline-ink/40;
+    @apply outline outline-2 outline-offset-2 outline-brand;
   }
 }
 
