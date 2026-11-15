@@ -68,7 +68,7 @@ export default function SpeedDistribution({ timeRangeMinutes = 5 }: SpeedDistrib
 
   return (
     <Card title="How fast are vehicles moving?" subtitle="Rolling mean speed of vehicles across the network">
-      <div className="h-[240px] w-full">
+      <div className="h-[240px] w-full" role="region" aria-label="Vehicle speed trend line chart showing rolling mean speed across the network in km/h">
         {displayHistory.length === 0 ? (
           <div className="flex h-full items-center justify-center text-[13px] text-faint">Waiting for simulation data…</div>
         ) : (
